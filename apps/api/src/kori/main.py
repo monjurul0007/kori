@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 
 from kori.common.errors import register_error_handlers
-from kori.common.middleware import register_middleware
 from kori.config import Settings, get_settings
 from kori.logging import configure_logging
+from kori.middleware import register_middleware
 from kori.routes import register_routes
 
 
