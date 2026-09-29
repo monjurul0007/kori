@@ -26,7 +26,7 @@ flowchart LR
   B -- "HTTPS, session cookie, same origin" --> SPA
   B -- "HTTPS, session cookie, same origin" --> API
   SVC --> DB
-  PROXY -. "HTTP (planned, M3)" .-> AI
+  PROXY -. "HTTP/JSON + SSE (planned, M3)" .-> AI
   AI -. "calls /api/v1 as the user<br/>short-lived scoped token (planned, M3)" .-> API
 ```
 

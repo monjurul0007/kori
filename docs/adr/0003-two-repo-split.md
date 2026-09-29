@@ -26,6 +26,9 @@ core app, by contrast, is written through small reviewed PRs and has to stay sta
   - It proposes writes. Kori applies them only after the user confirms in the UI.
 - **The browser talks only to Kori.** AI endpoints are reached through Kori's `/api/v1/ai/*` proxy
   (M3), so auth stays in one place and there's one origin.
+- **Transport:** HTTP with JSON bodies, and server-sent events (SSE) for streamed answers, in both
+  directions. Spike S1 confirms this with a measurement before M3 fixes the contract. gRPC was
+  considered; see below.
 
 ## Alternatives considered
 
@@ -35,6 +38,22 @@ core app, by contrast, is written through small reviewed PRs and has to stay sta
     independent deploy or runtime (vLLM, GPUs) harder later.
 - **Three repos (web, api, ai).** Cross-repo PRs for every feature, and three CI pipelines, with no
   benefit for a single developer.
+- **gRPC between Kori's AI proxy and `kori-ai`.**
+  - For: typed protobuf contracts, compact binary messages, built-in streaming, and it's a common
+    choice for internal service-to-service calls at scale.
+  - Against, for Kori today:
+    - **No measurable speed-up.** Each request waits on an LLM call that takes hundreds of
+      milliseconds to seconds, while encoding a few KB of JSON takes well under a millisecond.
+    - **Browsers can't call gRPC natively.** Kori would still convert the stream to SSE for the
+      web app.
+    - **Two protocols and two contracts.** `kori-ai` calls Kori's REST API as the user, so gRPC
+      on the other direction adds protobuf next to OpenAPI, plus a code generator in both repos.
+    - **Hosting risk.** Free tiers differ in HTTP/2 support between services (spike S2), while
+      HTTP/1.1 with SSE works everywhere.
+    - **Tooling.** curl, browser dev tools and LLM tracing (M8) work directly with JSON over
+      HTTP, and the major LLM provider APIs stream the same way.
+  - Revisit: spike S1 compares both before M3. M10 looks again if a model-serving tier with
+    high-volume internal calls appears.
 
 ## Consequences
 

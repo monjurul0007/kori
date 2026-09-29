@@ -25,4 +25,5 @@ using the Nygard format (Status, Context, Decision, Consequences).
 
 - New sessions and new contributors can learn why things are as they are by reading `docs/adr/`.
 - Writing an ADR costs a little time for each important choice.
-- `CLAUDE.md` and `CONTRIBUTING.md` point here, so AI sessions pick up the same constraints.
+- `AGENTS.md` (which `CLAUDE.md` imports) and `CONTRIBUTING.md` point here, so every AI agent
+  picks up the same constraints.

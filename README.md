@@ -82,10 +82,11 @@ There's no application code yet. The API skeleton lands in M1-02 and a one-comma
 
 ## How this project is built
 
-I own the product and review every PR. Implementation is pair-programmed with Claude Code:
+I own the product and review every PR. Implementation is pair-programmed with an AI coding agent
+(currently Claude Code):
 - The backlog lives on a Trello board.
 - Each task card becomes one small, focused PR, following [CONTRIBUTING.md](CONTRIBUTING.md) and
-  [CLAUDE.md](CLAUDE.md).
+  [AGENTS.md](AGENTS.md), the tool-agnostic rules every AI agent follows.
 - I build the AI features (M4–M8) myself, as part of moving into AI/ML engineering.
 
 ## License
