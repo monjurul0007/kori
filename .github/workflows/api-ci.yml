@@ -18,6 +18,21 @@ jobs:
   api-ci:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: kori
+          POSTGRES_PASSWORD: kori
+          POSTGRES_DB: kori
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kori -d kori"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      KORI_DATABASE_URL: postgresql+psycopg://kori:kori@localhost:5432/kori
     defaults:
       run:
         working-directory: apps/api
@@ -40,6 +55,12 @@ jobs:
 
       - name: Mypy
         run: uv run mypy
+
+      - name: Migrate from a clean database
+        run: uv run alembic upgrade head
+
+      - name: Check models match migrations
+        run: uv run alembic check
 
       - name: Tests
         run: uv run pytest --cov-fail-under=85

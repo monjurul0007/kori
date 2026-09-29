@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     env: Env = Env.DEVELOPMENT
     log_level: str = "INFO"
     app_origin: str | None = None
+    database_url: str = "postgresql+psycopg://kori:kori@localhost:5432/kori"
 
     @model_validator(mode="after")
     def _require_origin_in_production(self) -> Self:
