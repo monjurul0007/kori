@@ -1,20 +1,21 @@
 from fastapi import FastAPI
 
 from kori.common.errors import register_error_handlers
-from kori.common.request_id import RequestIdMiddleware
+from kori.common.middleware import register_middleware
 from kori.config import Settings, get_settings
-from kori.health.router import router as health_router
 from kori.logging import configure_logging
+from kori.routes import register_routes
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
+    """Build the app. Each concern is registered by its own function."""
     settings = settings or get_settings()
     configure_logging(settings.log_level)
     app = FastAPI(title="Kori API", version="0.1.0")
     app.state.settings = settings
-    app.add_middleware(RequestIdMiddleware)
+    register_middleware(app)
     register_error_handlers(app)
-    app.include_router(health_router, prefix="/api/v1")
+    register_routes(app)
     return app
 
 

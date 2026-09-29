@@ -14,7 +14,16 @@ _VALID = re.compile(r"[A-Za-z0-9_-]{1,128}")
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
-    """Accept a valid inbound X-Request-ID or generate one; echo it and bind it to logs."""
+    """Give every request an ID.
+
+    Spec:
+    - Reads `X-Request-ID`; accepted only if it matches `[A-Za-z0-9_-]{1,128}`,
+      otherwise a uuid4 is generated.
+    - Stores the ID in `request_id_var` and binds it to structlog, so log lines
+      and problem+json errors carry it.
+    - Echoes it in the `X-Request-ID` response header, including on 500s
+      (unhandled errors are rendered here, so the header is not lost).
+    """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         inbound = request.headers.get(HEADER, "")
