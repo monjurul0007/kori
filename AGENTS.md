@@ -88,8 +88,13 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 | Task | Command |
 |---|---|
 | Run all repo hooks | `pre-commit run --all-files` |
+| Install API deps | `cd apps/api && uv sync` |
+| Run the API (dev) | `make api-dev` |
+| API tests (coverage ≥ 85%) | `make api-test` |
+| API lint, format check, types | `make api-lint` |
+| API auto-fix and format | `make api-fmt` |
 
-Later PRs add rows here for the API, web, DB, Docker and seed commands.
+Later PRs add rows here for the web, DB, Docker and seed commands.
 
 ## Never
 

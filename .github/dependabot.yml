@@ -1,4 +1,4 @@
-# Package ecosystems (uv/pip, npm, docker) are added by the PRs that
+# Package ecosystems (npm, docker) are added by the PRs that
 # introduce their manifests.
 version: 2
 updates:
@@ -10,4 +10,14 @@ updates:
       prefix: ci
     groups:
       github-actions:
+        patterns: ["*"]
+  - package-ecosystem: uv
+    directory: /apps/api
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      scope: api
+    groups:
+      python-deps:
         patterns: ["*"]

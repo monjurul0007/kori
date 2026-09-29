@@ -1,5 +1,5 @@
-# Repo-wide hooks. Language-specific hooks (ruff, eslint, prettier) are
-# added by the PRs that introduce Python and TypeScript code.
+# Repo-wide hooks. Language-specific hooks (eslint, prettier) are
+# added by the PRs that introduce TypeScript code.
 # Run locally: pre-commit install && pre-commit run --all-files
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -21,3 +21,12 @@ repos:
     rev: v8.21.2
     hooks:
       - id: gitleaks
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^apps/api/
+      - id: ruff-format
+        files: ^apps/api/
