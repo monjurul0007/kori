@@ -5,9 +5,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session
 
-from kori.common.models import NAMING_CONVENTION, Base
 from kori.config import Env, Settings
 from kori.db import get_db, make_sessionmaker
+from kori.db.base import NAMING_CONVENTION, Base
 from kori.main import create_app
 
 

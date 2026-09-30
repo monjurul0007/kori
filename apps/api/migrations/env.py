@@ -1,10 +1,11 @@
 from alembic import context
 from sqlalchemy import create_engine
 
-from kori.common.models import Base
 from kori.config import get_settings
+from kori.db.base import Base
 
 config = context.config
+# Import every model module here so autogenerate can see its tables.
 target_metadata = Base.metadata
 
 

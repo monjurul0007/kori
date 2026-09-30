@@ -18,6 +18,10 @@ jobs:
   api-ci:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # These credentials belong to a throwaway service container that exists only for this job and
+    # is unreachable from outside it, so they are not secrets. Service containers cannot read the
+    # `env` context, so the values are repeated in KORI_DATABASE_URL below. Real credentials
+    # (deploy, production) must come from GitHub secrets, never from this file.
     services:
       postgres:
         image: pgvector/pgvector:pg16
