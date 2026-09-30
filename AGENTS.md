@@ -93,8 +93,15 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 | API tests (coverage ≥ 85%) | `make api-test` |
 | API lint, format check, types | `make api-lint` |
 | API auto-fix and format | `make api-fmt` |
+| Export OpenAPI and regenerate the web client | `make openapi` |
+| Install web deps | `make web-install` |
+| Run the web app (dev, proxies `/api` to :8000) | `make web-dev` |
+| Web tests | `make web-test` |
+| Web lint, format check, types | `make web-lint` |
+| Web auto-fix and format | `make web-fmt` |
+| Web production build | `make web-build` |
 
-Later PRs add rows here for the web, DB, Docker and seed commands.
+Later PRs add rows here for the DB, Docker and seed commands.
 
 ## Never
 
