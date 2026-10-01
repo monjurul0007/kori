@@ -131,3 +131,20 @@ Apply these once in GitHub → **Settings**:
   - enable **Dependabot alerts** and **security updates**
 - **Actions → General:** set workflow permissions to **Read repository contents**.
 - **Labels:** create `review:skim` (green), `review:read` (yellow) and `review:scrutinize` (red).
+
+## Database migrations
+
+Schema changes go through Alembic (`apps/api/migrations/`). The `Base` in `kori/db/base.py` is the
+source of truth for the models, and `alembic check` in CI fails if a migration is missing.
+
+1. One-time setup: `cp apps/api/.env.example apps/api/.env`, then `make db-up` to start Postgres.
+2. Change or add a model. Import new model modules in `migrations/env.py` so autogenerate sees them.
+3. Generate the migration: `make makemigration m="add transactions table"`. This creates a file
+   in `apps/api/migrations/versions/`.
+4. **Read the generated file.** Autogenerate misses some changes (renames, server defaults, enum
+   edits, extensions), so fix it by hand and keep `downgrade()` working. Name constraints only
+   through the convention in `kori/db/base.py`.
+5. Apply it with `make migrate`, then run `make api-test`, which migrates a clean `<db>_test`
+   database from scratch.
+6. Commit the model change and the migration in the same PR. Never edit a migration that has been
+   merged; add a new one.

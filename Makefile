@@ -1,4 +1,4 @@
-.PHONY: api-dev api-test api-lint api-fmt openapi web-install web-dev web-test web-lint web-fmt web-build
+.PHONY: api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build
 
 api-dev:
 	cd apps/api && uv run uvicorn kori.main:app_factory --factory --reload
@@ -11,6 +11,15 @@ api-lint:
 
 api-fmt:
 	cd apps/api && uv run ruff check --fix . && uv run ruff format .
+
+db-up:
+	docker compose up -d --wait db
+
+migrate:
+	cd apps/api && uv run alembic upgrade head
+
+makemigration:
+	cd apps/api && uv run alembic revision --autogenerate -m "$(m)"
 
 openapi:
 	cd apps/api && uv run python scripts/export_openapi.py ../../openapi.json

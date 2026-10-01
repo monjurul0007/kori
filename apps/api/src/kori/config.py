@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     env: Env = Env.DEVELOPMENT
     log_level: str = "INFO"
     app_origin: str | None = None
+    database_url: str  # required, no default: set KORI_DATABASE_URL (see .env.example)
 
     @model_validator(mode="after")
     def _require_origin_in_production(self) -> Self:
