@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from kori.common.errors import register_error_handlers
 from kori.config import Settings, get_settings
+from kori.db.register import register_db
 from kori.logging import configure_logging
 from kori.middleware import register_middleware
 from kori.routes import register_routes
@@ -13,6 +14,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings.log_level)
     app = FastAPI(title="Kori API", version="0.1.0")
     app.state.settings = settings
+    register_db(app, settings)
     register_middleware(app)
     register_error_handlers(app)
     register_routes(app)

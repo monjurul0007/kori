@@ -1,4 +1,4 @@
-.PHONY: api-dev api-test api-lint api-fmt
+.PHONY: api-dev api-test api-lint api-fmt db-up migrate makemigration
 
 api-dev:
 	cd apps/api && uv run uvicorn kori.main:app_factory --factory --reload
@@ -11,3 +11,12 @@ api-lint:
 
 api-fmt:
 	cd apps/api && uv run ruff check --fix . && uv run ruff format .
+
+db-up:
+	docker compose up -d --wait db
+
+migrate:
+	cd apps/api && uv run alembic upgrade head
+
+makemigration:
+	cd apps/api && uv run alembic revision --autogenerate -m "$(m)"
