@@ -9,7 +9,7 @@ from sqlalchemy.engine import URL, make_url
 from sqlalchemy.orm import Session
 
 from kori.config import Env, Settings, get_settings
-from kori.db import get_db
+from kori.db.session import get_db
 from kori.main import create_app
 
 

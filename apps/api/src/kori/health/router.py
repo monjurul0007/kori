@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from kori.common.errors import problem_response
-from kori.db import get_db
+from kori.db.session import get_db
 
 router = APIRouter(tags=["health"])
 log = structlog.get_logger()

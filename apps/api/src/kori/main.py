@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from kori.common.errors import register_error_handlers
 from kori.config import Settings, get_settings
-from kori.db import register_db
+from kori.db.register import register_db
 from kori.logging import configure_logging
 from kori.middleware import register_middleware
 from kori.routes import register_routes
