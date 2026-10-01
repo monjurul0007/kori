@@ -2,10 +2,10 @@ name: api-ci
 
 on:
   pull_request:
-    paths: ["apps/api/**", ".github/workflows/api-ci.yml"]
+    paths: ["apps/api/**", "openapi.json", "apps/web/src/api/**", ".github/workflows/api-ci.yml"]
   push:
     branches: [main]
-    paths: ["apps/api/**", ".github/workflows/api-ci.yml"]
+    paths: ["apps/api/**", "openapi.json", "apps/web/src/api/**", ".github/workflows/api-ci.yml"]
 
 permissions:
   contents: read
@@ -48,6 +48,16 @@ jobs:
           enable-cache: true
           cache-dependency-glob: apps/api/uv.lock
 
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/web/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
       - name: Install dependencies
         run: uv sync --frozen
 
@@ -68,3 +78,13 @@ jobs:
 
       - name: Tests
         run: uv run pytest --cov-fail-under=85
+
+      - name: Regenerate OpenAPI spec and web client
+        working-directory: .
+        run: |
+          (cd apps/api && uv run python scripts/export_openapi.py ../../openapi.json)
+          (cd apps/web && pnpm install --frozen-lockfile && pnpm gen:api)
+
+      - name: OpenAPI drift check
+        working-directory: .
+        run: git diff --exit-code openapi.json apps/web/src/api/schema.d.ts

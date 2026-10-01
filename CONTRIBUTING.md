@@ -96,8 +96,18 @@ pre-commit install        # run the hooks on every commit
 pre-commit run --all-files
 ```
 
-Language-specific setup (uv, pnpm, Docker Compose) is added to this section by the PRs that
-introduce it.
+Web setup (Node 22 and pnpm 10, for example via `corepack enable`):
+
+```bash
+make web-install   # pnpm install --frozen-lockfile
+make web-dev       # Vite dev server; /api is proxied to http://localhost:8000
+make openapi       # re-export openapi.json and regenerate the typed API client
+```
+
+Commit `openapi.json` and `apps/web/src/api/schema.d.ts` together with any API change. CI
+regenerates both and fails on drift.
+
+Language-specific setup for Docker Compose is added to this section by the PRs that introduce it.
 
 ## Repository settings (owner checklist)
 

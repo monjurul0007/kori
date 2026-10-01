@@ -1,4 +1,4 @@
-# Package ecosystems (npm, docker) are added by the PRs that
+# Package ecosystems (docker) are added by the PRs that
 # introduce their manifests.
 version: 2
 updates:
@@ -20,4 +20,14 @@ updates:
       scope: api
     groups:
       python-deps:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /apps/web
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      scope: web
+    groups:
+      npm-deps:
         patterns: ["*"]

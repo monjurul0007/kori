@@ -1,4 +1,4 @@
-.PHONY: api-dev api-test api-lint api-fmt db-up migrate makemigration
+.PHONY: api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build
 
 api-dev:
 	cd apps/api && uv run uvicorn kori.main:app_factory --factory --reload
@@ -20,3 +20,25 @@ migrate:
 
 makemigration:
 	cd apps/api && uv run alembic revision --autogenerate -m "$(m)"
+
+openapi:
+	cd apps/api && uv run python scripts/export_openapi.py ../../openapi.json
+	cd apps/web && pnpm gen:api
+
+web-install:
+	cd apps/web && pnpm install --frozen-lockfile
+
+web-dev:
+	cd apps/web && pnpm dev
+
+web-test:
+	cd apps/web && pnpm test
+
+web-lint:
+	cd apps/web && pnpm lint && pnpm typecheck
+
+web-fmt:
+	cd apps/web && pnpm exec eslint --fix . && pnpm format
+
+web-build:
+	cd apps/web && pnpm build
