@@ -1,8 +1,14 @@
 from alembic import context
 from sqlalchemy import create_engine
 
+from kori.auth import models as _auth  # noqa: F401
+from kori.categories import models as _categories  # noqa: F401
 from kori.config import get_settings
 from kori.db.base import Base
+from kori.payment_methods import models as _payment_methods  # noqa: F401
+from kori.tags import models as _tags  # noqa: F401
+from kori.transactions import models as _transactions  # noqa: F401
+from kori.users import models as _users  # noqa: F401
 
 config = context.config
 # Import every model module here so autogenerate can see its tables.
