@@ -1,4 +1,3 @@
-# ruff: noqa: S106  (fake passwords in tests)
 from collections.abc import Iterator
 from contextlib import contextmanager
 
@@ -48,22 +47,3 @@ def test_create_user_reports_duplicates() -> None:
     runner.invoke(cli.app, args, input="pw-one-two\npw-one-two\n")
     again = runner.invoke(cli.app, args, input="pw-one-two\npw-one-two\n")
     assert again.exit_code == 1
-
-
-def test_ensure_defaults_restores_missing_defaults(db: Session) -> None:
-    from sqlalchemy import delete, func, select
-
-    from kori.categories.models import Category
-    from kori.users.service import create_user
-
-    user = create_user(db, email="a@b.co", display_name="A", password="pw-123456")
-    db.execute(delete(Category).where(Category.user_id == user.id, Category.name == "Rent"))
-    result = runner.invoke(cli.app, ["ensure-defaults", "--email", "A@B.co"])
-    assert result.exit_code == 0, result.output
-    count = db.scalar(select(func.count()).select_from(Category).where(Category.user_id == user.id))
-    assert count == 16
-
-
-def test_ensure_defaults_unknown_user_fails() -> None:
-    result = runner.invoke(cli.app, ["ensure-defaults", "--email", "nobody@b.co"])
-    assert result.exit_code == 1

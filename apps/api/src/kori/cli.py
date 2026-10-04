@@ -14,8 +14,7 @@ from sqlalchemy.orm import Session
 
 from kori.config import get_settings
 from kori.db.session import make_engine, make_sessionmaker
-from kori.users.defaults import seed_defaults
-from kori.users.service import create_user, get_user_by_email
+from kori.users.service import create_user
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -50,17 +49,3 @@ def create_user_command(
             typer.echo(str(exc), err=True)
             raise typer.Exit(1) from exc
     typer.echo(f"Created user {user.email}")
-
-
-@app.command("ensure-defaults")
-def ensure_defaults_command(
-    email: Annotated[str, typer.Option(help="Email of the existing user")],
-) -> None:
-    """Add any missing default categories and payment methods for an existing user."""
-    with open_session() as db:
-        user = get_user_by_email(db, email)
-        if user is None:
-            typer.echo(f"No user with email {email}", err=True)
-            raise typer.Exit(1)
-        seed_defaults(db, user)
-    typer.echo(f"Defaults are in place for {user.email}")

@@ -15,12 +15,17 @@ def get_user_by_email(db: Session, email: str) -> User | None:
 
 
 def create_user(db: Session, *, email: str, display_name: str, password: str) -> User:
-    """Create a user with a lowercased email. Raises `ValueError` if the email is taken."""
+    """Create a user (lowercased email) with the default reference data.
+
+    Raises `ValueError` if the email is taken. The user and defaults succeed or fail together.
+    """
     email = normalize_email(email)
     if get_user_by_email(db, email) is not None:
         raise ValueError(f"A user with email {email} already exists")
     user = User(email=email, display_name=display_name, password_hash=hash_password(password))
-    db.add(user)
-    db.flush()
-    seed_defaults(db, user)
+    # One savepoint: if seeding the defaults fails, the user is rolled back with them.
+    with db.begin_nested():
+        db.add(user)
+        db.flush()
+        seed_defaults(db, user)
     return user
