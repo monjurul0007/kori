@@ -1,4 +1,4 @@
-# ruff: noqa: S105, S106  (fake passwords in tests)
+# ruff: noqa: S105  (fake passwords in tests)
 """Unit tests for every function in `kori.auth.service`, run directly against the database."""
 
 import hashlib
@@ -218,17 +218,3 @@ def test_is_throttled_matches_email_case_insensitively(db: Session) -> None:
     for _ in range(service.THROTTLE_MAX_FAILURES):
         _fail(db, "a@example.com", 1)
     assert service.is_throttled(db, "A@Example.com") is not None
-
-
-# users.service
-
-
-def test_create_user_lowercases_email_and_hashes_password(db: Session) -> None:
-    from kori.users.service import create_user, get_user_by_email
-
-    created = create_user(db, email=" New@Example.COM ", display_name="N", password="pw-123456")
-    assert created.email == "new@example.com"
-    assert created.password_hash != "pw-123456"
-    assert passwords.verify_password(created.password_hash, "pw-123456")
-    assert get_user_by_email(db, "NEW@example.com") == created
-    assert get_user_by_email(db, "missing@example.com") is None
