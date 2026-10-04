@@ -58,3 +58,24 @@ export function unwrap<T>(result: {
   }
   return result.data;
 }
+
+/** Like `unwrap` for 204 responses, which have no body to return. */
+export function unwrapEmpty(result: { error?: unknown; response: Response }): void {
+  if (result.error !== undefined || !result.response.ok) {
+    throw new ApiError(toProblem(result.response, result.error), result.response);
+  }
+}
+
+let onUnauthorized: (() => void) | undefined;
+
+/** Register what happens when an API call comes back 401 (the session expired). */
+export function setUnauthorizedHandler(handler: (() => void) | undefined) {
+  onUnauthorized = handler;
+}
+
+// Login and /auth/me report 401 themselves (a wrong password, "not signed in yet").
+api.use({
+  onResponse({ response, schemaPath }) {
+    if (response.status === 401 && !schemaPath.startsWith("/api/v1/auth/")) onUnauthorized?.();
+  },
+});
