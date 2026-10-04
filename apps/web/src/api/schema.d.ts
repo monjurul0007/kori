@@ -58,6 +58,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Categories */
+        get: operations["list_categories_api_v1_categories_get"];
+        put?: never;
+        /** Create Category */
+        post: operations["create_category_api_v1_categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Category */
+        patch: operations["update_category_api_v1_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/categories/{category_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Category */
+        post: operations["archive_category_api_v1_categories__category_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/{category_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Category */
+        post: operations["unarchive_category_api_v1_categories__category_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/healthz": {
         parameters: {
             query?: never;
@@ -69,6 +138,75 @@ export interface paths {
         get: operations["healthz_api_v1_healthz_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payment-methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Payment Methods */
+        get: operations["list_payment_methods_api_v1_payment_methods_get"];
+        put?: never;
+        /** Create Payment Method */
+        post: operations["create_payment_method_api_v1_payment_methods_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payment-methods/{payment_method_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Payment Method */
+        patch: operations["update_payment_method_api_v1_payment_methods__payment_method_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/payment-methods/{payment_method_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Payment Method */
+        post: operations["archive_payment_method_api_v1_payment_methods__payment_method_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payment-methods/{payment_method_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Payment Method */
+        post: operations["unarchive_payment_method_api_v1_payment_methods__payment_method_id__unarchive_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -92,10 +230,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tags */
+        get: operations["list_tags_api_v1_tags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Tag */
+        delete: operations["delete_tag_api_v1_tags__tag_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename Tag
+         * @description Rename a tag. If the new name exists, the tag is merged into it and that tag returned.
+         */
+        patch: operations["rename_tag_api_v1_tags__tag_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CategoryCreate */
+        CategoryCreate: {
+            /** Color */
+            color?: string | null;
+            /** Icon */
+            icon?: string | null;
+            kind: components["schemas"]["CategoryKind"];
+            /** Name */
+            name: string;
+            /**
+             * Sort Order
+             * @default 0
+             */
+            sort_order: number;
+        };
+        /**
+         * CategoryKind
+         * @enum {string}
+         */
+        CategoryKind: "expense" | "income";
+        /** CategoryOut */
+        CategoryOut: {
+            /** Archived At */
+            archived_at: string | null;
+            /** Color */
+            color: string | null;
+            /** Icon */
+            icon: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["CategoryKind"];
+            /** Name */
+            name: string;
+            /** Sort Order */
+            sort_order: number;
+        };
+        /**
+         * CategoryUpdate
+         * @description Only the fields that are sent change; `icon` and `color` may be set to null.
+         */
+        CategoryUpdate: {
+            /** Color */
+            color?: string | null;
+            /** Icon */
+            icon?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Sort Order */
+            sort_order?: number | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -107,6 +336,65 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** PaymentMethodCreate */
+        PaymentMethodCreate: {
+            kind: components["schemas"]["PaymentMethodKind"];
+            /** Name */
+            name: string;
+            /**
+             * Sort Order
+             * @default 0
+             */
+            sort_order: number;
+        };
+        /**
+         * PaymentMethodKind
+         * @enum {string}
+         */
+        PaymentMethodKind: "cash" | "mobile_wallet" | "card" | "bank" | "other";
+        /** PaymentMethodOut */
+        PaymentMethodOut: {
+            /** Archived At */
+            archived_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentMethodKind"];
+            /** Name */
+            name: string;
+            /** Sort Order */
+            sort_order: number;
+        };
+        /**
+         * PaymentMethodUpdate
+         * @description Only the fields that are sent change.
+         */
+        PaymentMethodUpdate: {
+            kind?: components["schemas"]["PaymentMethodKind"] | null;
+            /** Name */
+            name?: string | null;
+            /** Sort Order */
+            sort_order?: number | null;
+        };
+        /** TagOut */
+        TagOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Usage Count */
+            usage_count: number;
+        };
+        /** TagUpdate */
+        TagUpdate: {
+            /** Name */
+            name: string;
         };
         /** UserOut */
         UserOut: {
@@ -144,8 +432,18 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type SchemaCategoryCreate = components['schemas']['CategoryCreate'];
+export type SchemaCategoryKind = components['schemas']['CategoryKind'];
+export type SchemaCategoryOut = components['schemas']['CategoryOut'];
+export type SchemaCategoryUpdate = components['schemas']['CategoryUpdate'];
 export type SchemaHttpValidationError = components['schemas']['HTTPValidationError'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
+export type SchemaPaymentMethodCreate = components['schemas']['PaymentMethodCreate'];
+export type SchemaPaymentMethodKind = components['schemas']['PaymentMethodKind'];
+export type SchemaPaymentMethodOut = components['schemas']['PaymentMethodOut'];
+export type SchemaPaymentMethodUpdate = components['schemas']['PaymentMethodUpdate'];
+export type SchemaTagOut = components['schemas']['TagOut'];
+export type SchemaTagUpdate = components['schemas']['TagUpdate'];
 export type SchemaUserOut = components['schemas']['UserOut'];
 export type SchemaValidationError = components['schemas']['ValidationError'];
 export type $defs = Record<string, never>;
@@ -219,6 +517,168 @@ export interface operations {
             };
         };
     };
+    list_categories_api_v1_categories_get: {
+        parameters: {
+            query?: {
+                kind?: components["schemas"]["CategoryKind"] | null;
+                include_archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_category_api_v1_categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_category_api_v1_categories__category_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_category_api_v1_categories__category_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_category_api_v1_categories__category_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     healthz_api_v1_healthz_get: {
         parameters: {
             query?: never;
@@ -241,6 +701,167 @@ export interface operations {
             };
         };
     };
+    list_payment_methods_api_v1_payment_methods_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentMethodOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_payment_method_api_v1_payment_methods_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentMethodCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentMethodOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_payment_method_api_v1_payment_methods__payment_method_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_method_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentMethodUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentMethodOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_payment_method_api_v1_payment_methods__payment_method_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_method_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentMethodOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_payment_method_api_v1_payment_methods__payment_method_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_method_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentMethodOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     readyz_api_v1_readyz_get: {
         parameters: {
             query?: never;
@@ -257,6 +878,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    list_tags_api_v1_tags_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"][];
+                };
+            };
+        };
+    };
+    delete_tag_api_v1_tags__tag_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_tag_api_v1_tags__tag_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
