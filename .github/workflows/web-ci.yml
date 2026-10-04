@@ -1,8 +1,9 @@
 name: web-ci
 
 on:
+  # No path filter on pull_request: a skipped workflow reports no status, so a required
+  # `web-ci` check would block every PR that doesn't touch apps/web.
   pull_request:
-    paths: ["apps/web/**", ".github/workflows/web-ci.yml"]
   push:
     branches: [main]
     paths: ["apps/web/**", ".github/workflows/web-ci.yml"]
