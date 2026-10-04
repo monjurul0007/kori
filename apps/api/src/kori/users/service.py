@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from kori.auth.passwords import hash_password
+from kori.users.defaults import seed_defaults
 from kori.users.models import User
 
 
@@ -21,4 +22,5 @@ def create_user(db: Session, *, email: str, display_name: str, password: str) ->
     user = User(email=email, display_name=display_name, password_hash=hash_password(password))
     db.add(user)
     db.flush()
+    seed_defaults(db, user)
     return user

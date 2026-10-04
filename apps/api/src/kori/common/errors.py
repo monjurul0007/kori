@@ -44,6 +44,22 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
     return problem_response(request, exc.status_code, detail, headers=exc.headers)
 
 
+class NotFoundError(Exception):
+    """The resource does not exist, or belongs to someone else (never reveal which)."""
+
+
+class ConflictError(Exception):
+    """The request conflicts with existing data, such as a duplicate name."""
+
+
+async def not_found_handler(request: Request, exc: NotFoundError) -> JSONResponse:
+    return problem_response(request, 404, str(exc) or "Not found")
+
+
+async def conflict_handler(request: Request, exc: ConflictError) -> JSONResponse:
+    return problem_response(request, 409, str(exc) or "Conflict")
+
+
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
@@ -64,5 +80,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 def register_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(StarletteHTTPException, http_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(NotFoundError, not_found_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(ConflictError, conflict_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)
