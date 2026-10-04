@@ -4,39 +4,20 @@ import { useForm } from "react-hook-form";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 
-import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { useLogin } from "./hooks";
-import { safeNext, useSession } from "./session";
+import { useSession } from "./session";
+import { loginErrorMessage, safeNext } from "./utils";
 
 const schema = z.object({
   email: z.string().trim().min(1, "Enter your email").max(320),
   password: z.string().min(1, "Enter your password").max(1024),
 });
 type Values = z.infer<typeof schema>;
-
-function retryMinutes(response: Response): number | null {
-  const seconds = Number(response.headers.get("retry-after"));
-  return Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds / 60) : null;
-}
-
-function loginErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    if (error.response.status === 401) return "Email or password is incorrect";
-    if (error.response.status === 429) {
-      const minutes = retryMinutes(error.response);
-      return minutes
-        ? `Too many attempts. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}`
-        : "Too many attempts. Try again later";
-    }
-    return error.message;
-  }
-  return "Could not reach Kori. Check your connection and try again";
-}
 
 export function LoginPage() {
   const [params] = useSearchParams();

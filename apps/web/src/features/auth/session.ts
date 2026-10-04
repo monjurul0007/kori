@@ -14,11 +14,3 @@ export function useSession() {
   const loggedOut = query.error instanceof ApiError && query.error.response.status === 401;
   return { ...query, user: query.data, loggedOut };
 }
-
-/** A `next` target is only honoured when it is a same-origin path. */
-export function safeNext(next: string | null): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
-    return "/transactions";
-  }
-  return next;
-}

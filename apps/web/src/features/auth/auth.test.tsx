@@ -5,7 +5,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "@/test/setup";
 import { renderApp } from "@/test/renderApp";
 
-import { safeNext } from "./session";
+import { safeNext } from "./utils";
 
 const user = {
   id: "7d9f6b1e-2d1c-4c57-9b0a-1d6a2e0f4a11",
