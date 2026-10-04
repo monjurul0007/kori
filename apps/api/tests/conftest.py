@@ -54,5 +54,7 @@ def db(engine: Engine) -> Iterator[Session]:
 def client(db: Session) -> Iterator[TestClient]:
     app = create_app(Settings(env=Env.TEST))
     app.dependency_overrides[get_db] = lambda: db
-    with TestClient(app, raise_server_exceptions=False) as c:
+    with TestClient(
+        app, raise_server_exceptions=False, headers={"Origin": "http://localhost:5173"}
+    ) as c:
         yield c
