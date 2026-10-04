@@ -1,4 +1,9 @@
-"""The `kori` command line. Users are created here because there is no signup endpoint."""
+"""The `kori` command line. Users are created here because there is no signup endpoint.
+
+TODO(signup-policy): when public signup is wanted, decide who may register (invite only,
+allow-list, or open) and add password rules (minimum length, breached-password check). Until
+then this command is the only way to create a user and applies no password policy.
+"""
 
 from collections.abc import Iterator
 from contextlib import contextmanager

@@ -13,6 +13,8 @@ def set_session_cookie(response: Response, settings: Settings, token: str) -> No
         max_age=int(SESSION_LIFETIME.total_seconds()),
         path="/",
         httponly=True,
+        # TODO(https): `Secure` is only set in production, so plain-http dev and test still work.
+        # When the app moves to HTTPS everywhere, set it unconditionally.
         secure=settings.env is Env.PRODUCTION,
         samesite="lax",
     )

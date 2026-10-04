@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
-from kori.auth import passwords
+from kori.auth import passwords as hashing
 from kori.auth.models import LoginAttempt, Session
 from kori.users.models import User
 from kori.users.service import get_user_by_email, normalize_email
@@ -34,12 +34,13 @@ def authenticate(db: DbSession, email: str, password: str) -> User | None:
     """Return the user for valid credentials, else None. Rehashes on outdated parameters."""
     user = get_user_by_email(db, email)
     if user is None:
-        passwords.verify_password(passwords.DUMMY_HASH, password)
+        # Spend the same time as a real check, so response time doesn't reveal which emails exist.
+        hashing.verify_password(hashing.DUMMY_HASH, password)
         return None
-    if not passwords.verify_password(user.password_hash, password):
+    if not hashing.verify_password(user.password_hash, password):
         return None
-    if passwords.needs_rehash(user.password_hash):
-        user.password_hash = passwords.hash_password(password)
+    if hashing.needs_rehash(user.password_hash):
+        user.password_hash = hashing.hash_password(password)
     return user
 
 
