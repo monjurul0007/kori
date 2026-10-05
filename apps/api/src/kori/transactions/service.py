@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -27,23 +27,16 @@ def _today(user: User) -> date:
     return datetime.now(ZoneInfo(user.timezone)).date()
 
 
-def _one_year_ahead(today: date) -> date:
-    try:
-        return today.replace(year=today.year + 1)
-    except ValueError:  # 29 February
-        return today + timedelta(days=365)
-
-
 def _validate(db: Session, user: User, data: TransactionIn) -> None:
     """Checks that need the database or the user's time zone; all problems are reported at once."""
     errors: list[dict[str, Any]] = []
 
-    latest = _one_year_ahead(_today(user))
+    latest = _today(user)
     if not MIN_DATE <= data.occurred_on <= latest:
         errors.append(
             field_error(
                 ["body", "occurred_on"],
-                f"Date must be between {MIN_DATE} and {latest}",
+                f"Date must be between {MIN_DATE} and {latest} (today)",
                 "value_error",
             )
         )

@@ -150,7 +150,7 @@ def test_validation_reports_split_line_position(db: Session, user: User, food: s
     assert _locs(exc) == [["body", "lines", 1, "category_id"]]
 
 
-def test_date_window_uses_the_users_time_zone(
+def test_date_cap_is_today_in_the_users_time_zone(
     db: Session, user: User, food: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # 2026-12-31 23:00 UTC is already 2027-01-01 in Dhaka (UTC+6).
@@ -160,17 +160,12 @@ def test_date_window_uses_the_users_time_zone(
         lambda u: datetime(2026, 12, 31, 23, tzinfo=UTC).astimezone(ZoneInfo(u.timezone)).date(),
     )
     assert service._today(user) == date(2027, 1, 1)
-    edge = date(2028, 1, 1)
+    edge = date(2027, 1, 1)
     service.create_transaction(db, user, make(food, occurred_on=edge))
     with pytest.raises(UnprocessableError):
         service.create_transaction(db, user, make(food, occurred_on=edge + timedelta(days=1)))
     with pytest.raises(UnprocessableError):
         service.create_transaction(db, user, make(food, occurred_on=date(1999, 12, 31)))
-
-
-def test_one_year_ahead_handles_leap_day() -> None:
-    assert service._one_year_ahead(date(2028, 2, 29)) == date(2028, 2, 29) + timedelta(days=365)
-    assert service._one_year_ahead(date(2026, 5, 4)) == date(2027, 5, 4)
 
 
 def test_tags_are_upserted_per_user_and_reused(

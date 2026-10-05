@@ -180,10 +180,9 @@ def test_date_bounds(signed_in: TestClient, food: str) -> None:
     today = date.today()
     assert signed_in.post(URL, json=body(food, occurred_on="1999-12-31")).status_code == 422
     assert signed_in.post(URL, json=body(food, occurred_on="2000-01-01")).status_code == 201
-    far = today.replace(year=today.year + 2).isoformat()
-    assert signed_in.post(URL, json=body(food, occurred_on=far)).status_code == 422
-    soon = (today + timedelta(days=300)).isoformat()
-    assert signed_in.post(URL, json=body(food, occurred_on=soon)).status_code == 201
+    tomorrow = (today + timedelta(days=2)).isoformat()
+    assert signed_in.post(URL, json=body(food, occurred_on=tomorrow)).status_code == 422
+    assert signed_in.post(URL, json=body(food, occurred_on=today.isoformat())).status_code == 201
 
 
 def test_tags_are_case_insensitive_reused_and_limited(
