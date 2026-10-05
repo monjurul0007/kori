@@ -124,6 +124,40 @@
         "title": "CategoryOut",
         "type": "object"
       },
+      "CategoryRef": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CategoryKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ],
+        "title": "CategoryRef",
+        "type": "object"
+      },
+      "CategorySource": {
+        "enum": [
+          "user",
+          "default",
+          "ai",
+          "rule",
+          "seed"
+        ],
+        "title": "CategorySource",
+        "type": "string"
+      },
       "CategoryUpdate": {
         "description": "Only the fields that are sent change; `icon` and `color` may be set to null.",
         "properties": {
@@ -192,6 +226,49 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "LineIn": {
+        "properties": {
+          "amount": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Amount",
+            "type": "string"
+          },
+          "category_id": {
+            "format": "uuid",
+            "title": "Category Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category_id",
+          "amount"
+        ],
+        "title": "LineIn",
+        "type": "object"
+      },
+      "LineOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/CategoryRef"
+          },
+          "category_source": {
+            "$ref": "#/components/schemas/CategorySource"
+          }
+        },
+        "required": [
+          "category",
+          "amount",
+          "category_source"
+        ],
+        "title": "LineOut",
         "type": "object"
       },
       "LoginRequest": {
@@ -290,6 +367,25 @@
         "title": "PaymentMethodOut",
         "type": "object"
       },
+      "PaymentMethodRef": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "PaymentMethodRef",
+        "type": "object"
+      },
       "PaymentMethodUpdate": {
         "description": "Only the fields that are sent change.",
         "properties": {
@@ -368,6 +464,228 @@
         ],
         "title": "TagUpdate",
         "type": "object"
+      },
+      "TransactionIn": {
+        "description": "Send either `category_id` (one line) or `lines` (a split), never both.",
+        "properties": {
+          "amount": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Amount",
+            "type": "string"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "lines": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LineIn"
+                },
+                "maxItems": 20,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lines"
+          },
+          "merchant": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
+          },
+          "tags": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TransactionType"
+          }
+        },
+        "required": [
+          "type",
+          "amount",
+          "occurred_on"
+        ],
+        "title": "TransactionIn",
+        "type": "object"
+      },
+      "TransactionOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_split": {
+            "title": "Is Split",
+            "type": "boolean"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "merchant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "occurred_on": {
+            "format": "date",
+            "title": "Occurred On",
+            "type": "string"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/TransactionSource"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "amount",
+          "occurred_on",
+          "merchant",
+          "note",
+          "payment_method",
+          "lines",
+          "tags",
+          "is_split",
+          "source",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TransactionOut",
+        "type": "object"
+      },
+      "TransactionSource": {
+        "enum": [
+          "manual",
+          "ai",
+          "recurring",
+          "import",
+          "seed"
+        ],
+        "title": "TransactionSource",
+        "type": "string"
+      },
+      "TransactionType": {
+        "enum": [
+          "expense",
+          "income"
+        ],
+        "title": "TransactionType",
+        "type": "string"
       },
       "UserOut": {
         "properties": {
@@ -1141,6 +1459,175 @@
         "summary": "Rename Tag",
         "tags": [
           "tags"
+        ]
+      }
+    },
+    "/api/v1/transactions": {
+      "post": {
+        "operationId": "create_transaction_api_v1_transactions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Transaction",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions/{transaction_id}": {
+      "delete": {
+        "operationId": "delete_transaction_api_v1_transactions__transaction_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Transaction Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Transaction",
+        "tags": [
+          "transactions"
+        ]
+      },
+      "get": {
+        "operationId": "get_transaction_api_v1_transactions__transaction_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Transaction Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Transaction",
+        "tags": [
+          "transactions"
+        ]
+      },
+      "put": {
+        "operationId": "update_transaction_api_v1_transactions__transaction_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Transaction Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Transaction",
+        "tags": [
+          "transactions"
         ]
       }
     }

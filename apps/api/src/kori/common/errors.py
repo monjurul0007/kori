@@ -52,6 +52,29 @@ class ConflictError(Exception):
     """The request conflicts with existing data, such as a duplicate name."""
 
 
+class UnprocessableError(Exception):
+    """The request is well-formed but breaks a rule that needs the database to check."""
+
+    def __init__(self, errors: list[dict[str, Any]]) -> None:
+        super().__init__("Request validation failed")
+        self.errors = errors
+
+
+def field_error(loc: list[str | int], msg: str, type_: str) -> dict[str, Any]:
+    """One `errors[]` entry, in the same shape as the schema validation errors."""
+    return {"loc": loc, "msg": msg, "type": type_}
+
+
+async def unprocessable_handler(request: Request, exc: UnprocessableError) -> JSONResponse:
+    return problem_response(
+        request,
+        422,
+        "Request validation failed",
+        title="Unprocessable Content",
+        extra={"errors": exc.errors},
+    )
+
+
 async def not_found_handler(request: Request, exc: NotFoundError) -> JSONResponse:
     return problem_response(request, 404, str(exc) or "Not found")
 
@@ -82,5 +105,6 @@ def register_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(StarletteHTTPException, http_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(NotFoundError, not_found_handler)  # type: ignore[arg-type]
     app.add_exception_handler(ConflictError, conflict_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(UnprocessableError, unprocessable_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)

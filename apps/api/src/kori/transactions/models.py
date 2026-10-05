@@ -14,8 +14,9 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from kori.categories.models import Category
 from kori.common.enums import (
     CategorySource,
     TransactionSource,
@@ -24,6 +25,8 @@ from kori.common.enums import (
 )
 from kori.db.base import Base
 from kori.db.mixins import Timestamps, UserOwned, UuidPk
+from kori.payment_methods.models import PaymentMethod
+from kori.tags.models import Tag, TransactionTag
 
 
 class Transaction(UuidPk, UserOwned, Timestamps, Base):
@@ -69,6 +72,18 @@ class Transaction(UuidPk, UserOwned, Timestamps, Base):
         server_default=TransactionSource.MANUAL.value,
     )
 
+    # Read-only views: the service writes lines and tag links explicitly.
+    payment_method: Mapped[PaymentMethod | None] = relationship(lazy="joined", viewonly=True)
+    lines: Mapped[list["TransactionLine"]] = relationship(
+        lazy="selectin",
+        viewonly=True,
+        order_by="TransactionLine.position",
+        primaryjoin="Transaction.id == TransactionLine.transaction_id",
+    )
+    tags: Mapped[list[Tag]] = relationship(
+        secondary=TransactionTag.__table__, lazy="selectin", viewonly=True, order_by=Tag.name
+    )
+
 
 class TransactionLine(UuidPk, Base):
     """One category slice of a transaction. A split is simply more than one line."""
@@ -95,3 +110,5 @@ class TransactionLine(UuidPk, Base):
         server_default=CategorySource.USER.value,
     )
     category_confidence: Mapped[float | None] = mapped_column(REAL)
+
+    category: Mapped[Category] = relationship(lazy="joined", viewonly=True)
