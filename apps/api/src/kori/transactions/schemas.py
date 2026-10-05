@@ -100,3 +100,17 @@ class TransactionOut(BaseModel):
 
 def category_ref(category: Category) -> CategoryRef:
     return CategoryRef(id=category.id, name=category.name, kind=category.kind)
+
+
+class Totals(BaseModel):
+    """Sums over the whole filtered set, not just the current page."""
+
+    expense: str
+    income: str
+    count: int
+
+
+class TransactionPage(BaseModel):
+    items: list[TransactionOut]
+    next_cursor: str | None
+    totals: Totals

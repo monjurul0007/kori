@@ -465,6 +465,30 @@
         "title": "TagUpdate",
         "type": "object"
       },
+      "Totals": {
+        "description": "Sums over the whole filtered set, not just the current page.",
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "expense": {
+            "title": "Expense",
+            "type": "string"
+          },
+          "income": {
+            "title": "Income",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expense",
+          "income",
+          "count"
+        ],
+        "title": "Totals",
+        "type": "object"
+      },
       "TransactionIn": {
         "description": "Send either `category_id` (one line) or `lines` (a split), never both.",
         "properties": {
@@ -666,6 +690,38 @@
           "updated_at"
         ],
         "title": "TransactionOut",
+        "type": "object"
+      },
+      "TransactionPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TransactionOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Totals"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "totals"
+        ],
+        "title": "TransactionPage",
         "type": "object"
       },
       "TransactionSource": {
@@ -1463,6 +1519,207 @@
       }
     },
     "/api/v1/transactions": {
+      "get": {
+        "operationId": "list_transactions_api_v1_transactions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "examples": [
+                "2026-09"
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TransactionType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "payment_method_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Payment Method Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tag"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Transactions",
+        "tags": [
+          "transactions"
+        ]
+      },
       "post": {
         "operationId": "create_transaction_api_v1_transactions_post",
         "requestBody": {

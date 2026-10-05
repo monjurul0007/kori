@@ -275,7 +275,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List Transactions */
+        get: operations["list_transactions_api_v1_transactions_get"];
         put?: never;
         /** Create Transaction */
         post: operations["create_transaction_api_v1_transactions_post"];
@@ -479,6 +480,18 @@ export interface components {
             name: string;
         };
         /**
+         * Totals
+         * @description Sums over the whole filtered set, not just the current page.
+         */
+        Totals: {
+            /** Count */
+            count: number;
+            /** Expense */
+            expense: string;
+            /** Income */
+            income: string;
+        };
+        /**
          * TransactionIn
          * @description Send either `category_id` (one line) or `lines` (a split), never both.
          */
@@ -548,6 +561,14 @@ export interface components {
              */
             updated_at: string;
         };
+        /** TransactionPage */
+        TransactionPage: {
+            /** Items */
+            items: components["schemas"]["TransactionOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+            totals: components["schemas"]["Totals"];
+        };
         /**
          * TransactionSource
          * @enum {string}
@@ -611,8 +632,10 @@ export type SchemaPaymentMethodRef = components['schemas']['PaymentMethodRef'];
 export type SchemaPaymentMethodUpdate = components['schemas']['PaymentMethodUpdate'];
 export type SchemaTagOut = components['schemas']['TagOut'];
 export type SchemaTagUpdate = components['schemas']['TagUpdate'];
+export type SchemaTotals = components['schemas']['Totals'];
 export type SchemaTransactionIn = components['schemas']['TransactionIn'];
 export type SchemaTransactionOut = components['schemas']['TransactionOut'];
+export type SchemaTransactionPage = components['schemas']['TransactionPage'];
 export type SchemaTransactionSource = components['schemas']['TransactionSource'];
 export type SchemaTransactionType = components['schemas']['TransactionType'];
 export type SchemaUserOut = components['schemas']['UserOut'];
@@ -1124,6 +1147,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_transactions_api_v1_transactions_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+                from?: string | null;
+                to?: string | null;
+                type?: components["schemas"]["TransactionType"] | null;
+                category_id?: string[] | null;
+                payment_method_id?: string | null;
+                tag?: string | null;
+                q?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionPage"];
                 };
             };
             /** @description Validation Error */
