@@ -93,7 +93,13 @@ def _upsert_tags(db: Session, user: User, names: list[str]) -> list[Tag]:
     return list(db.scalars(select(Tag).where(Tag.user_id == user.id, Tag.name.in_(names))))
 
 
-def _write_children(db: Session, user: User, tx: Transaction, data: TransactionIn) -> None:
+def _write_children(
+    db: Session,
+    user: User,
+    tx: Transaction,
+    data: TransactionIn,
+    category_source: CategorySource = CategorySource.USER,
+) -> None:
     db.execute(delete(TransactionLine).where(TransactionLine.transaction_id == tx.id))
     db.execute(delete(TransactionTag).where(TransactionTag.transaction_id == tx.id))
     db.add_all(
@@ -102,7 +108,7 @@ def _write_children(db: Session, user: User, tx: Transaction, data: TransactionI
             category_id=line.category_id,
             amount_minor=parse_taka(line.amount),
             position=i,
-            category_source=CategorySource.USER,
+            category_source=category_source,
         )
         for i, line in enumerate(data.resolved_lines())
     )
@@ -113,10 +119,17 @@ def _write_children(db: Session, user: User, tx: Transaction, data: TransactionI
     db.flush()
 
 
-def _save(db: Session, user: User, tx: Transaction | None, data: TransactionIn) -> Transaction:
+def _save(
+    db: Session,
+    user: User,
+    tx: Transaction | None,
+    data: TransactionIn,
+    source: TransactionSource = TransactionSource.MANUAL,
+    category_source: CategorySource = CategorySource.USER,
+) -> Transaction:
     """Write the transaction, its lines and tags in one savepoint; a failure changes nothing."""
     if tx is None:
-        tx = Transaction(user_id=user.id, source=TransactionSource.MANUAL)
+        tx = Transaction(user_id=user.id, source=source)
     try:
         with db.begin_nested():
             db.add(tx)
@@ -128,7 +141,7 @@ def _save(db: Session, user: User, tx: Transaction | None, data: TransactionIn) 
             tx.payment_method_id = data.payment_method_id
             tx.updated_at = func.now()  # also when nothing else changed
             db.flush()
-            _write_children(db, user, tx, data)
+            _write_children(db, user, tx, data, category_source)
             # The lines-sum trigger is deferred to commit. Run it now so that a violation is a
             # 422 here and rolls back this savepoint, instead of failing the whole request later.
             db.execute(text(f"SET CONSTRAINTS {_LINES_TRIGGERS} IMMEDIATE"))
@@ -143,9 +156,17 @@ def _save(db: Session, user: User, tx: Transaction | None, data: TransactionIn) 
     return tx
 
 
-def create_transaction(db: Session, user: User, data: TransactionIn) -> Transaction:
+def create_transaction(
+    db: Session,
+    user: User,
+    data: TransactionIn,
+    *,
+    source: TransactionSource = TransactionSource.MANUAL,
+    category_source: CategorySource = CategorySource.USER,
+) -> Transaction:
+    """The API always uses the defaults; the seed marks its rows `seed`."""
     _validate(db, user, data)
-    return _save(db, user, None, data)
+    return _save(db, user, None, data, source, category_source)
 
 
 def get_transaction(db: Session, user: User, id: uuid.UUID) -> Transaction:

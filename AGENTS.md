@@ -95,6 +95,7 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 | API auto-fix and format | `make api-fmt` |
 | Start local Postgres (needs `apps/api/.env`, copy from `.env.example`) | `make db-up` |
 | Apply migrations | `make migrate` |
+| Fill the demo user with fake data ([docs](docs/seed-data.md)) | `make seed` |
 | New migration from model changes | `make makemigration m="add foo"` |
 | Export OpenAPI and regenerate the web client | `make openapi` |
 | Install web deps | `make web-install` |
@@ -104,7 +105,7 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 | Web auto-fix and format | `make web-fmt` |
 | Web production build | `make web-build` |
 
-Later PRs add rows here for the DB, Docker and seed commands.
+Later PRs add rows here for the Docker commands.
 
 ## Never
 
