@@ -1,4 +1,3 @@
-import calendar
 import uuid
 from datetime import date
 from typing import Annotated
@@ -7,8 +6,8 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from kori.auth.deps import CurrentUser
+from kori.common.dates import resolve_date_range
 from kori.common.enums import TransactionType
-from kori.common.errors import UnprocessableError, field_error
 from kori.common.money import format_taka
 from kori.db.session import get_db
 from kori.tags.schemas import normalize_tag_name
@@ -54,28 +53,6 @@ def to_out(tx: Transaction) -> TransactionOut:
     )
 
 
-def _filters(
-    month: str | None,
-    date_from: date | None,
-    date_to: date | None,
-    filters: service.TransactionFilters,
-) -> service.TransactionFilters:
-    if month is not None and (date_from is not None or date_to is not None):
-        raise UnprocessableError(
-            [field_error(["query", "month"], "Use month or from/to, not both", "value_error")]
-        )
-    if month is not None:
-        year, mon = int(month[:4]), int(month[5:])
-        date_from = date(year, mon, 1)
-        date_to = date(year, mon, calendar.monthrange(year, mon)[1])
-    if date_from is not None and date_to is not None and date_from > date_to:
-        raise UnprocessableError(
-            [field_error(["query", "from"], "from must not be after to", "value_error")]
-        )
-    filters.date_from, filters.date_to = date_from, date_to
-    return filters
-
-
 @router.get("")
 def list_transactions(
     user: CurrentUser,
@@ -93,17 +70,15 @@ def list_transactions(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     cursor: str | None = None,
 ) -> TransactionPage:
-    filters = _filters(
-        month,
-        date_from,
-        date_to,
-        service.TransactionFilters(
-            type=type,
-            category_ids=category_id or [],
-            payment_method_id=payment_method_id,
-            tag=normalize_tag_name(tag) if tag else None,
-            q=q,
-        ),
+    date_from, date_to = resolve_date_range(month, date_from, date_to)
+    filters = service.TransactionFilters(
+        date_from=date_from,
+        date_to=date_to,
+        type=type,
+        category_ids=category_id or [],
+        payment_method_id=payment_method_id,
+        tag=normalize_tag_name(tag) if tag else None,
+        q=q,
     )
     result = service.list_transactions(db, user, filters, cursor, limit)
     return TransactionPage(
