@@ -1,12 +1,16 @@
 import uuid
+from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from kori.auth.deps import CurrentUser
+from kori.common.dates import resolve_date_range
+from kori.common.enums import TransactionType
 from kori.common.money import format_taka
 from kori.db.session import get_db
+from kori.tags.schemas import normalize_tag_name
 from kori.transactions import service
 from kori.transactions.models import Transaction
 from kori.transactions.schemas import (
@@ -14,6 +18,7 @@ from kori.transactions.schemas import (
     PaymentMethodRef,
     TransactionIn,
     TransactionOut,
+    TransactionPage,
     category_ref,
 )
 
@@ -45,6 +50,41 @@ def to_out(tx: Transaction) -> TransactionOut:
         source=tx.source,
         created_at=tx.created_at,
         updated_at=tx.updated_at,
+    )
+
+
+@router.get("")
+def list_transactions(
+    user: CurrentUser,
+    db: Db,
+    month: Annotated[
+        str | None, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$", examples=["2026-09"])
+    ] = None,
+    date_from: Annotated[date | None, Query(alias="from")] = None,
+    date_to: Annotated[date | None, Query(alias="to")] = None,
+    type: TransactionType | None = None,
+    category_id: Annotated[list[uuid.UUID] | None, Query()] = None,
+    payment_method_id: uuid.UUID | None = None,
+    tag: Annotated[str | None, Query(max_length=200)] = None,
+    q: Annotated[str | None, Query(min_length=2, max_length=100)] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    cursor: str | None = None,
+) -> TransactionPage:
+    date_from, date_to = resolve_date_range(month, date_from, date_to)
+    filters = service.TransactionFilters(
+        date_from=date_from,
+        date_to=date_to,
+        type=type,
+        category_ids=category_id or [],
+        payment_method_id=payment_method_id,
+        tag=normalize_tag_name(tag) if tag else None,
+        q=q,
+    )
+    result = service.list_transactions(db, user, filters, cursor, limit)
+    return TransactionPage(
+        items=[to_out(tx) for tx in result.items],
+        next_cursor=result.next_cursor,
+        totals=result.totals,
     )
 
 
