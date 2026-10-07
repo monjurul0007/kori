@@ -1,4 +1,4 @@
-import { formatTaka, parseTakaInput } from "./money";
+import { formatTaka, fromPoisha, parseTakaInput, toPoisha } from "./money";
 
 describe("formatTaka", () => {
   it.each([
@@ -45,5 +45,12 @@ describe("parseTakaInput", () => {
     expect(parseTakaInput("1.234")).toBeNull();
     expect(parseTakaInput("-5")).toBeNull();
     expect(parseTakaInput("1e5")).toBeNull();
+  });
+});
+
+describe("poisha helpers", () => {
+  it("round-trips exactly", () => {
+    expect(fromPoisha(toPoisha("1250.5") + toPoisha("0.10"))).toBe("1250.60");
+    expect(fromPoisha(toPoisha("10") - toPoisha("12.50"))).toBe("-2.50");
   });
 });
