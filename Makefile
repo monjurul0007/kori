@@ -1,4 +1,4 @@
-.PHONY: api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build
+.PHONY: seed api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build
 
 api-dev:
 	cd apps/api && uv run uvicorn kori.main:app_factory --factory --reload
@@ -14,6 +14,9 @@ api-fmt:
 
 db-up:
 	docker compose up -d --wait db
+
+seed:
+	cd apps/api && uv run kori seed --email demo@kori.local --months 6 --seed 42 --reset
 
 migrate:
 	cd apps/api && uv run alembic upgrade head
