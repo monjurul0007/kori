@@ -201,4 +201,31 @@ describe("transaction form", () => {
     expect(within(dialog).getByText("Pick a category")).toBeInTheDocument();
     expect(state.posted).toHaveLength(0);
   });
+
+  it("still saves, and warns, when localStorage is blocked", async () => {
+    const state = mockApi();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    try {
+      renderApp(`/transactions?month=${month}`);
+      await userEvent.click(
+        (await screen.findAllByRole("button", { name: "Add transaction" }))[0]!,
+      );
+      const dialog = await screen.findByRole("dialog");
+      await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "20");
+      await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+      await userEvent.selectOptions(within(dialog).getByLabelText("Payment method"), "bKash");
+      await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+      await waitFor(() => expect(state.posted).toHaveLength(1));
+      expect(warn).toHaveBeenCalledWith("Couldn't remember the payment method", expect.any(Error));
+      expect(warn).toHaveBeenCalledWith("Couldn't read the last payment method", expect.any(Error));
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
 });

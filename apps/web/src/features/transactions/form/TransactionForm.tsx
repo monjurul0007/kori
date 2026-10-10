@@ -26,7 +26,8 @@ const LAST_METHOD_KEY = "kori.lastPaymentMethod";
 function rememberedMethod(): string {
   try {
     return localStorage.getItem(LAST_METHOD_KEY) ?? "";
-  } catch {
+  } catch (e) {
+    console.warn("Couldn't read the last payment method", e);
     return "";
   }
 }
@@ -34,8 +35,9 @@ function rememberedMethod(): string {
 function remember(id: string) {
   try {
     localStorage.setItem(LAST_METHOD_KEY, id);
-  } catch {
-    // Private mode: the default just isn't remembered.
+  } catch (e) {
+    // Storage can be blocked (private mode); saving must still work, so only warn.
+    console.warn("Couldn't remember the payment method", e);
   }
 }
 
