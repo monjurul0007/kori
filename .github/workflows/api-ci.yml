@@ -1,8 +1,8 @@
 name: api-ci
 
 on:
+  # No path filter on PRs: api-ci is a required check, so it must report on every PR.
   pull_request:
-    paths: ["apps/api/**", "openapi.json", "apps/web/src/api/**", ".github/workflows/api-ci.yml"]
   push:
     branches: [main]
     paths: ["apps/api/**", "openapi.json", "apps/web/src/api/**", ".github/workflows/api-ci.yml"]
