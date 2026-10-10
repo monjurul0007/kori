@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatMonth } from "@/lib/dates";
 
 import { DayGroup } from "./DayGroup";
+import { TransactionSheet } from "./form/TransactionSheet";
 import { FilterSheet } from "./FilterSheet";
 import { MonthSwitcher } from "./MonthSwitcher";
 import { SearchInput } from "./SearchInput";
@@ -79,8 +80,7 @@ export function TransactionsPage() {
     filters.tag && { label: `#${filters.tag}`, clear: { tag: undefined } },
   ].filter((chip) => !!chip);
 
-  // M1-14 wires the tap to the edit form; until then it is a deliberate no-op.
-  const onSelect = () => {};
+  const [editing, setEditing] = useState<Transaction>();
 
   return (
     <>
@@ -132,10 +132,15 @@ export function TransactionsPage() {
           </p>
         )}
         {groups.map(([date, items]) => (
-          <DayGroup key={date} date={date} transactions={items} onSelect={onSelect} />
+          <DayGroup key={date} date={date} transactions={items} onSelect={setEditing} />
         ))}
         <div ref={sentinel} aria-hidden="true" />
         {isFetchingNextPage && <Skeleton className="h-14 w-full" />}
+        <TransactionSheet
+          open={!!editing}
+          onOpenChange={(open) => !open && setEditing(undefined)}
+          transaction={editing}
+        />
       </div>
     </>
   );
