@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import { AddTransactionSheet } from "./AddTransactionSheet";
+import { TransactionSheet } from "@/features/transactions/form/TransactionSheet";
+
 import { BottomNav } from "./BottomNav";
 import { SideNav } from "./SideNav";
 
@@ -18,7 +19,7 @@ export function AppShell() {
         <Outlet context={{ openAdd: () => setAdding(true) } satisfies ShellContext} />
       </main>
       <BottomNav onAdd={() => setAdding(true)} />
-      <AddTransactionSheet open={adding} onOpenChange={setAdding} />
+      <TransactionSheet open={adding} onOpenChange={setAdding} />
     </div>
   );
 }

@@ -56,3 +56,9 @@ export function formatMonth(month: string): string {
   const name = new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" }).format(date);
   return `${name} ${date.getUTCFullYear()}`;
 }
+
+export function addDays(iso: string, delta: number): string {
+  const date = toDate(iso);
+  date.setUTCDate(date.getUTCDate() + delta);
+  return fromDate(date);
+}
