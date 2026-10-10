@@ -34,3 +34,17 @@ export function parseTakaInput(input: string): string | null {
   const fraction = match[3];
   return fraction ? `${whole}.${fraction.padEnd(2, "0")}` : whole;
 }
+
+/** Exact integer poisha for sums; amounts stay strings at every boundary. */
+export function toPoisha(amount: string): bigint {
+  const match = AMOUNT.exec(amount.trim());
+  if (!match) throw new Error(`Invalid taka amount: ${amount}`);
+  const [, sign = "", whole = "0", fraction = ""] = match;
+  const poisha = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
+  return sign ? -poisha : poisha;
+}
+
+export function fromPoisha(poisha: bigint): string {
+  const abs = poisha < 0n ? -poisha : poisha;
+  return `${poisha < 0n ? "-" : ""}${abs / 100n}.${String(abs % 100n).padStart(2, "0")}`;
+}
