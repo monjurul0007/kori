@@ -6,6 +6,7 @@ from kori.db.register import register_db
 from kori.logging import configure_logging
 from kori.middleware import register_middleware
 from kori.routes import register_routes
+from kori.static import register_static
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -18,6 +19,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     register_middleware(app)
     register_error_handlers(app)
     register_routes(app)
+    register_static(app, settings.static_dir)
     return app
 
 

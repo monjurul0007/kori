@@ -18,5 +18,19 @@ services:
       timeout: 3s
       retries: 10
 
+  app:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KORI_ENV: development
+      # Dev credentials only. Override POSTGRES_* in a root .env if you changed them.
+      KORI_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kori}:${POSTGRES_PASSWORD:-kori}@db:5432/${POSTGRES_DB:-kori}
+    ports:
+      - "127.0.0.1:8000:8000"
+
 volumes:
   kori-db:

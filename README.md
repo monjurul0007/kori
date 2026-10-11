@@ -70,8 +70,18 @@ The reasoning behind each choice is in [ADR-0002](docs/adr/0002-tech-stack.md).
 
 ## Getting started
 
-There's no application code yet. The API skeleton lands in M1-02 and a one-command local stack
-(`docker compose up`) in M1-15. Until then, this repo holds the conventions and design docs.
+Needs Docker. This builds the production image and starts it with Postgres:
+
+```bash
+git clone https://github.com/monjurul0007/kori.git && cd kori
+cp apps/api/.env.example apps/api/.env
+make up                                          # http://localhost:8000, migrations applied
+make create-user email=you@example.com name="You"
+make seed                                        # optional: fake demo data (needs uv)
+```
+
+`make down` stops it and `make logs` follows the app logs. For development with hot reload, see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Project docs
 
