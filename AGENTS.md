@@ -104,8 +104,11 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 | Web lint, format check, types | `make web-lint` |
 | Web auto-fix and format | `make web-fmt` |
 | Web production build | `make web-build` |
+| Build and start the whole stack (app + Postgres) at http://localhost:8000 | `make up` |
+| Stop the stack / follow the app logs | `make down` / `make logs` |
+| Create a user in the running stack | `make create-user email=… name=…` |
 
-Later PRs add rows here for the Docker commands.
+Later PRs add rows here for the remaining Docker commands.
 
 ## Never
 
