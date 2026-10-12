@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     env: Env = Env.DEVELOPMENT
     log_level: str = "INFO"
     app_origin: str | None = None
+    static_dir: str | None = None  # built web app to serve; unset in dev (Vite serves it)
     database_url: str  # required, no default: set KORI_DATABASE_URL (see .env.example)
 
     @model_validator(mode="after")

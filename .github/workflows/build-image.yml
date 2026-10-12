@@ -1,0 +1,73 @@
+name: build-image
+
+on:
+  # No path filter on pull_request, for the same reason as web-ci.
+  pull_request:
+  push:
+    branches: [main]
+    paths: ["apps/**", "infra/docker/**", ".dockerignore", ".github/workflows/build-image.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/Dockerfile
+          load: true
+          push: false
+          tags: kori:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Check the image runs as non-root and stays under 300 MB
+        run: |
+          user="$(docker image inspect kori:ci --format '{{.Config.User}}')"
+          size="$(docker image inspect kori:ci --format '{{.Size}}')"
+          echo "user=$user size=$((size / 1000000)) MB"
+          test "$user" = "kori"
+          test "$size" -lt 300000000
+
+      - name: Start Postgres and the container
+        run: |
+          docker network create kori-ci
+          docker run -d --name db --network kori-ci \
+            -e POSTGRES_USER=kori -e POSTGRES_PASSWORD=kori -e POSTGRES_DB=kori \
+            pgvector/pgvector:pg16
+          for _ in $(seq 30); do
+            docker exec db pg_isready -U kori -d kori && break
+            sleep 2
+          done
+          docker run -d --name app --network kori-ci -p 8000:8000 \
+            -e KORI_ENV=development \
+            -e KORI_DATABASE_URL=postgresql+psycopg://kori:kori@db:5432/kori \
+            kori:ci
+
+      - name: Smoke test
+        run: |
+          for _ in $(seq 30); do
+            curl -fsS http://localhost:8000/api/v1/healthz && break
+            sleep 2
+          done
+          curl -fsS http://localhost:8000/api/v1/healthz
+          curl -fsS -H 'Accept: text/html' http://localhost:8000/ | grep -q '<div id="root">'
+          curl -fsS -H 'Accept: text/html' 'http://localhost:8000/transactions?month=2026-09' | grep -q '<div id="root">'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/api/v1/nope)" = 404
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs app
