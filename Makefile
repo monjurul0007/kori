@@ -1,17 +1,20 @@
+# Compose reads its ${VARS} from apps/api/.env too, so all dev settings live in one file.
+COMPOSE = docker compose $(if $(wildcard apps/api/.env),--env-file apps/api/.env)
+
 .PHONY: up down logs create-user seed api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build
 
 up:
-	docker compose up -d --build --wait
+	$(COMPOSE) up -d --build --wait
 
 down:
-	docker compose down
+	$(COMPOSE) down
 
 logs:
-	docker compose logs -f app
+	$(COMPOSE) logs -f app
 
 # Usage: make create-user email=me@example.com name="Your Name" (prompts for the password)
 create-user:
-	docker compose exec app kori create-user --email "$(email)" --name "$(name)"
+	$(COMPOSE) exec app kori create-user --email "$(email)" --name "$(name)"
 
 api-dev:
 	cd apps/api && uv run uvicorn kori.main:app_factory --factory --reload
@@ -26,7 +29,7 @@ api-fmt:
 	cd apps/api && uv run ruff check --fix . && uv run ruff format .
 
 db-up:
-	docker compose up -d --wait db
+	$(COMPOSE) up -d --wait db
 
 seed:
 	cd apps/api && uv run kori seed --email demo@kori.local --months 6 --seed 42 --reset

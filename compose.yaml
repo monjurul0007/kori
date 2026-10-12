@@ -25,9 +25,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - path: apps/api/.env
+        required: false
     environment:
-      KORI_ENV: development
-      # Dev credentials only. Override POSTGRES_* in a root .env if you changed them.
+      # The one value that differs inside the stack: the database host is `db`, not localhost.
+      # POSTGRES_* come from apps/api/.env (the Makefile passes it as --env-file).
       KORI_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kori}:${POSTGRES_PASSWORD:-kori}@db:5432/${POSTGRES_DB:-kori}
     ports:
       - "127.0.0.1:8000:8000"
