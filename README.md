@@ -1,12 +1,14 @@
 # Kori (কড়ি)
 
 [![lint](https://github.com/monjurul0007/kori/actions/workflows/lint.yml/badge.svg)](https://github.com/monjurul0007/kori/actions/workflows/lint.yml)
+[![deploy](https://github.com/monjurul0007/kori/actions/workflows/deploy.yml/badge.svg)](https://github.com/monjurul0007/kori/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **A personal expense and budget app that grows into an AI assistant.**
 It's named after the cowrie shells (কড়ি) once used as money in Bengal.
 
-> **Status: pre-alpha.** Milestone 1 ("Log it, live") is in progress. See the [roadmap](ROADMAP.md).
+> **Status: pre-alpha.** Milestone 1 ("Log it, live") is code-complete; every merge deploys to
+> free-tier hosting ([runbook](docs/deploy.md)). See the [roadmap](ROADMAP.md).
 
 ## Why Kori
 
