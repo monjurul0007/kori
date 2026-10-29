@@ -96,7 +96,7 @@ pre-commit install        # run the hooks on every commit
 pre-commit run --all-files
 ```
 
-Web setup (Node 22 and pnpm 10, for example via `corepack enable`):
+Web setup (Node 26 and pnpm 10, for example via `npm install -g pnpm@10`; Node 26 no longer ships corepack):
 
 ```bash
 make web-install   # pnpm install --frozen-lockfile
