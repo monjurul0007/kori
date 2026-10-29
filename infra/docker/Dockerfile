@@ -2,7 +2,7 @@
 # One image serving the API and the built web app. Build context: the repo root.
 
 # --- 1. Build the web app ---
-FROM node:22-slim AS web
+FROM node:26-slim AS web
 WORKDIR /web
 RUN npm install -g pnpm@10.33.0
 COPY apps/web/package.json apps/web/pnpm-lock.yaml ./
