@@ -1,0 +1,149 @@
+name: deploy
+
+# Every merge to main: gate on the PR's CI, build and push the image, migrate, deploy, smoke-test.
+# Setup and rollback: docs/deploy.md. Hosting decision: docs/adr/0005-hosting.md.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit SHA on main to (re)deploy, for a rollback. Empty means the branch head.
+        required: false
+
+permissions:
+  contents: read
+
+# Two deploys must never run at once; a newer one waits instead of cancelling a running one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  GHCR_IMAGE: ghcr.io/${{ github.repository }}
+  AR_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/kori/kori
+
+jobs:
+  ci-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+    outputs:
+      sha: ${{ steps.pick.outputs.sha }}
+    steps:
+      - id: pick
+        run: echo "sha=${{ inputs.ref || github.sha }}" >> "$GITHUB_OUTPUT"
+
+      # The four checks have no path filter on pull requests, so they all ran on the PR's head.
+      # A commit that did not come from a PR with all of them green is not deployed.
+      - name: Require green lint, api-ci, web-ci and build-image on the merged PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.pick.outputs.sha }}
+        run: |
+          pr_head="$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" --jq '.[0].head.sha // empty')"
+          test -n "$pr_head" || { echo "::error::$SHA is not from a pull request"; exit 1; }
+          for check in pre-commit api-ci web-ci build-image; do
+            result="$(gh api "repos/$GITHUB_REPOSITORY/commits/$pr_head/check-runs?per_page=100" \
+              --jq "[.check_runs[] | select(.name == \"$check\")] | sort_by(.completed_at) | last | .conclusion")"
+            echo "$check: $result"
+            test "$result" = "success" || { echo "::error::$check is not green on $pr_head"; exit 1; }
+          done
+
+  deploy:
+    needs: ci-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production # optional required-reviewer gate is set on this environment
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # GitHub OIDC -> Google Workload Identity Federation, no stored Google key
+    env:
+      SHA: ${{ needs.ci-gate.outputs.sha }}
+      REGION: ${{ vars.GCP_REGION }}
+      SERVICE: ${{ vars.CLOUD_RUN_SERVICE || 'kori' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.ci-gate.outputs.sha }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Log in to Artifact Registry
+        run: gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build once, push to GHCR and Artifact Registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/Dockerfile
+          push: true
+          tags: |
+            ${{ env.GHCR_IMAGE }}:${{ env.SHA }}
+            ${{ env.GHCR_IMAGE }}:main
+            ${{ env.AR_IMAGE }}:${{ env.SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Production settings. The file is written with a restrictive mode and never echoed.
+      - name: Write production env file
+        env:
+          KORI_DATABASE_URL: ${{ secrets.KORI_DATABASE_URL }}
+          KORI_APP_ORIGIN: ${{ vars.KORI_APP_ORIGIN }}
+        run: |
+          umask 077
+          test -n "$KORI_DATABASE_URL" && test -n "$KORI_APP_ORIGIN"
+          case "$KORI_DATABASE_URL" in *sslmode=require*) ;; *) echo "::error::KORI_DATABASE_URL needs sslmode=require"; exit 1 ;; esac
+          jq -n --arg db "$KORI_DATABASE_URL" --arg origin "$KORI_APP_ORIGIN" \
+            '{KORI_ENV: "production", KORI_DATABASE_URL: $db, KORI_APP_ORIGIN: $origin, WEB_CONCURRENCY: "1"}' \
+            > "$RUNNER_TEMP/env.json"
+
+      # Migrations run first, as a one-off job. If it fails, this step fails, the deploy below never
+      # starts and the previous revision keeps serving.
+      - name: Run migrations
+        run: |
+          gcloud run jobs deploy "$SERVICE-migrate" \
+            --region "$REGION" --image "$AR_IMAGE:$SHA" \
+            --command alembic --args upgrade,head \
+            --env-vars-file "$RUNNER_TEMP/env.json" \
+            --max-retries 0 --task-timeout 300s \
+            --execute-now --wait
+
+      - name: Deploy the new revision
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --region "$REGION" --image "$AR_IMAGE:$SHA" \
+            --env-vars-file "$RUNNER_TEMP/env.json" \
+            --port 8000 --cpu 1 --memory 512Mi --cpu-boost \
+            --min-instances 0 --max-instances 2 \
+            --allow-unauthenticated --quiet
+
+      - name: Smoke test
+        run: |
+          url="$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')"
+          for _ in $(seq 10); do
+            curl -fsS --max-time 30 "$url/api/v1/healthz" && break
+            sleep 5
+          done
+          curl -fsS --max-time 30 "$url/api/v1/healthz"
+          curl -fsS --max-time 30 -H 'Accept: text/html' "$url/" | grep -q '<div id="root">'
+          echo "Deployed $SHA to $url"
+
+      - name: Remove the env file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/env.json"
