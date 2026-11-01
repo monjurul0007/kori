@@ -2,6 +2,7 @@ from alembic import context
 from sqlalchemy import create_engine
 
 from kori.auth import models as _auth  # noqa: F401
+from kori.budgets import models as _budgets  # noqa: F401
 from kori.categories import models as _categories  # noqa: F401
 from kori.config import get_settings
 from kori.db.base import Base

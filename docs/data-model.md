@@ -1,8 +1,9 @@
 # Data model
 
-The core schema from M1-05. Models live in `apps/api/src/kori/<feature>/models.py`; the single
-migration is `apps/api/migrations/versions/0002_core_data_model.py`. Money and date rules come
-from [ADR-0004](adr/0004-money-and-dates.md).
+The core schema from M1-05, plus budgets from M2-01. Models live in
+`apps/api/src/kori/<feature>/models.py`. The core migration is
+`apps/api/migrations/versions/0002_core_data_model.py`, and budgets are `0003_budgets.py`. Money and
+date rules come from [ADR-0004](adr/0004-money-and-dates.md).
 
 ```mermaid
 erDiagram
@@ -11,6 +12,8 @@ erDiagram
     users ||--o{ payment_methods : owns
     users ||--o{ transactions : owns
     users ||--o{ tags : owns
+    users ||--o{ budgets : owns
+    categories |o--o{ budgets : "budgeted"
     transactions ||--|{ transaction_lines : "split into"
     categories ||--o{ transaction_lines : classifies
     payment_methods |o--o{ transactions : "paid with"
@@ -70,6 +73,13 @@ erDiagram
         category_source category_source
         real category_confidence
     }
+    budgets {
+        uuid id PK
+        uuid user_id FK
+        uuid category_id FK "NULL = overall limit"
+        date effective_from "1st of a month"
+        bigint amount_minor "poisha, NULL = cleared"
+    }
     tags {
         uuid id PK
         uuid user_id FK
@@ -107,6 +117,11 @@ erDiagram
   because attempts can name an unknown email; it supports throttling.
 - **Search and pagination indexes.** `(user_id, occurred_on DESC, created_at DESC, id DESC)` serves
   keyset pagination; `gin_trgm_ops` indexes on `merchant` and `note` serve fuzzy search.
+- **Budgets carry forward.** A `budgets` row says "from this month on, this category's budget is X".
+  The budget in effect for a month is the latest row on or before its 1st; a NULL `amount_minor` means
+  cleared, so history is never deleted. `category_id IS NULL` is the overall limit, and the unique
+  constraint is `NULLS NOT DISTINCT` so that slot also has one row per month. `effective_from` is
+  checked to be the 1st of a month. See [ADR-0007](adr/0007-budgets.md).
 
 ## Known consequences and open questions
 
