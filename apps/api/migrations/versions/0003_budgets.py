@@ -17,7 +17,6 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-
     op.create_table(
         "budgets",
         sa.Column("category_id", sa.UUID(), nullable=True),
@@ -68,6 +67,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-
     op.drop_index("ix_budgets_user_id_effective_from", table_name="budgets")
     op.drop_table("budgets")
