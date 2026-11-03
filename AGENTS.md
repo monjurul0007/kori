@@ -19,9 +19,9 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 ## Where things are
 
 - **Backlog:** the Trello board "Kori", https://trello.com/b/yYbrEc3C/kori
-  - Lists: `📌 Start here` · `Backlog` · `Spikes` · `Future Milestones` · `Milestone 1 · Log it, live` · `In Review` · `Done`
-  - Reference cards: How we work (https://trello.com/c/h4Mm3VqB) and the Project brief
-    (https://trello.com/c/bcmnXqx0)
+  - Lists: `📌 Start here` · `Backlog` · `Spikes` · `Future Milestones` · one `Milestone <N> · <name>` list per planned milestone (for example `Milestone 2 · Plan it`) · `In Review` · `Done`
+  - Reference cards: How we work (https://trello.com/c/h4Mm3VqB), the Project brief
+    (https://trello.com/c/bcmnXqx0) and the Kori Engineer Routine (https://trello.com/c/dvZifuoD)
 - **This repo (`kori`):**
   - `apps/api` (FastAPI, from M1-02)
   - `apps/web` (React, from M1-11)

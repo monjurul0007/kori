@@ -58,6 +58,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/budgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Budgets
+         * @description The budgets in effect for a month (default: the current month in the user's time zone).
+         */
+        get: operations["get_budgets_api_v1_budgets_get"];
+        /**
+         * Put Budget
+         * @description Set or clear one budget from a month onward. Returns that month's budgets.
+         */
+        put: operations["put_budget_api_v1_budgets_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/categories": {
         parameters: {
             query?: never;
@@ -309,6 +333,57 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BudgetCategory */
+        BudgetCategory: {
+            /** Archived */
+            archived: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["CategoryKind"];
+            /** Name */
+            name: string;
+        };
+        /** BudgetOut */
+        BudgetOut: {
+            /** Amount */
+            amount: string;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+        };
+        /**
+         * BudgetSet
+         * @description Set or clear one budget from `month` onward.
+         *
+         *     `category_id: null` is the overall limit; `amount: null` clears the budget.
+         */
+        BudgetSet: {
+            /** Amount */
+            amount: string | null;
+            /** Category Id */
+            category_id: string | null;
+            /**
+             * Month
+             * @example 2026-11
+             */
+            month: string;
+        };
+        /** CategoryBudgetOut */
+        CategoryBudgetOut: {
+            /** Amount */
+            amount: string;
+            category: components["schemas"]["BudgetCategory"];
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+        };
         /** CategoryCreate */
         CategoryCreate: {
             /** Color */
@@ -409,6 +484,17 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** MonthBudgets */
+        MonthBudgets: {
+            /** Categories */
+            categories: components["schemas"]["CategoryBudgetOut"][];
+            /**
+             * Month
+             * @example 2026-11
+             */
+            month: string;
+            overall: components["schemas"]["BudgetOut"] | null;
         };
         /** PaymentMethodCreate */
         PaymentMethodCreate: {
@@ -615,6 +701,10 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type SchemaBudgetCategory = components['schemas']['BudgetCategory'];
+export type SchemaBudgetOut = components['schemas']['BudgetOut'];
+export type SchemaBudgetSet = components['schemas']['BudgetSet'];
+export type SchemaCategoryBudgetOut = components['schemas']['CategoryBudgetOut'];
 export type SchemaCategoryCreate = components['schemas']['CategoryCreate'];
 export type SchemaCategoryKind = components['schemas']['CategoryKind'];
 export type SchemaCategoryOut = components['schemas']['CategoryOut'];
@@ -625,6 +715,7 @@ export type SchemaHttpValidationError = components['schemas']['HTTPValidationErr
 export type SchemaLineIn = components['schemas']['LineIn'];
 export type SchemaLineOut = components['schemas']['LineOut'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
+export type SchemaMonthBudgets = components['schemas']['MonthBudgets'];
 export type SchemaPaymentMethodCreate = components['schemas']['PaymentMethodCreate'];
 export type SchemaPaymentMethodKind = components['schemas']['PaymentMethodKind'];
 export type SchemaPaymentMethodOut = components['schemas']['PaymentMethodOut'];
@@ -707,6 +798,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+        };
+    };
+    get_budgets_api_v1_budgets_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthBudgets"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_budget_api_v1_budgets_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BudgetSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthBudgets"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

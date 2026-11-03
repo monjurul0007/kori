@@ -11,10 +11,11 @@ Status, Context, Decision and Consequences.
 | [0003](0003-two-repo-split.md) | Two repositories: `kori` and `kori-ai` | Accepted |
 | [0004](0004-money-and-dates.md) | Money and date representation | Accepted |
 | [0005](0005-hosting.md) | Hosting: Cloud Run and Neon | Proposed |
+| [0007](0007-budgets.md) | Budgets: carry-forward model | Accepted |
 
 **Upcoming**, from the spikes on the Trello board:
 - 0006: background jobs (S3)
-- 0007: the AI integration contract (S1)
+- 0008: the AI integration contract (S1)
 
 ## Writing a new ADR
 

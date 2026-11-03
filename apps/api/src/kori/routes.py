@@ -3,6 +3,7 @@
 from fastapi import APIRouter, FastAPI
 
 from kori.auth.router import router as auth_router
+from kori.budgets.router import router as budgets_router
 from kori.categories.router import router as categories_router
 from kori.health.router import router as health_router
 from kori.payment_methods.router import router as payment_methods_router
@@ -15,6 +16,7 @@ ROUTERS: list[APIRouter] = [
     health_router,
     auth_router,
     categories_router,
+    budgets_router,
     payment_methods_router,
     tags_router,
     transactions_router,

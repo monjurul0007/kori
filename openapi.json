@@ -1,6 +1,122 @@
 {
   "components": {
     "schemas": {
+      "BudgetCategory": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CategoryKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "archived"
+        ],
+        "title": "BudgetCategory",
+        "type": "object"
+      },
+      "BudgetOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "effective_from"
+        ],
+        "title": "BudgetOut",
+        "type": "object"
+      },
+      "BudgetSet": {
+        "description": "Set or clear one budget from `month` onward.\n\n`category_id: null` is the overall limit; `amount: null` clears the budget.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "examples": [
+                  "1250.50"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "month": {
+            "examples": [
+              "2026-11"
+            ],
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "category_id",
+          "amount"
+        ],
+        "title": "BudgetSet",
+        "type": "object"
+      },
+      "CategoryBudgetOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/BudgetCategory"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "effective_from",
+          "category"
+        ],
+        "title": "CategoryBudgetOut",
+        "type": "object"
+      },
       "CategoryCreate": {
         "properties": {
           "color": {
@@ -289,6 +405,42 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "MonthBudgets": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryBudgetOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "month": {
+            "examples": [
+              "2026-11"
+            ],
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "type": "string"
+          },
+          "overall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BudgetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "month",
+          "overall",
+          "categories"
+        ],
+        "title": "MonthBudgets",
         "type": "object"
       },
       "PaymentMethodCreate": {
@@ -892,6 +1044,100 @@
         "summary": "Me",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/budgets": {
+      "get": {
+        "description": "The budgets in effect for a month (default: the current month in the user's time zone).",
+        "operationId": "get_budgets_api_v1_budgets_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "examples": [
+                "2026-11"
+              ],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthBudgets"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Budgets",
+        "tags": [
+          "budgets"
+        ]
+      },
+      "put": {
+        "description": "Set or clear one budget from a month onward. Returns that month's budgets.",
+        "operationId": "put_budget_api_v1_budgets_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BudgetSet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthBudgets"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Budget",
+        "tags": [
+          "budgets"
         ]
       }
     },
