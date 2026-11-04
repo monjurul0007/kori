@@ -1,5 +1,5 @@
-import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ChevronRight, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,27 @@ export function SettingsPage() {
           <dt className="text-muted-foreground">Currency</dt>
           <dd>{user?.currency}</dd>
         </dl>
+      </section>
+      <section aria-labelledby="manage-heading" className="mb-6">
+        <h2 id="manage-heading" className="mb-2 font-medium">
+          Manage
+        </h2>
+        <ul className="divide-y rounded-md border">
+          {[
+            { to: "/settings/categories", label: "Categories" },
+            { to: "/settings/payment-methods", label: "Payment methods" },
+          ].map((l) => (
+            <li key={l.to}>
+              <Link
+                to={l.to}
+                className="flex min-h-11 items-center justify-between px-3 hover:bg-muted"
+              >
+                {l.label}
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
       <Button
         variant="outline"
