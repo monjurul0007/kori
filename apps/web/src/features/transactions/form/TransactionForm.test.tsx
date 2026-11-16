@@ -144,34 +144,209 @@ describe("transaction form", () => {
     expect(error).toBeInTheDocument();
   });
 
-  it("opens a split read-only with the M2 message", async () => {
-    const state = mockApi([
-      makeTx("s", {
-        occurred_on: today,
-        amount: "150",
-        is_split: true,
-        lines: [
-          { category: food, amount: "100", category_source: "user" },
-          { category: bills, amount: "50", category_source: "user" },
-        ],
-      }),
-    ]);
+  const splitTx = () =>
+    makeTx("s", {
+      occurred_on: today,
+      amount: "150",
+      is_split: true,
+      lines: [
+        { category: food, amount: "100", category_source: "user" },
+        { category: bills, amount: "50", category_source: "user" },
+      ],
+    });
+
+  async function openNew() {
+    await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
+    return screen.findByRole("dialog");
+  }
+
+  async function startSplit(total: string) {
+    const dialog = await openNew();
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), total);
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Split" }));
+    return dialog;
+  }
+
+  it("splits a ৳500 expense into ৳300 + ৳200 and saves two lines", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("500");
+    expect(within(dialog).getByLabelText("Line 1 amount")).toHaveValue("500");
+    expect(within(dialog).getByLabelText("Line 1 category")).toHaveValue("c-food");
+    await userEvent.clear(within(dialog).getByLabelText("Line 1 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 1 amount"), "300");
+    await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
+    await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "200");
+    expect(within(dialog).getByText("Remaining ৳0")).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    expect(state.posted[0]).toMatchObject({
+      amount: "500",
+      lines: [
+        { category_id: "c-food", amount: "300" },
+        { category_id: "c-bills", amount: "200" },
+      ],
+    });
+    expect(state.posted[0]).not.toHaveProperty("category_id");
+  });
+
+  it("shows Over by and disables Save until the lines balance", async () => {
+    mockApi();
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("500");
+    await userEvent.clear(within(dialog).getByLabelText("Line 1 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 1 amount"), "300");
+    await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
+    await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "250");
+    expect(within(dialog).getByText("Over by ৳50")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Save" })).toBeDisabled();
+    await userEvent.clear(within(dialog).getByLabelText("Line 2 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "100");
+    expect(within(dialog).getByText("Remaining ৳100")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Save" })).toBeDisabled();
+  });
+
+  it("fills the remaining amount into the last line", async () => {
+    mockApi();
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("500");
+    await userEvent.clear(within(dialog).getByLabelText("Line 1 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 1 amount"), "300");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Fill remaining" }));
+    expect(within(dialog).getByLabelText("Line 2 amount")).toHaveValue("200.00");
+    expect(within(dialog).getByText("Remaining ৳0")).toBeInTheDocument();
+  });
+
+  it("goes back to a single category when lines are removed down to one", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("500");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Remove line 2" }));
+    expect(within(dialog).queryByLabelText("Line 1 amount")).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("radio", { name: "Food & Dining" })).toBeChecked();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    expect(state.posted[0]).toMatchObject({ amount: "500", category_id: "c-food" });
+    expect(state.posted[0]).not.toHaveProperty("lines");
+  });
+
+  it("stops adding lines at 20", async () => {
+    mockApi();
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("500");
+    for (let i = 0; i < 18; i++) {
+      await userEvent.click(within(dialog).getByRole("button", { name: "Add line" }));
+    }
+    expect(within(dialog).getByLabelText("Line 20 amount")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Add line" })).toBeDisabled();
+  });
+
+  it("edits a split: changes a line and the total, then sends a PUT with the new lines", async () => {
+    const state = mockApi([splitTx()]);
     renderApp(`/transactions?month=${month}`);
     await userEvent.click(await screen.findByText("Shop s"));
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Split editing arrives in M2")).toBeInTheDocument();
-    expect(within(dialog).queryByLabelText("Amount (৳)")).not.toBeInTheDocument();
-    await userEvent.type(within(dialog).getByLabelText("Merchant"), "!");
+    expect(within(dialog).getByLabelText("Line 1 amount")).toHaveValue("100");
+    expect(within(dialog).getByLabelText("Line 2 category")).toHaveValue("c-bills");
+    const total = within(dialog).getByLabelText("Amount (৳)");
+    await userEvent.clear(total);
+    await userEvent.type(total, "180");
+    expect(within(dialog).getByText("Remaining ৳30")).toBeInTheDocument();
+    await userEvent.clear(within(dialog).getByLabelText("Line 2 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "80");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
     await waitFor(() => expect(state.put).toHaveLength(1));
     expect(state.put[0]).toMatchObject({
-      amount: "150",
+      amount: "180",
       lines: [
         { category_id: "c-food", amount: "100" },
-        { category_id: "c-bills", amount: "50" },
+        { category_id: "c-bills", amount: "80" },
       ],
     });
     expect(state.put[0]).not.toHaveProperty("category_id");
+  });
+
+  it("offers only income categories in an income split", async () => {
+    mockApi();
+    server.use(
+      http.get("*/api/v1/categories", () =>
+        HttpResponse.json([
+          { ...food, archived_at: null },
+          { id: "c-sal", name: "Salary", kind: "income", archived_at: null },
+          { id: "c-gift", name: "Gift", kind: "income", archived_at: null },
+        ]),
+      ),
+    );
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await openNew();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Income" }));
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "100");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Salary" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Split" }));
+    const options = within(within(dialog).getByLabelText("Line 2 category"))
+      .getAllByRole("option")
+      .map((o) => o.textContent);
+    expect(options).toEqual(["Category…", "Salary", "Gift"]);
+  });
+
+  it("shows a server 422 on line 2 under line 2", async () => {
+    mockApi();
+    server.use(
+      http.post("*/api/v1/transactions", () =>
+        HttpResponse.json(
+          {
+            type: "about:blank",
+            title: "Unprocessable",
+            status: 422,
+            detail: "Request validation failed",
+            request_id: "r1",
+            errors: [
+              {
+                loc: ["body", "lines", 1, "amount"],
+                msg: "Too many decimals",
+                type: "value_error",
+              },
+            ],
+          },
+          { status: 422, headers: { "content-type": "application/problem+json" } },
+        ),
+      ),
+    );
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("500");
+    await userEvent.clear(within(dialog).getByLabelText("Line 1 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 1 amount"), "300");
+    await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
+    await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "200");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    expect(await within(dialog).findByText("Too many decimals")).toBeInTheDocument();
+    const line2 = within(dialog).getByLabelText("Line 2 amount");
+    expect(line2).toHaveAttribute("aria-invalid", "true");
+    expect(within(dialog).getByLabelText("Line 1 amount")).not.toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
+  it("balances ৳0.10 + ৳0.20 against a total of ৳0.30 exactly", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    const dialog = await startSplit("0.30");
+    await userEvent.clear(within(dialog).getByLabelText("Line 1 amount"));
+    await userEvent.type(within(dialog).getByLabelText("Line 1 amount"), "0.10");
+    await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
+    await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "0.20");
+    expect(within(dialog).getByText("Remaining ৳0")).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    expect(state.posted[0]).toMatchObject({
+      amount: "0.30",
+      lines: [
+        { category_id: "c-food", amount: "0.10" },
+        { category_id: "c-bills", amount: "0.20" },
+      ],
+    });
   });
 
   it("autocompletes tags and creates new ones on Enter", async () => {

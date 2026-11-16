@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { todayInDhaka } from "@/lib/dates";
-import { formatTaka, parseTakaInput } from "@/lib/money";
+import { parseTakaInput } from "@/lib/money";
 import { toastError } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,8 @@ import { DateQuickPick } from "./DateQuickPick";
 import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from "./mutations";
 import type { TransactionBody } from "./mutations";
 import { PaymentMethodSelect } from "./PaymentMethodSelect";
-import { fieldForLoc, formSchema, type FormValues } from "./schema";
+import { fieldForLoc, formSchema, poishaOf, type FormValues } from "./schema";
+import { remainingPoisha, SplitEditor } from "./SplitEditor";
 import { TagInput } from "./TagInput";
 
 const LAST_METHOD_KEY = "kori.lastPaymentMethod";
@@ -56,7 +57,6 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
   const remove = useDeleteTransaction(edit?.id ?? "");
   const [confirming, setConfirming] = useState(false);
   const [formError, setFormError] = useState<string>();
-  const split = edit?.is_split ?? false;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -64,6 +64,9 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
       type: edit?.type ?? "expense",
       amount: edit?.amount ?? "",
       categoryId: edit?.lines[0]?.category.id ?? "",
+      lines: edit?.is_split
+        ? edit.lines.map((l) => ({ categoryId: l.category.id, amount: l.amount }))
+        : [],
       occurredOn: edit?.occurred_on ?? todayInDhaka(),
       merchant: edit?.merchant ?? "",
       paymentMethodId: edit ? (edit.payment_method?.id ?? "") : rememberedMethod(),
@@ -76,9 +79,12 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
   const watch = <K extends keyof FormValues>(name: K) => values[name];
   const { errors, isSubmitting } = formState;
   const type = values.type;
+  const split = values.lines.length > 0;
+  const remaining = split ? remainingPoisha(values.amount, values.lines) : null;
+  const unbalanced = split && remaining !== 0n;
   useEffect(() => {
-    if (!split) setFocus("amount");
-  }, [split, setFocus]);
+    if (!edit?.is_split) setFocus("amount");
+  }, [edit, setFocus]);
   const busy = isSubmitting || remove.isPending;
   const err = (name: keyof FormValues) => (errors[name] ? `${uid}-${name}-error` : undefined);
   const message = (name: keyof FormValues) =>
@@ -90,7 +96,11 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
 
   const submit = handleSubmit(async (v) => {
     setFormError(undefined);
-    const amount = split && edit ? edit.amount : (parseTakaInput(v.amount) ?? v.amount);
+    const amount = parseTakaInput(v.amount) ?? v.amount;
+    const lines = v.lines.map((l) => ({
+      category_id: l.categoryId,
+      amount: parseTakaInput(l.amount) ?? l.amount,
+    }));
     const body: TransactionBody = {
       type: v.type,
       amount,
@@ -99,9 +109,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
       note: v.note.trim() || null,
       payment_method_id: v.paymentMethodId || null,
       tags: v.tags,
-      ...(split && edit
-        ? { lines: edit.lines.map((l) => ({ category_id: l.category.id, amount: l.amount })) }
-        : { category_id: v.categoryId }),
+      ...(lines.length ? { lines } : { category_id: v.categoryId }),
     };
     const category = categories.find((c) => c.id === v.categoryId);
     const preview: Transaction = {
@@ -117,12 +125,14 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
       note: body.note ?? null,
       payment_method: methods.find((m) => m.id === v.paymentMethodId) ?? null,
       tags: v.tags,
-      lines:
-        split && edit
-          ? edit.lines
-          : category
-            ? [{ category, amount, category_source: "user" }]
-            : [],
+      lines: lines.length
+        ? lines.flatMap((l) => {
+            const c = categories.find((x) => x.id === l.category_id);
+            return c ? [{ category: c, amount: l.amount, category_source: "user" as const }] : [];
+          })
+        : category
+          ? [{ category, amount, category_source: "user" as const }]
+          : [],
     };
     try {
       if (edit) await update.mutateAsync({ body, preview });
@@ -162,20 +172,16 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
     <form onSubmit={submit} noValidate className="space-y-4">
       <div className="space-y-1">
         <Label htmlFor={`${uid}-amount`}>Amount (৳)</Label>
-        {split ? (
-          <p className="text-2xl font-semibold">{formatTaka(edit?.amount ?? "0")}</p>
-        ) : (
-          <Input
-            id={`${uid}-amount`}
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="0"
-            aria-invalid={!!errors.amount}
-            aria-describedby={err("amount")}
-            className="h-14 text-3xl font-semibold md:text-3xl"
-            {...register("amount")}
-          />
-        )}
+        <Input
+          id={`${uid}-amount`}
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder="0"
+          aria-invalid={!!errors.amount}
+          aria-describedby={err("amount")}
+          className="h-14 text-3xl font-semibold md:text-3xl"
+          {...register("amount")}
+        />
         {message("amount")}
       </div>
 
@@ -204,18 +210,15 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
         ))}
       </div>
 
-      {split && edit ? (
-        <div className="rounded-md border p-3 text-sm">
-          <ul>
-            {edit.lines.map((l, i) => (
-              <li key={i} className="flex justify-between">
-                <span>{l.category.name}</span>
-                <span className="tabular-nums">{formatTaka(l.amount)}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-muted-foreground">Split editing arrives in M2</p>
-        </div>
+      {split ? (
+        <SplitEditor
+          form={form}
+          categories={kindCategories}
+          onCollapse={(id) => {
+            setValue("lines", []);
+            setValue("categoryId", id, { shouldValidate: true });
+          }}
+        />
       ) : (
         <div className="space-y-1">
           <Label>Category</Label>
@@ -226,6 +229,19 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
             describedBy={err("categoryId")}
           />
           {message("categoryId")}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const total = parseTakaInput(values.amount) ?? values.amount;
+              setValue("lines", [
+                { categoryId: values.categoryId, amount: poishaOf(values.amount) ? total : "" },
+                { categoryId: "", amount: "" },
+              ]);
+            }}
+          >
+            Split
+          </Button>
         </div>
       )}
 
@@ -295,7 +311,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
             Delete
           </Button>
         )}
-        <Button type="submit" className="flex-1" disabled={busy}>
+        <Button type="submit" className="flex-1" disabled={busy || unbalanced}>
           {isSubmitting ? "Saving…" : "Save"}
         </Button>
       </div>
