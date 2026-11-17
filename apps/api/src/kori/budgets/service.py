@@ -24,19 +24,19 @@ def current_month(user: User) -> str:
     return datetime.now(ZoneInfo(user.timezone)).strftime("%Y-%m")
 
 
-def _first_of(month: str, loc: list[str | int]) -> date:
+def first_of_month(month: str, loc: list[str | int]) -> date:
     match = _MONTH.fullmatch(month)
     if match is None:
         raise UnprocessableError([field_error(loc, "Month must look like 2026-11", "value_error")])
     return date(int(match[1]), int(match[2]), 1)
 
 
-def _add_months(first: date, months: int) -> date:
+def add_months(first: date, months: int) -> date:
     index = first.year * 12 + first.month - 1 + months
     return date(index // 12, index % 12 + 1, 1)
 
 
-def _budgets_in_effect(db: Session, user: User, first: date) -> list[Budget]:
+def budgets_in_effect(db: Session, user: User, first: date) -> list[Budget]:
     """The row in effect on `first` for each category and for the overall slot (NULL category).
 
     Rows with a NULL amount are returned too: they are the "cleared" marker, and callers drop them.
@@ -53,11 +53,11 @@ def _budgets_in_effect(db: Session, user: User, first: date) -> list[Budget]:
 
 def get_budgets(db: Session, user: User, month: str) -> MonthBudgets:
     """The budgets in effect for `month` (`YYYY-MM`). Any month may be read."""
-    first = _first_of(month, ["query", "month"])
+    first = first_of_month(month, ["query", "month"])
 
     overall: BudgetOut | None = None
     by_category: dict[uuid.UUID, tuple[date, str]] = {}
-    for b in _budgets_in_effect(db, user, first):
+    for b in budgets_in_effect(db, user, first):
         if b.amount_minor is None:
             continue  # cleared from this month on
         if b.category_id is None:
@@ -94,11 +94,11 @@ def set_budget(
     `category_id=None` is the overall limit. `month` must run from the current month (in the
     user's time zone) to 12 months ahead, so a past month's budget never changes.
     """
-    first = _first_of(month, ["body", "month"])
+    first = first_of_month(month, ["body", "month"])
     errors = []
 
-    this_month = _first_of(current_month(user), ["body", "month"])
-    last_month = _add_months(this_month, MAX_MONTHS_AHEAD)
+    this_month = first_of_month(current_month(user), ["body", "month"])
+    last_month = add_months(this_month, MAX_MONTHS_AHEAD)
     if not this_month <= first <= last_month:
         errors.append(
             field_error(
@@ -149,5 +149,5 @@ def set_budget(
 def _has_budget(db: Session, user: User, first: date, category_id: uuid.UUID | None) -> bool:
     return any(
         b.category_id == category_id and b.amount_minor is not None
-        for b in _budgets_in_effect(db, user, first)
+        for b in budgets_in_effect(db, user, first)
     )

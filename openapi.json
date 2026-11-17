@@ -94,6 +94,65 @@
         "title": "BudgetSet",
         "type": "object"
       },
+      "BudgetStatus": {
+        "description": "Budget progress for one month.",
+        "properties": {
+          "categories": {
+            "description": "Categories with a budget.",
+            "items": {
+              "$ref": "#/components/schemas/CategoryBudgetStatus"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "days_elapsed": {
+            "description": "Today in the user's time zone; 0 for a future month.",
+            "title": "Days Elapsed",
+            "type": "integer"
+          },
+          "days_in_month": {
+            "title": "Days In Month",
+            "type": "integer"
+          },
+          "days_left": {
+            "title": "Days Left",
+            "type": "integer"
+          },
+          "month": {
+            "examples": [
+              "2026-11"
+            ],
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "type": "string"
+          },
+          "overall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverallBudgetStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null when there is neither an overall limit nor any category budget."
+          },
+          "unbudgeted": {
+            "$ref": "#/components/schemas/Unbudgeted"
+          }
+        },
+        "required": [
+          "month",
+          "days_in_month",
+          "days_elapsed",
+          "days_left",
+          "overall",
+          "categories",
+          "unbudgeted"
+        ],
+        "title": "BudgetStatus",
+        "type": "object"
+      },
       "CategoryBudgetOut": {
         "properties": {
           "amount": {
@@ -115,6 +174,58 @@
           "category"
         ],
         "title": "CategoryBudgetOut",
+        "type": "object"
+      },
+      "CategoryBudgetStatus": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/ReportCategory"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level",
+            "description": "ok below 80%, warning from 80% up to 100%, over from 100%."
+          },
+          "limit": {
+            "description": "The monthly budget in effect, in taka.",
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Limit",
+            "type": "string"
+          },
+          "percent": {
+            "description": "spent / limit, one decimal place; may exceed 100.",
+            "examples": [
+              "34.5"
+            ],
+            "title": "Percent",
+            "type": "string"
+          },
+          "remaining": {
+            "description": "limit - spent; negative when over budget.",
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Remaining",
+            "type": "string"
+          },
+          "spent": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Spent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "limit",
+          "spent",
+          "remaining",
+          "percent",
+          "level"
+        ],
+        "title": "CategoryBudgetStatus",
         "type": "object"
       },
       "CategoryCreate": {
@@ -274,6 +385,42 @@
         "title": "CategorySource",
         "type": "string"
       },
+      "CategorySpending": {
+        "properties": {
+          "amount": {
+            "description": "Sum of this category's line amounts, in taka.",
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Amount",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ReportCategory"
+          },
+          "count": {
+            "description": "Transactions with at least one line in this category.",
+            "title": "Count",
+            "type": "integer"
+          },
+          "percent": {
+            "description": "Share of the report total, one decimal place.",
+            "examples": [
+              "34.5"
+            ],
+            "title": "Percent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "amount",
+          "count",
+          "percent"
+        ],
+        "title": "CategorySpending",
+        "type": "object"
+      },
       "CategoryUpdate": {
         "description": "Only the fields that are sent change; `icon` and `color` may be set to null.",
         "properties": {
@@ -343,6 +490,23 @@
         },
         "title": "HTTPValidationError",
         "type": "object"
+      },
+      "Level": {
+        "enum": [
+          "ok",
+          "warning",
+          "over"
+        ],
+        "title": "Level",
+        "type": "string"
+      },
+      "LimitSource": {
+        "enum": [
+          "set",
+          "sum_of_categories"
+        ],
+        "title": "LimitSource",
+        "type": "string"
       },
       "LineIn": {
         "properties": {
@@ -441,6 +605,56 @@
           "categories"
         ],
         "title": "MonthBudgets",
+        "type": "object"
+      },
+      "OverallBudgetStatus": {
+        "properties": {
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "limit": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Limit",
+            "type": "string"
+          },
+          "limit_source": {
+            "$ref": "#/components/schemas/LimitSource",
+            "description": "'set' for an explicit overall limit, else 'sum_of_categories'."
+          },
+          "percent": {
+            "examples": [
+              "34.5"
+            ],
+            "title": "Percent",
+            "type": "string"
+          },
+          "remaining": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Remaining",
+            "type": "string"
+          },
+          "spent": {
+            "description": "Every expense in the month, budgeted category or not.",
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Spent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "limit",
+          "limit_source",
+          "spent",
+          "remaining",
+          "percent",
+          "level"
+        ],
+        "title": "OverallBudgetStatus",
         "type": "object"
       },
       "PaymentMethodCreate": {
@@ -577,6 +791,86 @@
           }
         },
         "title": "PaymentMethodUpdate",
+        "type": "object"
+      },
+      "ReportCategory": {
+        "properties": {
+          "archived": {
+            "description": "Archived categories still appear in reports.",
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CategoryKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "archived"
+        ],
+        "title": "ReportCategory",
+        "type": "object"
+      },
+      "SpendingReport": {
+        "description": "Spending (or income) by category for an inclusive date range.",
+        "properties": {
+          "by_category": {
+            "description": "Largest amount first, then name.",
+            "items": {
+              "$ref": "#/components/schemas/CategorySpending"
+            },
+            "title": "By Category",
+            "type": "array"
+          },
+          "count": {
+            "description": "Distinct transactions in the range.",
+            "title": "Count",
+            "type": "integer"
+          },
+          "from": {
+            "description": "First day, inclusive.",
+            "format": "date",
+            "title": "From",
+            "type": "string"
+          },
+          "to": {
+            "description": "Last day, inclusive.",
+            "format": "date",
+            "title": "To",
+            "type": "string"
+          },
+          "total": {
+            "description": "Sum of every line in the range, in taka.",
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Total",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TransactionType"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "type",
+          "total",
+          "count",
+          "by_category"
+        ],
+        "title": "SpendingReport",
         "type": "object"
       },
       "TagOut": {
@@ -894,6 +1188,73 @@
         ],
         "title": "TransactionType",
         "type": "string"
+      },
+      "Trend": {
+        "description": "Monthly expense and income, oldest first, empty months as zero.",
+        "properties": {
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/TrendMonth"
+            },
+            "title": "Months",
+            "type": "array"
+          }
+        },
+        "required": [
+          "months"
+        ],
+        "title": "Trend",
+        "type": "object"
+      },
+      "TrendMonth": {
+        "properties": {
+          "expense": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Expense",
+            "type": "string"
+          },
+          "income": {
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Income",
+            "type": "string"
+          },
+          "month": {
+            "examples": [
+              "2026-11"
+            ],
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "title": "Month",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "expense",
+          "income"
+        ],
+        "title": "TrendMonth",
+        "type": "object"
+      },
+      "Unbudgeted": {
+        "properties": {
+          "spent": {
+            "description": "Expenses in categories that have no budget this month.",
+            "examples": [
+              "1250.50"
+            ],
+            "title": "Spent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "spent"
+        ],
+        "title": "Unbudgeted",
+        "type": "object"
       },
       "UserOut": {
         "properties": {
@@ -1648,6 +2009,240 @@
         "summary": "Readyz",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/reports/budget-status": {
+      "get": {
+        "description": "Budget progress for a month (default: the current month in the user's time zone).",
+        "operationId": "budget_status_api_v1_reports_budget_status_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "examples": [
+                "2026-11"
+              ],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Budget Status",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/spending": {
+      "get": {
+        "description": "Spending by category for a month, or for an inclusive `from`/`to` range.",
+        "operationId": "spending_api_v1_reports_spending_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "examples": [
+                "2026-11"
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/TransactionType",
+              "default": "expense"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpendingReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Spending",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/trend": {
+      "get": {
+        "description": "Expense and income per month, oldest first, ending at `end` (default: this month).",
+        "operationId": "trend_api_v1_reports_trend_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "examples": [
+                "2026-11"
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "in": "query",
+            "name": "months",
+            "required": false,
+            "schema": {
+              "default": 6,
+              "maximum": 24,
+              "minimum": 1,
+              "title": "Months",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trend"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Trend",
+        "tags": [
+          "reports"
         ]
       }
     },
