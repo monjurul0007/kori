@@ -254,6 +254,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/budget-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Budget Status
+         * @description Budget progress for a month (default: the current month in the user's time zone).
+         */
+        get: operations["budget_status_api_v1_reports_budget_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/spending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Spending
+         * @description Spending by category for a month, or for an inclusive `from`/`to` range.
+         */
+        get: operations["spending_api_v1_reports_spending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Trend
+         * @description Expense and income per month, oldest first, ending at `end` (default: this month).
+         */
+        get: operations["trend_api_v1_reports_trend_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tags": {
         parameters: {
             query?: never;
@@ -373,6 +433,34 @@ export interface components {
              */
             month: string;
         };
+        /**
+         * BudgetStatus
+         * @description Budget progress for one month.
+         */
+        BudgetStatus: {
+            /**
+             * Categories
+             * @description Categories with a budget.
+             */
+            categories: components["schemas"]["CategoryBudgetStatus"][];
+            /**
+             * Days Elapsed
+             * @description Today in the user's time zone; 0 for a future month.
+             */
+            days_elapsed: number;
+            /** Days In Month */
+            days_in_month: number;
+            /** Days Left */
+            days_left: number;
+            /**
+             * Month
+             * @example 2026-11
+             */
+            month: string;
+            /** @description Null when there is neither an overall limit nor any category budget. */
+            overall: components["schemas"]["OverallBudgetStatus"] | null;
+            unbudgeted: components["schemas"]["Unbudgeted"];
+        };
         /** CategoryBudgetOut */
         CategoryBudgetOut: {
             /** Amount */
@@ -383,6 +471,35 @@ export interface components {
              * Format: date
              */
             effective_from: string;
+        };
+        /** CategoryBudgetStatus */
+        CategoryBudgetStatus: {
+            category: components["schemas"]["ReportCategory"];
+            /** @description ok below 80%, warning from 80% up to 100%, over from 100%. */
+            level: components["schemas"]["Level"];
+            /**
+             * Limit
+             * @description The monthly budget in effect, in taka.
+             * @example 1250.50
+             */
+            limit: string;
+            /**
+             * Percent
+             * @description spent / limit, one decimal place; may exceed 100.
+             * @example 34.5
+             */
+            percent: string;
+            /**
+             * Remaining
+             * @description limit - spent; negative when over budget.
+             * @example 1250.50
+             */
+            remaining: string;
+            /**
+             * Spent
+             * @example 1250.50
+             */
+            spent: string;
         };
         /** CategoryCreate */
         CategoryCreate: {
@@ -439,6 +556,27 @@ export interface components {
          * @enum {string}
          */
         CategorySource: "user" | "default" | "ai" | "rule" | "seed";
+        /** CategorySpending */
+        CategorySpending: {
+            /**
+             * Amount
+             * @description Sum of this category's line amounts, in taka.
+             * @example 1250.50
+             */
+            amount: string;
+            category: components["schemas"]["ReportCategory"];
+            /**
+             * Count
+             * @description Transactions with at least one line in this category.
+             */
+            count: number;
+            /**
+             * Percent
+             * @description Share of the report total, one decimal place.
+             * @example 34.5
+             */
+            percent: string;
+        };
         /**
          * CategoryUpdate
          * @description Only the fields that are sent change; `icon` and `color` may be set to null.
@@ -458,6 +596,16 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * Level
+         * @enum {string}
+         */
+        Level: "ok" | "warning" | "over";
+        /**
+         * LimitSource
+         * @enum {string}
+         */
+        LimitSource: "set" | "sum_of_categories";
         /** LineIn */
         LineIn: {
             /**
@@ -495,6 +643,33 @@ export interface components {
              */
             month: string;
             overall: components["schemas"]["BudgetOut"] | null;
+        };
+        /** OverallBudgetStatus */
+        OverallBudgetStatus: {
+            level: components["schemas"]["Level"];
+            /**
+             * Limit
+             * @example 1250.50
+             */
+            limit: string;
+            /** @description 'set' for an explicit overall limit, else 'sum_of_categories'. */
+            limit_source: components["schemas"]["LimitSource"];
+            /**
+             * Percent
+             * @example 34.5
+             */
+            percent: string;
+            /**
+             * Remaining
+             * @example 1250.50
+             */
+            remaining: string;
+            /**
+             * Spent
+             * @description Every expense in the month, budgeted category or not.
+             * @example 1250.50
+             */
+            spent: string;
         };
         /** PaymentMethodCreate */
         PaymentMethodCreate: {
@@ -547,6 +722,57 @@ export interface components {
             name?: string | null;
             /** Sort Order */
             sort_order?: number | null;
+        };
+        /** ReportCategory */
+        ReportCategory: {
+            /**
+             * Archived
+             * @description Archived categories still appear in reports.
+             */
+            archived: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["CategoryKind"];
+            /** Name */
+            name: string;
+        };
+        /**
+         * SpendingReport
+         * @description Spending (or income) by category for an inclusive date range.
+         */
+        SpendingReport: {
+            /**
+             * By Category
+             * @description Largest amount first, then name.
+             */
+            by_category: components["schemas"]["CategorySpending"][];
+            /**
+             * Count
+             * @description Distinct transactions in the range.
+             */
+            count: number;
+            /**
+             * From
+             * Format: date
+             * @description First day, inclusive.
+             */
+            from: string;
+            /**
+             * To
+             * Format: date
+             * @description Last day, inclusive.
+             */
+            to: string;
+            /**
+             * Total
+             * @description Sum of every line in the range, in taka.
+             * @example 1250.50
+             */
+            total: string;
+            type: components["schemas"]["TransactionType"];
         };
         /** TagOut */
         TagOut: {
@@ -665,6 +891,41 @@ export interface components {
          * @enum {string}
          */
         TransactionType: "expense" | "income";
+        /**
+         * Trend
+         * @description Monthly expense and income, oldest first, empty months as zero.
+         */
+        Trend: {
+            /** Months */
+            months: components["schemas"]["TrendMonth"][];
+        };
+        /** TrendMonth */
+        TrendMonth: {
+            /**
+             * Expense
+             * @example 1250.50
+             */
+            expense: string;
+            /**
+             * Income
+             * @example 1250.50
+             */
+            income: string;
+            /**
+             * Month
+             * @example 2026-11
+             */
+            month: string;
+        };
+        /** Unbudgeted */
+        Unbudgeted: {
+            /**
+             * Spent
+             * @description Expenses in categories that have no budget this month.
+             * @example 1250.50
+             */
+            spent: string;
+        };
         /** UserOut */
         UserOut: {
             /** Currency */
@@ -704,23 +965,31 @@ export interface components {
 export type SchemaBudgetCategory = components['schemas']['BudgetCategory'];
 export type SchemaBudgetOut = components['schemas']['BudgetOut'];
 export type SchemaBudgetSet = components['schemas']['BudgetSet'];
+export type SchemaBudgetStatus = components['schemas']['BudgetStatus'];
 export type SchemaCategoryBudgetOut = components['schemas']['CategoryBudgetOut'];
+export type SchemaCategoryBudgetStatus = components['schemas']['CategoryBudgetStatus'];
 export type SchemaCategoryCreate = components['schemas']['CategoryCreate'];
 export type SchemaCategoryKind = components['schemas']['CategoryKind'];
 export type SchemaCategoryOut = components['schemas']['CategoryOut'];
 export type SchemaCategoryRef = components['schemas']['CategoryRef'];
 export type SchemaCategorySource = components['schemas']['CategorySource'];
+export type SchemaCategorySpending = components['schemas']['CategorySpending'];
 export type SchemaCategoryUpdate = components['schemas']['CategoryUpdate'];
 export type SchemaHttpValidationError = components['schemas']['HTTPValidationError'];
+export type SchemaLevel = components['schemas']['Level'];
+export type SchemaLimitSource = components['schemas']['LimitSource'];
 export type SchemaLineIn = components['schemas']['LineIn'];
 export type SchemaLineOut = components['schemas']['LineOut'];
 export type SchemaLoginRequest = components['schemas']['LoginRequest'];
 export type SchemaMonthBudgets = components['schemas']['MonthBudgets'];
+export type SchemaOverallBudgetStatus = components['schemas']['OverallBudgetStatus'];
 export type SchemaPaymentMethodCreate = components['schemas']['PaymentMethodCreate'];
 export type SchemaPaymentMethodKind = components['schemas']['PaymentMethodKind'];
 export type SchemaPaymentMethodOut = components['schemas']['PaymentMethodOut'];
 export type SchemaPaymentMethodRef = components['schemas']['PaymentMethodRef'];
 export type SchemaPaymentMethodUpdate = components['schemas']['PaymentMethodUpdate'];
+export type SchemaReportCategory = components['schemas']['ReportCategory'];
+export type SchemaSpendingReport = components['schemas']['SpendingReport'];
 export type SchemaTagOut = components['schemas']['TagOut'];
 export type SchemaTagUpdate = components['schemas']['TagUpdate'];
 export type SchemaTotals = components['schemas']['Totals'];
@@ -729,6 +998,9 @@ export type SchemaTransactionOut = components['schemas']['TransactionOut'];
 export type SchemaTransactionPage = components['schemas']['TransactionPage'];
 export type SchemaTransactionSource = components['schemas']['TransactionSource'];
 export type SchemaTransactionType = components['schemas']['TransactionType'];
+export type SchemaTrend = components['schemas']['Trend'];
+export type SchemaTrendMonth = components['schemas']['TrendMonth'];
+export type SchemaUnbudgeted = components['schemas']['Unbudgeted'];
 export type SchemaUserOut = components['schemas']['UserOut'];
 export type SchemaValidationError = components['schemas']['ValidationError'];
 export type $defs = Record<string, never>;
@@ -1227,6 +1499,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    budget_status_api_v1_reports_budget_status_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    spending_api_v1_reports_spending_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+                from?: string | null;
+                to?: string | null;
+                type?: components["schemas"]["TransactionType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpendingReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trend_api_v1_reports_trend_get: {
+        parameters: {
+            query?: {
+                end?: string | null;
+                months?: number;
+                category_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Trend"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
