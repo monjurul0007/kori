@@ -3,6 +3,8 @@ import { useMutation, useQueryClient, type InfiniteData } from "@tanstack/react-
 import { api, unwrap, unwrapEmpty } from "@/api/client";
 import type { components } from "@/api/schema";
 
+import { REPORTS_KEY } from "@/features/dashboard/hooks";
+
 import type { Transaction } from "../TransactionRow";
 
 export type TransactionBody = components["schemas"]["TransactionIn"];
@@ -34,7 +36,11 @@ function useOptimistic(change: (items: Transaction[], vars: Vars) => Transaction
     onError(_e: unknown, _v: Vars, ctx?: { snapshot: [readonly unknown[], Cache | undefined][] }) {
       ctx?.snapshot.forEach(([key, data]) => client.setQueryData(key, data));
     },
-    onSettled: () => client.invalidateQueries({ queryKey: ["transactions"] }),
+    onSettled: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ["transactions"] }),
+        client.invalidateQueries({ queryKey: REPORTS_KEY }),
+      ]),
   };
 }
 

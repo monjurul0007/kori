@@ -92,11 +92,17 @@ describe("route guard and logout", () => {
     expect(router.state.location.search).toBe("?next=%2Fsettings");
   });
 
-  it("redirects / to transactions inside the shell", async () => {
-    server.use(loggedIn());
+  it("redirects / to the dashboard inside the shell", async () => {
+    server.use(
+      loggedIn(),
+      http.get("*/api/v1/reports/*", () => HttpResponse.json({}, { status: 500 })),
+      http.get("*/api/v1/transactions", () =>
+        HttpResponse.json({ items: [], next_cursor: null, totals: {} }),
+      ),
+    );
     const { router } = renderApp("/");
-    expect(await screen.findByRole("heading", { name: "Transactions" })).toBeInTheDocument();
-    expect(router.state.location.pathname).toBe("/transactions");
+    expect(await screen.findByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/dashboard");
     expect(screen.getAllByRole("navigation", { name: "Main" })).toHaveLength(2);
   });
 

@@ -20,7 +20,7 @@ export default defineConfig({
         theme_color: THEME_COLOR,
         background_color: THEME_COLOR,
         display: "standalone",
-        start_url: "/transactions",
+        start_url: "/dashboard",
         icons: [
           { src: "icon-192.png", sizes: "192x192", type: "image/png" },
           { src: "icon-512.png", sizes: "512x512", type: "image/png" },
