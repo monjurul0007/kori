@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from "react-router-do
 
 import { RouteError } from "@/components/RouteError";
 import { AppShell } from "@/components/layout/AppShell";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { CategoriesSettingsPage } from "@/features/settings/CategoriesSettingsPage";
@@ -21,7 +22,8 @@ export const routes: RouteObject[] = [
           {
             element: <AppShell />,
             children: [
-              { path: "/", element: <Navigate to="/transactions" replace /> },
+              { path: "/", element: <Navigate to="/dashboard" replace /> },
+              { path: "/dashboard", element: <DashboardPage /> },
               { path: "/transactions", element: <TransactionsPage /> },
               { path: "/settings", element: <SettingsPage /> },
               { path: "/settings/categories", element: <CategoriesSettingsPage /> },
