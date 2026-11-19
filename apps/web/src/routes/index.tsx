@@ -8,6 +8,7 @@ import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { CategoriesSettingsPage } from "@/features/settings/CategoriesSettingsPage";
 import { PaymentMethodsSettingsPage } from "@/features/settings/PaymentMethodsSettingsPage";
+import { TagsSettingsPage } from "@/features/settings/TagsSettingsPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { TransactionsPage } from "@/features/transactions/TransactionsPage";
 
@@ -30,6 +31,7 @@ export const routes: RouteObject[] = [
               { path: "/settings", element: <SettingsPage /> },
               { path: "/settings/categories", element: <CategoriesSettingsPage /> },
               { path: "/settings/payment-methods", element: <PaymentMethodsSettingsPage /> },
+              { path: "/settings/tags", element: <TagsSettingsPage /> },
             ],
           },
         ],

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api, unwrap } from "@/api/client";
+import { api, unwrap, unwrapEmpty } from "@/api/client";
 import type { components } from "@/api/schema";
 
 import type { OrderPatch } from "./reorder";
@@ -176,5 +176,46 @@ export function useReorderPaymentMethods() {
     onMutate: optimistic,
     onError: (_e, _v, rollback) => rollback?.(),
     onSettled: refresh,
+  });
+}
+
+// ---- tags -------------------------------------------------------------------------------
+
+export type Tag = components["schemas"]["TagOut"];
+
+/** Same rules as the API: lowercase, trimmed, inner whitespace becomes `-`. */
+export const normalizeTagName = (raw: string) =>
+  raw.trim().replace(/^#/, "").toLowerCase().replace(/\s+/g, "-");
+
+// Renaming, merging or deleting a tag changes what the form suggests and what transactions show.
+function useRefreshTags() {
+  const client = useQueryClient();
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: ["tags"] }),
+      client.invalidateQueries({ queryKey: ["transactions"] }),
+    ]);
+}
+
+export function useRenameTag() {
+  const refresh = useRefreshTags();
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) =>
+      unwrap(
+        await api.PATCH("/api/v1/tags/{tag_id}", {
+          params: { path: { tag_id: id } },
+          body: { name },
+        }),
+      ),
+    onSuccess: refresh,
+  });
+}
+
+export function useDeleteTag() {
+  const refresh = useRefreshTags();
+  return useMutation({
+    mutationFn: async (id: string) =>
+      unwrapEmpty(await api.DELETE("/api/v1/tags/{tag_id}", { params: { path: { tag_id: id } } })),
+    onSuccess: refresh,
   });
 }

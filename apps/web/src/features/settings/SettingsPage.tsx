@@ -38,6 +38,7 @@ export function SettingsPage() {
           {[
             { to: "/settings/categories", label: "Categories" },
             { to: "/settings/payment-methods", label: "Payment methods" },
+            { to: "/settings/tags", label: "Tags" },
           ].map((l) => (
             <li key={l.to}>
               <Link
