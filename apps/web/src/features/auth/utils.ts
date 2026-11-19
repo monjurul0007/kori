@@ -23,7 +23,7 @@ export function loginErrorMessage(error: unknown): string {
 /** A `next` target is only honoured when it is a same-origin path. */
 export function safeNext(next: string | null): string {
   if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
-    return "/transactions";
+    return "/dashboard";
   }
   return next;
 }
