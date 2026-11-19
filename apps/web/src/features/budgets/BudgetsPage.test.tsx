@@ -213,3 +213,84 @@ describe("BudgetsPage", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Amount is too large");
   });
 });
+
+describe("BudgetsPage edge cases", () => {
+  it("uses the month in the URL for every request", async () => {
+    mockApi();
+    const months: string[] = [];
+    server.use(
+      http.get("*/api/v1/budgets", ({ request }) => {
+        months.push(new URL(request.url).searchParams.get("month") ?? "");
+        return HttpResponse.json({ month: "", overall: null, categories: [] });
+      }),
+    );
+    const month = addMonths(THIS_MONTH, 2);
+    renderApp(`/budgets?month=${month}`);
+    await screen.findByRole("heading", { name: "No budget" });
+    expect(months).toContain(month);
+    // A future month is editable, so there is no read-only note.
+    expect(screen.queryByText(/Past months are read-only/)).not.toBeInTheDocument();
+  });
+
+  it("falls back to the current month for a bad ?month=", async () => {
+    mockApi();
+    renderApp("/budgets?month=nonsense");
+    await screen.findByRole("heading", { name: "No budget" });
+    expect(screen.queryByText(/nonsense/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous month" })).toBeInTheDocument();
+  });
+
+  it("offers to set an overall limit when none is set and no category has a budget", async () => {
+    mockApi();
+    renderApp("/budgets");
+    expect(await screen.findByRole("button", { name: "Set overall limit" })).toBeInTheDocument();
+    expect(screen.getByText("No category budgets yet.")).toBeInTheDocument();
+  });
+
+  it("shows an over-budget row as over, with the amount over", async () => {
+    mockApi({
+      budgeted: [
+        { cat: food, limit: "1000.00", spent: "1200.00", percent: "120.0", level: "over" },
+      ],
+    });
+    renderApp("/budgets");
+    expect(await screen.findByText("৳1,200 spent · ৳200 over")).toBeInTheDocument();
+    const bar = screen.getByRole("progressbar", { name: "Food budget used" });
+    expect(bar).toHaveAttribute("aria-valuenow", "100");
+    expect(bar).toHaveAttribute("aria-valuetext", "120% used");
+  });
+
+  it("shows the sheet copy for the chosen month", async () => {
+    mockApi();
+    renderApp("/budgets");
+    await userEvent.click(await screen.findByRole("button", { name: "Set Food budget" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent(/Food budget/);
+    expect(screen.getByText(/Applies from .* onward/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remove budget" })).not.toBeInTheDocument();
+  });
+
+  it("refreshes the dashboard's budget status after saving", async () => {
+    mockApi();
+    let statusCalls = 0;
+    server.use(
+      http.get("*/api/v1/reports/budget-status", () => {
+        statusCalls += 1;
+        return HttpResponse.json({
+          month: THIS_MONTH,
+          days_elapsed: 1,
+          days_in_month: 30,
+          days_left: 29,
+          unbudgeted: { spent: "0.00" },
+          overall: null,
+          categories: [],
+        });
+      }),
+    );
+    renderApp("/budgets");
+    await userEvent.click(await screen.findByRole("button", { name: "Set Food budget" }));
+    await userEvent.type(screen.getByLabelText(/Monthly limit/), "100");
+    const before = statusCalls;
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(statusCalls).toBeGreaterThan(before));
+  });
+});

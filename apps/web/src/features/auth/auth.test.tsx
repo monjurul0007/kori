@@ -50,6 +50,27 @@ describe("login", () => {
     expect(await screen.findByText("Demo User")).toBeInTheDocument();
   });
 
+  it("lands on the dashboard when there is no next", async () => {
+    let signedIn = false;
+    server.use(
+      http.get("*/api/v1/auth/me", () =>
+        signedIn ? HttpResponse.json(user) : problem(401, "Unauthorized", "Not signed in"),
+      ),
+      http.post("*/api/v1/auth/login", () => {
+        signedIn = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+      http.get("*/api/v1/reports/*", () => HttpResponse.json({}, { status: 500 })),
+      http.get("*/api/v1/transactions", () =>
+        HttpResponse.json({ items: [], next_cursor: null, totals: {} }),
+      ),
+    );
+    const { router } = renderApp("/login");
+    await fillAndSubmit();
+    await waitFor(() => expect(router.state.location.pathname).toBe("/dashboard"));
+    expect(await screen.findByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+  });
+
   it("shows a message for 401", async () => {
     server.use(
       loggedOut(),
@@ -137,9 +158,9 @@ describe("route guard and logout", () => {
 describe("safeNext", () => {
   it.each([
     ["/settings", "/settings"],
-    ["//evil.example", "/transactions"],
-    ["https://evil.example", "/transactions"],
-    [null, "/transactions"],
+    ["//evil.example", "/dashboard"],
+    ["https://evil.example", "/dashboard"],
+    [null, "/dashboard"],
   ])("%s -> %s", (input, expected) => {
     expect(safeNext(input)).toBe(expected);
   });
