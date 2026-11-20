@@ -48,6 +48,7 @@ def to_out(tx: Transaction) -> TransactionOut:
         tags=[tag.name for tag in tx.tags],
         is_split=len(tx.lines) > 1,
         source=tx.source,
+        recurring_rule_id=tx.recurring_rule_id,
         created_at=tx.created_at,
         updated_at=tx.updated_at,
     )

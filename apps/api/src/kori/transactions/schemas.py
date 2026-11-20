@@ -94,6 +94,7 @@ class TransactionOut(BaseModel):
     tags: list[str]
     is_split: bool
     source: TransactionSource
+    recurring_rule_id: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
 

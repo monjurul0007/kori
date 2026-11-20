@@ -15,6 +15,7 @@ export const makeTx = (id: string, over: Partial<Transaction> = {}): Transaction
   tags: [],
   is_split: false,
   source: "manual",
+  recurring_rule_id: null,
   created_at: "2026-09-10T00:00:00Z",
   updated_at: "2026-09-10T00:00:00Z",
   ...over,
