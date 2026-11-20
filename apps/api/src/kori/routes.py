@@ -7,6 +7,7 @@ from kori.budgets.router import router as budgets_router
 from kori.categories.router import router as categories_router
 from kori.health.router import router as health_router
 from kori.payment_methods.router import router as payment_methods_router
+from kori.recurring.router import router as recurring_router
 from kori.reports.router import router as reports_router
 from kori.tags.router import router as tags_router
 from kori.transactions.router import router as transactions_router
@@ -22,6 +23,7 @@ ROUTERS: list[APIRouter] = [
     tags_router,
     transactions_router,
     reports_router,
+    recurring_router,
 ]
 
 

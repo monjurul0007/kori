@@ -115,6 +115,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
     const preview: Transaction = {
       id: edit?.id ?? `pending-${crypto.randomUUID()}`,
       source: edit?.source ?? "manual",
+      recurring_rule_id: edit?.recurring_rule_id ?? null,
       created_at: edit?.created_at ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
       is_split: split,
