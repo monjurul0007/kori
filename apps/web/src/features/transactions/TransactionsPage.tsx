@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
@@ -16,7 +16,7 @@ import { MonthSwitcher } from "./MonthSwitcher";
 import { SearchInput } from "./SearchInput";
 import { TotalsBar } from "./TotalsBar";
 import type { Transaction } from "./TransactionRow";
-import { useFilters } from "./filters";
+import { exportHref, useFilters } from "./filters";
 import { useCategories, usePaymentMethods, useTransactions } from "./hooks";
 
 function RemovableChip({ label, onRemove }: { label: string; onRemove: () => void }) {
@@ -84,7 +84,17 @@ export function TransactionsPage() {
 
   return (
     <>
-      <PageHeader title="Transactions" />
+      <PageHeader
+        title="Transactions"
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <a href={exportHref(filters)} download>
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Export CSV
+            </a>
+          </Button>
+        }
+      />
       <div className="space-y-3">
         <MonthSwitcher month={filters.month} onChange={(month) => update({ month })} />
         <div className="flex items-center gap-2">
