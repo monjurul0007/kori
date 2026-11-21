@@ -56,3 +56,15 @@ export function useFilters() {
 
   return { filters, update };
 }
+
+/** Same-origin link to the CSV export for the current filters (the session cookie goes along). */
+export function exportHref(filters: Filters): string {
+  const query = new URLSearchParams({ month: filters.month });
+  if (filters.type) query.set("type", filters.type);
+  filters.categoryIds.forEach((id) => query.append("category_id", id));
+  if (filters.paymentMethodId) query.set("payment_method_id", filters.paymentMethodId);
+  if (filters.tag) query.set("tag", filters.tag);
+  const q = filters.q.trim();
+  if (q.length >= 2) query.set("q", q);
+  return `/api/v1/transactions/export.csv?${query}`;
+}

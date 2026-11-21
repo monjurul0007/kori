@@ -3,6 +3,7 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from kori.auth.deps import CurrentUser
@@ -11,7 +12,7 @@ from kori.common.enums import TransactionType
 from kori.common.money import format_taka
 from kori.db.session import get_db
 from kori.tags.schemas import normalize_tag_name
-from kori.transactions import service
+from kori.transactions import csv_export, service
 from kori.transactions.models import Transaction
 from kori.transactions.schemas import (
     LineOut,
@@ -53,6 +54,38 @@ def to_out(tx: Transaction) -> TransactionOut:
     )
 
 
+def build_filters(
+    month: str | None,
+    date_from: date | None,
+    date_to: date | None,
+    type: TransactionType | None,
+    category_id: list[uuid.UUID] | None,
+    payment_method_id: uuid.UUID | None,
+    tag: str | None,
+    q: str | None,
+) -> service.TransactionFilters:
+    date_from, date_to = resolve_date_range(month, date_from, date_to)
+    return service.TransactionFilters(
+        date_from=date_from,
+        date_to=date_to,
+        type=type,
+        category_ids=category_id or [],
+        payment_method_id=payment_method_id,
+        tag=normalize_tag_name(tag) if tag else None,
+        q=q,
+    )
+
+
+def _export_filename(month: str | None, f: service.TransactionFilters) -> str:
+    if month:
+        span = month
+    elif f.date_from or f.date_to:
+        span = f"{f.date_from or 'start'}-to-{f.date_to or 'today'}"
+    else:
+        span = "all"
+    return f"kori-transactions-{span}.csv"
+
+
 @router.get("")
 def list_transactions(
     user: CurrentUser,
@@ -70,21 +103,40 @@ def list_transactions(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     cursor: str | None = None,
 ) -> TransactionPage:
-    date_from, date_to = resolve_date_range(month, date_from, date_to)
-    filters = service.TransactionFilters(
-        date_from=date_from,
-        date_to=date_to,
-        type=type,
-        category_ids=category_id or [],
-        payment_method_id=payment_method_id,
-        tag=normalize_tag_name(tag) if tag else None,
-        q=q,
-    )
+    filters = build_filters(month, date_from, date_to, type, category_id, payment_method_id, tag, q)
     result = service.list_transactions(db, user, filters, cursor, limit)
     return TransactionPage(
         items=[to_out(tx) for tx in result.items],
         next_cursor=result.next_cursor,
         totals=result.totals,
+    )
+
+
+@router.get("/export.csv")
+def export_transactions(
+    user: CurrentUser,
+    db: Db,
+    month: Annotated[
+        str | None, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$", examples=["2026-09"])
+    ] = None,
+    date_from: Annotated[date | None, Query(alias="from")] = None,
+    date_to: Annotated[date | None, Query(alias="to")] = None,
+    type: TransactionType | None = None,
+    category_id: Annotated[list[uuid.UUID] | None, Query()] = None,
+    payment_method_id: uuid.UUID | None = None,
+    tag: Annotated[str | None, Query(max_length=200)] = None,
+    q: Annotated[str | None, Query(min_length=2, max_length=100)] = None,
+) -> StreamingResponse:
+    """Every matching transaction as CSV, oldest first. Same filters as the list, no paging."""
+    filters = build_filters(month, date_from, date_to, type, category_id, payment_method_id, tag, q)
+    rows = service.export_transactions(db, user, filters)
+    return StreamingResponse(
+        csv_export.encode_rows(rows),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{_export_filename(month, filters)}"',
+            "Cache-Control": "no-store",
+        },
     )
 
 
