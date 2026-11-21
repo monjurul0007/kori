@@ -50,6 +50,18 @@ describe("transactions list", () => {
     expect(screen.getByText("৳749.50")).toBeInTheDocument(); // net, exact
   });
 
+  it("exports with the current filters", async () => {
+    mockApi(() => page([tx("a")]));
+    renderApp("/transactions?month=2026-09&type=expense&tag=eid");
+    const link = await screen.findByRole("link", { name: /export csv/i });
+    expect(link).toHaveAttribute("download");
+    const href = new URL(link.getAttribute("href") ?? "", "http://localhost");
+    expect(href.pathname).toBe("/api/v1/transactions/export.csv");
+    expect(href.searchParams.get("month")).toBe("2026-09");
+    expect(href.searchParams.get("type")).toBe("expense");
+    expect(href.searchParams.get("tag")).toBe("eid");
+  });
+
   it("labels splits and styles income", async () => {
     mockApi(() =>
       page([

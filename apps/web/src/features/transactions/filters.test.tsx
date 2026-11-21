@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 
-import { useFilters } from "./filters";
+import { exportHref, useFilters } from "./filters";
 
 const wrap = (path: string) =>
   function Wrapper({ children }: { children: ReactNode }) {
@@ -71,5 +71,31 @@ describe("useFilters", () => {
     expect(new URLSearchParams(result.current.location.search).getAll("category_id")).toEqual([
       "b",
     ]);
+  });
+});
+
+describe("exportHref", () => {
+  it("carries the current filters to the export endpoint", () => {
+    const href = exportHref({
+      month: "2026-09",
+      type: "expense",
+      categoryIds: ["c1", "c2"],
+      paymentMethodId: "pm1",
+      tag: "eid",
+      q: " rent ",
+    });
+    const url = new URL(href, "http://localhost");
+    expect(url.pathname).toBe("/api/v1/transactions/export.csv");
+    expect(url.searchParams.get("month")).toBe("2026-09");
+    expect(url.searchParams.get("type")).toBe("expense");
+    expect(url.searchParams.getAll("category_id")).toEqual(["c1", "c2"]);
+    expect(url.searchParams.get("payment_method_id")).toBe("pm1");
+    expect(url.searchParams.get("tag")).toBe("eid");
+    expect(url.searchParams.get("q")).toBe("rent");
+  });
+
+  it("leaves out empty and too-short filters", () => {
+    const href = exportHref({ month: "2026-09", categoryIds: [], q: "a" });
+    expect(href).toBe("/api/v1/transactions/export.csv?month=2026-09");
   });
 });

@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
@@ -297,3 +298,54 @@ def list_transactions(
         expense=format_taka(int(expense_sum)), income=format_taka(int(income_sum)), count=count
     )
     return TransactionPageResult(items=items, next_cursor=next_cursor, totals=totals)
+
+
+@dataclass
+class ExportRow:
+    """One transaction as plain strings, ready to be written as a CSV row."""
+
+    date: str
+    type: str
+    amount: str
+    category: str
+    merchant: str
+    note: str
+    payment_method: str
+    tags: str
+    source: str
+    id: str
+
+
+EXPORT_BATCH = 500
+
+
+def _category_label(tx: Transaction) -> str:
+    if len(tx.lines) > 1:
+        parts = "; ".join(f"{ln.category.name} {format_taka(ln.amount_minor)}" for ln in tx.lines)
+        return f"Split: {parts}"
+    return tx.lines[0].category.name if tx.lines else ""
+
+
+def export_transactions(
+    db: Session, user: User, filters: TransactionFilters
+) -> Iterator[ExportRow]:
+    """Every match, oldest first, fetched in batches so memory stays flat."""
+    stmt = (
+        select(Transaction)
+        .where(*_conditions(user, filters))
+        .order_by(Transaction.occurred_on, Transaction.created_at, Transaction.id)
+        .execution_options(yield_per=EXPORT_BATCH)
+    )
+    for tx in db.scalars(stmt):
+        yield ExportRow(
+            date=tx.occurred_on.isoformat(),
+            type=tx.type.value,
+            amount=format_taka(tx.amount_minor),
+            category=_category_label(tx),
+            merchant=tx.merchant or "",
+            note=tx.note or "",
+            payment_method=tx.payment_method.name if tx.payment_method else "",
+            tags=";".join(t.name for t in tx.tags),
+            source=tx.source.value,
+            id=str(tx.id),
+        )
