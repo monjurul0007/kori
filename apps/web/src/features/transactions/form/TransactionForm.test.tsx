@@ -63,6 +63,25 @@ function mockApi(items: Transaction[] = []) {
 }
 
 describe("transaction form", () => {
+  it("fails fast when offline and keeps what was typed", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "300");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
+    const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("You're offline.");
+    expect(state.posted).toHaveLength(0);
+    expect(within(dialog).getByLabelText("Amount (৳)")).toHaveValue("300");
+    // Back online, the same form saves without retyping.
+    online.mockReturnValue(true);
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    online.mockRestore();
+  });
+
   it("logs an expense with amount, category, save", async () => {
     const state = mockApi();
     renderApp(`/transactions?month=${month}`);
