@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
 import "./index.css";
+import { listenForInstall } from "./pwa/installStore";
+
+listenForInstall();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element");

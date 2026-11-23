@@ -5,12 +5,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks";
 import { useSession } from "@/features/auth/session";
+import { useInstallPrompt } from "@/pwa/useInstallPrompt";
 import { toastError } from "@/lib/toast";
 
 export function SettingsPage() {
   const { user } = useSession();
   const navigate = useNavigate();
   const logout = useLogout();
+  const install = useInstallPrompt();
 
   return (
     <>
@@ -52,6 +54,16 @@ export function SettingsPage() {
           ))}
         </ul>
       </section>
+      {install.canPrompt && (
+        <section aria-labelledby="install-heading" className="mb-6">
+          <h2 id="install-heading" className="mb-2 font-medium">
+            App
+          </h2>
+          <Button variant="outline" className="h-11" onClick={() => void install.prompt()}>
+            Install Kori
+          </Button>
+        </section>
+      )}
       <Button
         variant="outline"
         className="h-11"

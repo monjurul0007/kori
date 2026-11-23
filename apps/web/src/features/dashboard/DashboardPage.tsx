@@ -1,6 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 
 import { PageHeader } from "@/components/layout/PageHeader";
+import { InstallCard } from "@/pwa/InstallCard";
 import { monthOf, todayInDhaka } from "@/lib/dates";
 
 import { MonthSwitcher } from "../transactions/MonthSwitcher";
@@ -21,6 +22,7 @@ export function DashboardPage() {
     <>
       <PageHeader title="Dashboard" />
       <div className="space-y-3">
+        <InstallCard />
         <MonthSwitcher month={month} onChange={(m) => setParams({ month: m })} />
         <div className="grid gap-3 md:grid-cols-2">
           <BudgetSummaryCard month={month} />

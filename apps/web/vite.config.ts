@@ -10,8 +10,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // The service worker re-checks for a new version on every page load and activates it.
-      registerType: "autoUpdate",
+      // A waiting service worker shows an update toast; the Reload button activates it.
+      registerType: "prompt",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
         name: "Kori",
@@ -35,7 +35,7 @@ export default defineConfig({
       workbox: {
         // App shell only: no runtime caching, and /api is never answered by the shell.
         globPatterns: ["**/*.{js,css,html,png,svg,webmanifest}"],
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/internal\//],
       },
     }),
   ],

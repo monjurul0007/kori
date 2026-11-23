@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { todayInDhaka } from "@/lib/dates";
 import { parseTakaInput } from "@/lib/money";
+import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 import { toastError } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -95,6 +96,11 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
     );
 
   const submit = handleSubmit(async (v) => {
+    if (!navigator.onLine) {
+      // Fail fast and keep what was typed; nothing is reset.
+      setFormError(OFFLINE_MESSAGE);
+      return;
+    }
     setFormError(undefined);
     const amount = parseTakaInput(v.amount) ?? v.amount;
     const lines = v.lines.map((l) => ({
@@ -157,6 +163,11 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
 
   const onDelete = async () => {
     if (!edit) return;
+    if (!navigator.onLine) {
+      setConfirming(false);
+      setFormError(OFFLINE_MESSAGE);
+      return;
+    }
     try {
       await remove.mutateAsync({ body: {} as TransactionBody, preview: edit });
       onDone();
