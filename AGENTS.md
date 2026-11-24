@@ -47,6 +47,8 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 4. **Implement only what is in scope.** If you find necessary work outside the scope, don't do it.
    Describe it in the PR and suggest a new card.
 5. **Run all checks locally** (see Commands) until they're green. Don't push red code.
+   Then **review your own diff** against "Code quality" below, as the owner's reviewer will. Fix
+   what you find before pushing.
 6. **Commit** using Conventional Commits (see CONTRIBUTING).
 7. **Push and open the PR** from the template:
    - the title is the card's PR title
@@ -74,6 +76,66 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 - **Errors:** RFC 9457 `application/problem+json`, always including `request_id`.
 - **AI:** the AI never writes directly. Writes are proposals the user confirms, and AI-set fields
   are marked (`source` / `category_source`).
+
+## Code quality
+
+The linters (ruff, mypy `strict`, ESLint, Prettier, `tsc`) catch formatting and many bugs. These
+rules cover what they can't. Match the surrounding code first: copy the existing module layout and
+naming before inventing a new one. The Kori Code Reviewer checks these too.
+
+**Readable**
+- **Names say what a thing is or does.** Use full words and domain terms (`poisha`, `occurred_on`,
+  `category`), not `data`, `tmp`, `val`, `mgr` or one-letter names outside tiny loops. Functions are
+  verbs, booleans read as questions (`is_active`, `has_budget`).
+- **Small functions that do one thing**, at one level of detail. If you need "and" to describe a
+  function, or a comment to explain a block, extract a named function instead.
+- **Keep nesting shallow.** Use early returns and guard clauses. Avoid more than 3 levels of
+  indentation and long boolean expressions; give conditions a name.
+- **No magic numbers or strings.** Name constants (`MAX_MONTHS_AHEAD`) and use the enums in
+  `kori/common/enums.py`.
+- **Comments explain why, not what.** Never leave commented-out code, stray `print` or
+  `console.log` calls, or `TODO`s without a card reference.
+
+**Structured**
+- **Follow the layers.** API: `router.py` (HTTP only) → `service.py` (business rules, all DB access)
+  → `models.py`; request and response shapes in `schemas.py`. Routers never query the DB, and
+  services never import FastAPI. Web: pages in `features/<name>/`, shared UI in
+  `components/`, pure helpers in `lib/`, server calls through hooks (`hooks.ts`) and the generated
+  client in `src/api`.
+- **Reuse before you add.** Search for an existing helper first (`kori/common/` for money, dates,
+  errors and pagination; `src/lib/` and `components/ui/` on the web). Don't copy-paste a block a
+  third time: extract it. But don't build an abstraction for a single use either.
+- **Keep files and components focused.** If a file passes roughly 300 lines or a component mixes
+  data fetching, state and layout, split it by responsibility. Don't split just to hit a number.
+- **Types carry the rules.** Python is fully typed with no `Any` and no bare `# type: ignore`. TypeScript has
+  no `any`, no non-null `!` assertions to silence the compiler, and no unchecked `as` casts; derive
+  types from the generated API client instead of retyping them. Make impossible states
+  unrepresentable (enums or unions, not loose strings and booleans).
+
+**Safe**
+- **Handle errors on purpose.** No bare `except:` or `except Exception: pass`, no empty `catch`
+  blocks, no fallback that hides a failure. Raise the typed errors in `kori/common/errors.py` so the
+  API returns `problem+json`. On the web, show the user an error state; never swallow a failed
+  request.
+- **Validate at the edge.** Parse and validate input once, in the schema. Inside the service layer,
+  trust typed values, and never build SQL from strings. Use SQLAlchemy expressions.
+- **No hidden side effects.** Keep functions pure where you can, don't mutate arguments, and keep
+  I/O in the service layer (API) or in hooks (web). No module-level state or singletons that tests
+  have to reset.
+- **Don't log secrets, tokens or personal data.**
+
+**Tested and maintainable**
+- **Tests describe behaviour.** Name them for what should happen (`test_other_users_budget_returns_404`),
+  one behaviour per test, with no logic in the test, and no snapshot tests. A test must fail if the
+  change it covers is removed. Cover the failure and boundary cases, not only the happy path, and
+  money rounding at 2 decimals.
+- **Don't change behaviour while refactoring.** Make refactors a separate commit, and only inside
+  the card's scope. Leave code better than you found it in the lines you touch, but don't clean up
+  unrelated code in the same PR; suggest a card instead.
+- **Dependencies are a decision.** Don't add a library for something the standard library or an
+  existing dependency does. A new dependency needs a line in the PR explaining why.
+- **Docs follow code.** Update the docs, ADR, `openapi.json` and regenerated client in the same PR
+  when behaviour or an API changes.
 
 ## Conventions
 
