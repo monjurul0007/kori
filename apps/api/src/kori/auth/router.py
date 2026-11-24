@@ -1,6 +1,7 @@
 import uuid
 from typing import Annotated
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
@@ -10,7 +11,9 @@ from kori.auth.cookies import clear_session_cookie, get_token, set_session_cooki
 from kori.auth.deps import CurrentUser
 from kori.config import Settings
 from kori.db.session import get_db
+from kori.recurring.materializer import materialize_due, today_for
 
+log = structlog.get_logger()
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -64,5 +67,11 @@ def logout(request: Request, db: Annotated[Session, Depends(get_db)]) -> Respons
 
 
 @router.get("/me")
-def me(user: CurrentUser) -> UserOut:
+def me(user: CurrentUser, db: Annotated[Session, Depends(get_db)]) -> UserOut:
+    # ADR-0006: opening the app catches up on recurring rules a missed cron left behind.
+    # One indexed query when nothing is due; it must never break the session bootstrap.
+    try:
+        materialize_due(db, user, today_for(user))
+    except Exception:
+        log.exception("recurring_catch_up_failed")
     return UserOut.model_validate(user)

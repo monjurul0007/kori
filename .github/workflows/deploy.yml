@@ -105,12 +105,15 @@ jobs:
         env:
           KORI_DATABASE_URL: ${{ secrets.KORI_DATABASE_URL }}
           KORI_APP_ORIGIN: ${{ vars.KORI_APP_ORIGIN }}
+          KORI_JOB_TOKEN: ${{ secrets.KORI_JOB_TOKEN }}
         run: |
           umask 077
           test -n "$KORI_DATABASE_URL" && test -n "$KORI_APP_ORIGIN"
           case "$KORI_DATABASE_URL" in *sslmode=require*) ;; *) echo "::error::KORI_DATABASE_URL needs sslmode=require"; exit 1 ;; esac
-          jq -n --arg db "$KORI_DATABASE_URL" --arg origin "$KORI_APP_ORIGIN" \
-            '{KORI_ENV: "production", KORI_DATABASE_URL: $db, KORI_APP_ORIGIN: $origin, WEB_CONCURRENCY: "1"}' \
+          # KORI_JOB_TOKEN is optional: without it POST /internal/jobs/tick answers 404 (ADR-0006).
+          jq -n --arg db "$KORI_DATABASE_URL" --arg origin "$KORI_APP_ORIGIN" --arg job "$KORI_JOB_TOKEN" \
+            '{KORI_ENV: "production", KORI_DATABASE_URL: $db, KORI_APP_ORIGIN: $origin, WEB_CONCURRENCY: "1"}
+              + (if $job == "" then {} else {KORI_JOB_TOKEN: $job} end)' \
             > "$RUNNER_TEMP/env.json"
 
       # Migrations run first, as a one-off job. If it fails, this step fails, the deploy below never

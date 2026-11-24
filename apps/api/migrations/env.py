@@ -6,6 +6,7 @@ from kori.budgets import models as _budgets  # noqa: F401
 from kori.categories import models as _categories  # noqa: F401
 from kori.config import get_settings
 from kori.db.base import Base
+from kori.jobs import models as _jobs  # noqa: F401
 from kori.payment_methods import models as _payment_methods  # noqa: F401
 from kori.recurring import models as _recurring  # noqa: F401
 from kori.tags import models as _tags  # noqa: F401
