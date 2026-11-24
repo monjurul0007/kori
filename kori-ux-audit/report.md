@@ -5,6 +5,10 @@
 - **Test account:** test@gmail.com
 - **Trello:** board "Kori" → list **🐞 Triage / Bugs**: 49 cards (36 issues + 13 design/modernisation/best-practice tickets)
 - **Design concept** (private until you share it): https://claude.ai/artifact/HYiSuqv16Dn7MLt93mEyec. Local copy: `kori-ux-audit/design-concept/`
+  - **Version 2:** every screen at desktop and phone size, in light and dark.
+  - **Screens:** Login, Dashboard, first run, Transactions, Add transaction, Budgets, the four Settings pages, and 404.
+  - **Logo:** three new directions (Coin K recommended). The cowrie mark was dropped at your request.
+  - **Palette:** "Neel and Gada", indigo and marigold, with no green.
 - **Running log:** `kori-ux-audit/findings.md`
 - **Screenshots:** `kori-ux-audit/screens/`
 
@@ -77,8 +81,8 @@ Comments with extra evidence were added to #3, #4, #7, #17 and #19 instead of cr
 ### Design improvement, modernization and best-practice tickets (13)
 | # | Title | Severity | Type | Link |
 |---|---|---|---|---|
-| 37 | [Medium] [Brand] Replace the font-dependent "K" app icon with a cowrie-shell logo mark and wordmark | Medium | Design improvement | https://trello.com/c/uhmhZld5 |
-| 38 | [Medium] [Design system] Refresh the colour theme and define semantic tokens for light and dark | Medium | Design improvement | https://trello.com/c/E1vrnG62 |
+| 37 | [Medium] [Brand] Replace the font-dependent "K" app icon with a new logo (Coin K recommended) | Medium | Design improvement | https://trello.com/c/uhmhZld5 |
+| 38 | [Medium] [Design system] Replace the green theme with the "Neel and Gada" palette and define semantic tokens | Medium | Design improvement | https://trello.com/c/E1vrnG62 |
 | 39 | [Medium] [Design system] Adopt a Bangla-ready typeface pair, with wide display figures for money | Medium | Design improvement | https://trello.com/c/rIHN2GES |
 | 40 | [Medium] [Design system] Write DESIGN.md and consolidate shared components | Medium | Best practice | https://trello.com/c/VMR7UVAk |
 | 41 | [Medium] [Dashboard] Redesign the dashboard around "Left to spend this month" | Medium | Design improvement | https://trello.com/c/JTUER2AI |

@@ -81,12 +81,12 @@ Modals / sheets: TransactionSheet (add/edit, splits, tags, date quick-pick, paym
 Comments added to existing cards: #7 hJsyKlt3 (Budgets also shows "Value error"), #17 sJwU4O5o (Budget sheet also a full-width bottom sheet), #3 KWISRgGu (no toast after budget save/remove; timings), #19 hIzqrdCy (clarifies the overall-budget case).
 
 ## Design improvement / modernization / best-practice tickets (requested mid-audit)
-Concept page (private artifact): https://claude.ai/artifact/HYiSuqv16Dn7MLt93mEyec. Local copy: `kori-ux-audit/design-concept/index.html`, with renders `concept-desktop-light.png` and `concept-mobile-dark.png`.
+Concept page (private artifact): https://claude.ai/artifact/HYiSuqv16Dn7MLt93mEyec. **Version 2 (2026-11-24):** the owner disliked the cowrie logo and asked to drop green and refresh every page. It now shows 3 logo directions (Coin K recommended), the "Neel and Gada" indigo/marigold palette, 9 desktop frames and 10 phone screens, with a light/dark switch. Trello cards uhmhZld5 and E1vrnG62 were rewritten; comments were added to NUzZBvyV, vDKK9R6H and kcUkxUuR. Local copy: `kori-ux-audit/design-concept/index.html`, with renders `concept-desktop-light.png` and `concept-mobile-dark.png`.
 
 | # | Title | Severity | Type | Trello |
 |---|---|---|---|---|
-| 37 | [Medium] [Brand] Replace the font-dependent "K" app icon with a cowrie-shell logo mark and wordmark | Medium | Design improvement | https://trello.com/c/uhmhZld5 |
-| 38 | [Medium] [Design system] Refresh the colour theme and define semantic tokens for light and dark | Medium | Design improvement | https://trello.com/c/E1vrnG62 |
+| 37 | [Medium] [Brand] Replace the font-dependent "K" app icon with a new logo (Coin K recommended) | Medium | Design improvement | https://trello.com/c/uhmhZld5 |
+| 38 | [Medium] [Design system] Replace the green theme with the "Neel and Gada" palette and define semantic tokens | Medium | Design improvement | https://trello.com/c/E1vrnG62 |
 | 39 | [Medium] [Design system] Adopt a Bangla-ready typeface pair, with wide display figures for money | Medium | Design improvement | https://trello.com/c/rIHN2GES |
 | 40 | [Medium] [Design system] Write DESIGN.md and consolidate shared components | Medium | Best practice | https://trello.com/c/VMR7UVAk |
 | 41 | [Medium] [Dashboard] Redesign the dashboard around "Left to spend this month" | Medium | Design improvement | https://trello.com/c/JTUER2AI |
