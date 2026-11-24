@@ -30,7 +30,9 @@ def upgrade() -> None:
         sa.Column("failed", sa.Integer(), nullable=False),
         sa.Column("duration_ms", sa.Integer(), nullable=False),
         sa.CheckConstraint(
-            "failed >= 0 AND created >= 0", name=op.f("ck_job_runs_counts_non_negative")
+            "rules_scanned >= 0 AND created >= 0 AND skipped >= 0 AND failed >= 0"
+            " AND duration_ms >= 0",
+            name=op.f("ck_job_runs_counts_non_negative"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_job_runs")),
     )

@@ -46,6 +46,7 @@ def no_token_client(db: Session) -> Iterator[TestClient]:
 def _clock(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(tx_service, "_today", lambda user: TODAY)
     monkeypatch.setattr(materializer, "today_for", lambda user: TODAY)
+    monkeypatch.setattr("kori.auth.router.today_for", lambda user: TODAY)  # imported by name
 
 
 def test_right_token_runs_the_tick_and_returns_the_summary(

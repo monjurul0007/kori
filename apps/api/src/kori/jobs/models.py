@@ -16,7 +16,13 @@ class JobRun(Base):
     """
 
     __tablename__ = "job_runs"
-    __table_args__ = (CheckConstraint("failed >= 0 AND created >= 0", name="counts_non_negative"),)
+    __table_args__ = (
+        CheckConstraint(
+            "rules_scanned >= 0 AND created >= 0 AND skipped >= 0 AND failed >= 0"
+            " AND duration_ms >= 0",
+            name="counts_non_negative",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=UUID_PK_DEFAULT

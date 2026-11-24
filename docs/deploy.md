@@ -111,6 +111,11 @@ the `production` GitHub environment (the same value reaches Cloud Run on the nex
 openssl rand -base64 32   # at least 32 characters; never commit it or paste it into a chat
 ```
 
+Like `KORI_DATABASE_URL`, the token reaches Cloud Run as a plain environment variable written by
+`deploy.yml`, not as a Secret Manager reference. ADR-0006 says "Cloud Run secret"; this is the same
+mechanism the app already uses for its other secret, and moving both to Secret Manager would be its
+own card.
+
 Without it the endpoint answers 404 and the workflow fails, so recurring rules only catch up when
 you open the app. Run the workflow once by hand after the deploy and check the JSON it prints
 (`created`, `failed`, `previous_run_at`). Run it a second time: `created` must be `0`.
