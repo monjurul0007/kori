@@ -164,3 +164,53 @@ The owner approved the refresh and asked for implementation cards the Kori Engin
   - when a DR card merges, the audit cards it resolves move to Done
   - The routine card (dvZifuoD) and "How we work" (h4Mm3VqB) were updated to match.
 - **Keep branch `claude/focused-wright-iatxgr`** until DR-01 merges; it holds the materials.
+
+## Bug track, run in parallel (2026-11-24, later the same day)
+The owner asked for the Triage findings to be turned into cards the routine picks up **in parallel** with milestone and design work. This replaces the "Planned in DR-xx" plan for 29 of the 36 findings. **Where this section and the DR table above differ, this section wins.**
+
+**Ownership rule:** every audit finding has exactly one owner.
+- A **BUG card** owns a finding when the behaviour fix should land now and survive the redesign. Its "Closes" list names the findings.
+- A **DR card** owns a finding when the finding is purely visual. Its "Resolves" list names the findings.
+
+### BUG cards (top of "🐞 Triage / Bugs", all "Blocked by: none")
+| Card | Fix | Review | Closes (audit cards) | DR cards that wait for it |
+|---|---|---|---|---|
+| BUG-01 https://trello.com/c/J59pboY0 | discard guard + sticky Save in the transaction sheet | read | Ma6z3Yfn, si4kFUcH | DR-07 |
+| BUG-02 https://trello.com/c/wcbgfxOd | "Add one" uses the viewed month's date; none for future months | skim | WZlzL0qv | DR-07 |
+| BUG-03 https://trello.com/c/oge2RE8t | labelled day totals that include income | skim | 9bObm26U | DR-11 |
+| BUG-04 https://trello.com/c/Woj9G9EN | name limits 50/40 with field errors | skim | rQCXvk7N | DR-14 |
+| BUG-05 https://trello.com/c/AVybW9jA | search empty states, 1-char hint, keepPreviousData | read | akvTYrVH, aWn28l4Y, 1rBVkCLf | DR-11 |
+| BUG-06 https://trello.com/c/i3JsYjdz | save/edit/delete toasts (Undo on create), focus to Cancel, "Deleting…" | read | KWISRgGu, 5BcZbPOU, PewFRAmt | DR-07, DR-08 |
+| BUG-07 https://trello.com/c/ecZ8fmAT | real "Page not found" route | skim | VbiF8mCu | DR-05 |
+| BUG-08 https://trello.com/c/FnRWRGEd | page titles, skip link, focus on navigation, settings Back | read | Z6JpcC5e, Ad6KB5xx, UMBnOcqJ | DR-05 |
+| BUG-09 https://trello.com/c/UnO8n68N | login a11y, friendly copy, show/hide, forgot-password help | read | sr9qITy2, C2NEUSve, shfVcgPb, KzXTSKs9 | DR-15 |
+| BUG-10 https://trello.com/c/ehdjHXIf | shared `validateAmount` for transaction and budget forms | skim | hJsyKlt3, jMUGveTv | DR-04 |
+| BUG-11 https://trello.com/c/SBb3xMu3 | budget remove confirm + Undo, save toast, "Overall" once | read | 6nCzKgv3, yTinCNEe | DR-12 |
+| BUG-12 https://trello.com/c/YCnp1ggR | tag combobox suggestions, normalised chips (keeps PR #39) | read | ZJC15AHr, YHZTqceM | DR-08 |
+| BUG-13 https://trello.com/c/pPoxN17g | CardTitle as h2, `lang="bn"` | skim | wdAcXdeP, yyybM8Tf | DR-18 |
+| BUG-14 https://trello.com/c/AyTmathb | 44px close, 32px chip remove, Show archived row | skim | mrxuDHHz | DR-18 |
+| BUG-15 https://trello.com/c/PDQxaJNJ | no sideways scroll at 768px | skim | oVYDSBW4 | DR-18 |
+
+### DR cards that kept their findings
+These 7 findings stay with DR cards: vDKK9R6H (DR-02), LcnWdE8e (DR-06), hIzqrdCy and DMnxPczY (DR-09), IY2YQgo6 (DR-10), and PtcVc4gz and sJwU4O5o (DR-14). The 13 design proposals (#37–49) also stay with their DR cards.
+
+### Changes to the DR cards
+DR-02, 03, 04, 05, 07, 08, 10, 11, 12, 14, 15 and 18 were rewritten:
+- **Resolves lists:** findings now owned by a BUG card were removed.
+- **Blocked by:** each card now also lists the BUG cards it waits for, from the table above. DR-04 also waits for BUG-10, and DR-18 for BUG-13, 14 and 15.
+- **Scope:** the redesign restyles the BUG fixes and keeps them; it never re-implements them.
+- DR-05 and DR-08 were renamed to match their restyle-only scope.
+- DR-15 no longer refers to a `kori reset-password` command. The CLI has only `create-user` and `seed`, so BUG-09 suggests a Backlog card for one.
+- BUG-06 dropped Undo for delete, matching DR-08. Re-creating a deleted row gives it a new id and could lose the AI `source` markers, so it needs a restore endpoint first.
+
+All 29 BUG-owned findings have a comment naming their BUG card.
+
+### Routine (`trig_01VheUWTDMwu9TYrWntboCrY`): three-track rotation
+- **Urgent first:** a BUG card with "URGENT" in its name or Severity Critical/High is done before the rotation.
+- **Rotation:** the branch of the routine's last card PR sets the order it tries the tracks:
+  - after `/bug-`: M → D → B
+  - after `/dr-`: B → M → D
+  - otherwise: D → B → M
+- **Closing findings:** when a BUG card merges, the findings under its "Closes" list move to Done.
+- The routine card (dvZifuoD) and "How we work" (h4Mm3VqB) describe the same rules.
+- **The last routine run (2026-11-24 15:59 UTC) failed with "usage limit reached"**. Nothing ran. The next scheduled run is 2026-11-25 00:37 UTC.
