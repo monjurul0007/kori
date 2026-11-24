@@ -47,9 +47,11 @@ function remember(id: string) {
 interface Props {
   transaction?: Transaction;
   onDone: () => void;
+  /** Reports whether anything has been typed, so the sheet can guard closing. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export function TransactionForm({ transaction: edit, onDone }: Props) {
+export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Props) {
   const uid = useId();
   const categories = useCategories().data ?? [];
   const methods = usePaymentMethods().data ?? [];
@@ -80,7 +82,11 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
   const { register, handleSubmit, control, setValue, setError, setFocus, formState } = form;
   const values = useWatch({ control }) as FormValues;
   const watch = <K extends keyof FormValues>(name: K) => values[name];
-  const { errors, isSubmitting } = formState;
+  const { errors, isSubmitting, isDirty } = formState;
+  const hasInput = isDirty || pendingTag.trim() !== "";
+  useEffect(() => {
+    onDirtyChange?.(hasInput);
+  }, [hasInput, onDirtyChange]);
   const type = values.type;
   const split = values.lines.length > 0;
   const remaining = split ? remainingPoisha(values.amount, values.lines) : null;
@@ -184,189 +190,193 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
   const kindCategories = categories.filter((c) => c.kind === type && !c.archived_at);
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor={`${uid}-amount`}>Amount (৳)</Label>
-        <Input
-          id={`${uid}-amount`}
-          inputMode="decimal"
-          autoComplete="off"
-          placeholder="0"
-          aria-invalid={!!errors.amount}
-          aria-describedby={err("amount")}
-          className="h-14 text-3xl font-semibold md:text-3xl"
-          {...register("amount")}
-        />
-        {message("amount")}
-      </div>
-
-      <div
-        role="group"
-        aria-label="Type"
-        className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1"
-      >
-        {(["expense", "income"] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            aria-pressed={type === t}
-            onClick={() => {
-              setValue("type", t);
-              setValue("categoryId", "");
-            }}
-            disabled={split}
-            className={cn(
-              "min-h-9 rounded text-sm font-medium",
-              type === t ? "bg-background shadow" : "text-muted-foreground",
-            )}
-          >
-            {t === "expense" ? "Expense" : "Income"}
-          </button>
-        ))}
-      </div>
-
-      {split ? (
-        <SplitEditor
-          form={form}
-          categories={kindCategories}
-          onCollapse={(id) => {
-            setValue("lines", []);
-            setValue("categoryId", id, { shouldValidate: true });
-          }}
-        />
-      ) : (
+    <form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col gap-4">
+      <div data-testid="form-body" className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1">
         <div className="space-y-1">
-          <Label>Category</Label>
-          <CategoryChips
-            categories={kindCategories}
-            value={watch("categoryId")}
-            onChange={(id) => setValue("categoryId", id, { shouldValidate: true })}
-            describedBy={err("categoryId")}
+          <Label htmlFor={`${uid}-amount`}>Amount (৳)</Label>
+          <Input
+            id={`${uid}-amount`}
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="0"
+            aria-invalid={!!errors.amount}
+            aria-describedby={err("amount")}
+            className="h-14 text-3xl font-semibold md:text-3xl"
+            {...register("amount")}
           />
-          {message("categoryId")}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              const total = parseTakaInput(values.amount) ?? values.amount;
-              setValue("lines", [
-                { categoryId: values.categoryId, amount: poishaOf(values.amount) ? total : "" },
-                { categoryId: "", amount: "" },
-              ]);
-            }}
-          >
-            Split
-          </Button>
+          {message("amount")}
         </div>
-      )}
 
-      <div className="space-y-1">
-        <Label htmlFor={`${uid}-date`}>Date</Label>
-        <DateQuickPick
-          id={`${uid}-date`}
-          value={watch("occurredOn")}
-          onChange={(d) => setValue("occurredOn", d, { shouldValidate: true })}
-          describedBy={err("occurredOn")}
-        />
-        {message("occurredOn")}
-      </div>
-
-      <div className="space-y-1">
-        <Label htmlFor={`${uid}-merchant`}>Merchant</Label>
-        <Input
-          id={`${uid}-merchant`}
-          aria-describedby={err("merchant")}
-          {...register("merchant")}
-        />
-        {message("merchant")}
-      </div>
-
-      <div className="space-y-1">
-        <Label htmlFor={`${uid}-method`}>Payment method</Label>
-        <PaymentMethodSelect
-          id={`${uid}-method`}
-          methods={methods}
-          value={watch("paymentMethodId")}
-          onChange={(id) => setValue("paymentMethodId", id)}
-        />
-        {message("paymentMethodId")}
-      </div>
-
-      <div className="space-y-1">
-        <Label htmlFor={`${uid}-tags`}>Tags</Label>
-        <TagInput
-          id={`${uid}-tags`}
-          value={watch("tags")}
-          onChange={(t) => setValue("tags", t)}
-          onPendingChange={setPendingTag}
-          known={knownTags}
-        />
-        {message("tags")}
-      </div>
-
-      <div className="space-y-1">
-        <Label htmlFor={`${uid}-note`}>Note</Label>
-        <Input id={`${uid}-note`} aria-describedby={err("note")} {...register("note")} />
-        {message("note")}
-      </div>
-
-      {edit?.recurring_rule_id && (
-        <p className="text-sm text-muted-foreground">
-          Added automatically. Changes here apply to this occurrence only.{" "}
-          <Link
-            to={`/settings/recurring?rule=${edit.recurring_rule_id}`}
-            onClick={onDone}
-            className="font-medium text-foreground underline"
-          >
-            Edit rule
-          </Link>
-        </p>
-      )}
-
-      {formError && (
-        <p role="alert" className="text-sm text-red-600">
-          {formError}
-        </p>
-      )}
-
-      <div className="flex items-center gap-2">
-        {edit && !confirming && (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={busy}
-            onClick={() => setConfirming(true)}
-          >
-            Delete
-          </Button>
-        )}
-        <Button type="submit" className="flex-1" disabled={busy || unbalanced}>
-          {isSubmitting ? "Saving…" : "Save"}
-        </Button>
-      </div>
-
-      {confirming && (
         <div
-          role="alertdialog"
-          aria-label="Confirm delete"
-          className="space-y-2 rounded-md border border-red-600 p-3"
+          role="group"
+          aria-label="Type"
+          className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1"
         >
-          <p className="text-sm">Delete this transaction? This can't be undone.</p>
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
-              Cancel
-            </Button>
+          {(["expense", "income"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              aria-pressed={type === t}
+              onClick={() => {
+                setValue("type", t);
+                setValue("categoryId", "");
+              }}
+              disabled={split}
+              className={cn(
+                "min-h-9 rounded text-sm font-medium",
+                type === t ? "bg-background shadow" : "text-muted-foreground",
+              )}
+            >
+              {t === "expense" ? "Expense" : "Income"}
+            </button>
+          ))}
+        </div>
+
+        {split ? (
+          <SplitEditor
+            form={form}
+            categories={kindCategories}
+            onCollapse={(id) => {
+              setValue("lines", []);
+              setValue("categoryId", id, { shouldValidate: true });
+            }}
+          />
+        ) : (
+          <div className="space-y-1">
+            <Label>Category</Label>
+            <CategoryChips
+              categories={kindCategories}
+              value={watch("categoryId")}
+              onChange={(id) => setValue("categoryId", id, { shouldValidate: true })}
+              describedBy={err("categoryId")}
+            />
+            {message("categoryId")}
             <Button
               type="button"
-              className="bg-red-600 text-white hover:bg-red-700"
-              disabled={busy}
-              onClick={() => void onDelete()}
+              variant="outline"
+              onClick={() => {
+                const total = parseTakaInput(values.amount) ?? values.amount;
+                setValue("lines", [
+                  { categoryId: values.categoryId, amount: poishaOf(values.amount) ? total : "" },
+                  { categoryId: "", amount: "" },
+                ]);
+              }}
             >
-              Confirm delete
+              Split
             </Button>
           </div>
+        )}
+
+        <div className="space-y-1">
+          <Label htmlFor={`${uid}-date`}>Date</Label>
+          <DateQuickPick
+            id={`${uid}-date`}
+            value={watch("occurredOn")}
+            onChange={(d) => setValue("occurredOn", d, { shouldValidate: true })}
+            describedBy={err("occurredOn")}
+          />
+          {message("occurredOn")}
         </div>
-      )}
+
+        <div className="space-y-1">
+          <Label htmlFor={`${uid}-merchant`}>Merchant</Label>
+          <Input
+            id={`${uid}-merchant`}
+            aria-describedby={err("merchant")}
+            {...register("merchant")}
+          />
+          {message("merchant")}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor={`${uid}-method`}>Payment method</Label>
+          <PaymentMethodSelect
+            id={`${uid}-method`}
+            methods={methods}
+            value={watch("paymentMethodId")}
+            onChange={(id) => setValue("paymentMethodId", id)}
+          />
+          {message("paymentMethodId")}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor={`${uid}-tags`}>Tags</Label>
+          <TagInput
+            id={`${uid}-tags`}
+            value={watch("tags")}
+            onChange={(t) => setValue("tags", t)}
+            onPendingChange={setPendingTag}
+            known={knownTags}
+          />
+          {message("tags")}
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor={`${uid}-note`}>Note</Label>
+          <Input id={`${uid}-note`} aria-describedby={err("note")} {...register("note")} />
+          {message("note")}
+        </div>
+
+        {edit?.recurring_rule_id && (
+          <p className="text-sm text-muted-foreground">
+            Added automatically. Changes here apply to this occurrence only.{" "}
+            <Link
+              to={`/settings/recurring?rule=${edit.recurring_rule_id}`}
+              onClick={onDone}
+              className="font-medium text-foreground underline"
+            >
+              Edit rule
+            </Link>
+          </p>
+        )}
+
+        {formError && (
+          <p role="alert" className="text-sm text-red-600">
+            {formError}
+          </p>
+        )}
+      </div>
+
+      <div data-testid="form-footer" className="space-y-3 border-t bg-background pt-3">
+        <div className="flex items-center gap-2">
+          {edit && !confirming && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setConfirming(true)}
+            >
+              Delete
+            </Button>
+          )}
+          <Button type="submit" className="flex-1" disabled={busy || unbalanced}>
+            {isSubmitting ? "Saving…" : "Save"}
+          </Button>
+        </div>
+
+        {confirming && (
+          <div
+            role="alertdialog"
+            aria-label="Confirm delete"
+            className="space-y-2 rounded-md border border-red-600 p-3"
+          >
+            <p className="text-sm">Delete this transaction? This can't be undone.</p>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="bg-red-600 text-white hover:bg-red-700"
+                disabled={busy}
+                onClick={() => void onDelete()}
+              >
+                Confirm delete
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </form>
   );
 }
