@@ -10,8 +10,8 @@ features then arrive in stages, each with measured quality.
 | # | Milestone | Goal | Status |
 |---|---|---|---|
 | M1 | **Log it, live** | Log real expenses on my phone in a deployed app: auth, transactions with splits and tags, a monthly list with totals, an installable PWA, seed data, CI/CD, and the `kori-ai` scaffold | ✅ |
-| M2 | **Plan it** | Monthly budgets, a dashboard, a reports API, a split editor, recurring transactions, PWA polish and E2E tests | ⏭️ |
-| M3 | **AI seams** | Contract and auth between Kori and `kori-ai`, an AI proxy, insights storage, background hooks, and UI slots for the assistant, quick-add and confirmation cards | 📋 |
+| M2 | **Plan it** | Monthly budgets, a dashboard, a reports API, a split editor, recurring transactions, PWA polish and E2E tests | ✅ |
+| M3 | **AI seams** | Contract and auth between Kori and `kori-ai`, an AI proxy, insights storage, background hooks, and UI slots for the assistant, quick-add and confirmation cards | ⏭️ |
 | M4 | **Natural-language entry** | "Spent 350 on lunch yesterday" becomes a proposed transaction you confirm, including Banglish input | 📋 |
 | M5 | **Ask Kori** | Embeddings, semantic search and tool-based Q&A whose answers match SQL exactly | 📋 |
 | M6 | **Agent with confirmed actions** | A LangGraph agent with persistent conversations that never writes without confirmation | 📋 |

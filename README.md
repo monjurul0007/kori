@@ -7,8 +7,24 @@
 **A personal expense and budget app that grows into an AI assistant.**
 It's named after the cowrie shells (কড়ি) once used as money in Bengal.
 
-> **Status: pre-alpha.** Milestone 1 ("Log it, live") is code-complete; every merge deploys to
-> free-tier hosting ([runbook](docs/deploy.md)). See the [roadmap](ROADMAP.md).
+> **Status: pre-alpha.** Milestones 1 ("Log it, live") and 2 ("Plan it") are code-complete; every
+> merge deploys to free-tier hosting ([runbook](docs/deploy.md)). See the [roadmap](ROADMAP.md)
+> and the [changelog](CHANGELOG.md).
+
+<p align="center">
+  <img src="docs/media/dashboard.png" width="19%" alt="Dashboard: this month's budget progress, budget warnings and a donut chart of spending by category">
+  <img src="docs/media/transactions.png" width="19%" alt="Transactions list for the month with spent, income and net totals, grouped by day, including a split transaction">
+  <img src="docs/media/split-form.png" width="19%" alt="Edit transaction form showing a split across two categories with the remaining amount at zero">
+  <img src="docs/media/budgets.png" width="19%" alt="Budgets page with an overall monthly limit and per-category limits showing how much is spent and left">
+  <img src="docs/media/recurring.png" width="19%" alt="Recurring rules page listing a weekly bazar rule and monthly rent and salary rules with their next dates">
+</p>
+
+<p align="center">
+  <img src="docs/media/log-expense.gif" width="260" alt="Short screen recording: adding a 180 taka coffee expense and seeing it appear in the recent transactions on the dashboard">
+</p>
+
+<sub>Screenshots and the GIF come from the fake demo seed data. Regenerate them with
+`pnpm screenshots` ([how](apps/web/e2e/screenshots.ts)).</sub>
 
 ## Why Kori
 
@@ -20,12 +36,12 @@ It's named after the cowrie shells (কড়ি) once used as money in Bengal.
 - **Built properly.** Small reviewed PRs, tests against a real Postgres, CI on every change, and
   written architecture decisions.
 
-## Planned features
+## Features
 
 | Milestone | What you get |
 |---|---|
-| **M1 · Log it, live** | Login, fast expense and income entry on phone (installable PWA), split transactions and tags, a monthly list with totals and search, and deployment on free-tier hosting |
-| **M2 · Plan it** | Monthly budgets, a dashboard, a split editor, recurring transactions |
+| **M1 · Log it, live** ✅ | Login, fast expense and income entry on phone (installable PWA), split transactions and tags, a monthly list with totals and search, and deployment on free-tier hosting |
+| **M2 · Plan it** ✅ | Monthly budgets with warnings, a dashboard (budget status, spending by category, six-month trend), a split editor, recurring rules, CSV export, and PWA polish (install prompt, update toast, offline shell) |
 | **M3 · AI seams** | The contract and auth between Kori and `kori-ai`, an assistant panel, quick-add, confirmation cards, an insights card |
 | **M4–M8 · AI track** | Natural-language entry, Q&A over my data using tools, an agent with confirmed actions, auto-categorization and anomaly alerts, evals and tracing |
 

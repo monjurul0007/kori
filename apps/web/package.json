@@ -12,6 +12,7 @@
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
+    "screenshots": "node --experimental-strip-types e2e/screenshots.ts",
     "gen:api": "openapi-typescript ../../openapi.json -o src/api/schema.d.ts --root-types"
   },
   "dependencies": {

@@ -64,7 +64,7 @@ flowchart LR
 | Logs | Structured JSON with a request ID; secrets and tokens are never logged |
 | Contracts | A committed `openapi.json` produces a typed TypeScript client (web) and a Python client (kori-ai); CI fails on drift |
 
-## Data model (planned, M1)
+## Data model (M1 and M2)
 
 ```mermaid
 erDiagram
@@ -77,6 +77,11 @@ erDiagram
   categories ||--o{ transaction_lines : classifies
   payment_methods |o--o{ transactions : "paid with"
   transactions }o--o{ tags : "tagged (transaction_tags)"
+  users ||--o{ budgets : owns
+  categories |o--o{ budgets : "budgeted"
+  users ||--o{ recurring_rules : owns
+  categories ||--o{ recurring_rules : classifies
+  recurring_rules |o--o{ transactions : "creates (recurring_rule_id)"
 ```
 
 - **`transactions`:** `type` (expense or income), `occurred_on` (local date), `amount_minor`
@@ -86,12 +91,18 @@ erDiagram
   than one. A deferred constraint trigger checks that the lines add up to the transaction amount.
   Each line carries `category_source` and `category_confidence`, the seam for auto-categorization.
 - **`categories` and `payment_methods`:** archived, never deleted, so history stays intact.
+- **`budgets`:** a monthly limit per category, or one overall limit (`category_id` null). A limit
+  applies from its `effective_from` month until a later row replaces it, so changing a limit never
+  rewrites history. Amounts are poisha like everywhere else ([ADR-0007](adr/0007-budgets.md)).
+- **`recurring_rules`:** a template (name, type, amount, category, frequency, interval, start and
+  end dates) plus the next due date. A job turns due rules into ordinary transactions with
+  `source = 'recurring'` and a `recurring_rule_id`, and `UNIQUE (recurring_rule_id, occurred_on)`
+  stops a date being created twice ([ADR-0006](adr/0006-background-jobs.md)).
 - **Later:**
-  - `budgets` and `recurring_rules` in M2
   - `insights` in M3
   - embeddings, whose location spike S1 decides
 
-The full schema lands with M1-05 in `docs/data-model.md`.
+The full schema, including budgets and recurring rules, is in [data-model.md](data-model.md).
 
 ## Deployment (planned)
 
