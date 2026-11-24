@@ -44,3 +44,7 @@ exports/
 *.swp
 .DS_Store
 Thumbs.db
+
+# --- Playwright ---
+apps/web/playwright-report/
+apps/web/test-results/

@@ -122,8 +122,8 @@ Apply these once in GitHub → **Settings**:
 - **Rules → Rulesets**, a new branch ruleset targeting `main`:
   - require a pull request before merging, with 0 required approvals (it's a solo project, and
     PRs are opened under the owner's account)
-  - require status checks to pass: `pre-commit` now; add `api-ci`, `web-ci` and `build-image` as
-    they arrive
+  - require status checks to pass: `ci-passed` only. It is the last job of `ci.yml`, which runs lint,
+    then api-ci and web-ci, then e2e, then build-image, and fails if any stage failed or was skipped
   - require linear history
   - block force pushes and deletions
 - **Code security:**

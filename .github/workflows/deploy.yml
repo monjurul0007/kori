@@ -38,16 +38,16 @@ jobs:
       - id: pick
         run: echo "sha=${{ inputs.ref || github.sha }}" >> "$GITHUB_OUTPUT"
 
-      # The four checks have no path filter on pull requests, so they all ran on the PR's head.
-      # A commit that did not come from a PR with all of them green is not deployed.
-      - name: Require green lint, api-ci, web-ci and build-image on the merged PR
+      # ci.yml runs on every pull request, and its ci-passed job is green only if lint, api-ci,
+      # web-ci, e2e and build-image all passed. A commit that did not come from such a PR is not deployed.
+      - name: Require the green ci-passed check on the merged PR
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ steps.pick.outputs.sha }}
         run: |
           pr_head="$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" --jq '.[0].head.sha // empty')"
           test -n "$pr_head" || { echo "::error::$SHA is not from a pull request"; exit 1; }
-          for check in pre-commit api-ci web-ci build-image; do
+          for check in ci-passed; do
             result="$(gh api "repos/$GITHUB_REPOSITORY/commits/$pr_head/check-runs?per_page=100" \
               --jq "[.check_runs[] | select(.name == \"$check\")] | sort_by(.completed_at) | last | .conclusion")"
             echo "$check: $result"

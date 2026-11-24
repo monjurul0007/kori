@@ -1,19 +1,18 @@
 name: lint
 
+# Stage 1 of ci.yml: pre-commit hooks (lint, format, secret scan).
+# Called by ci.yml; it can also be run on its own from the Actions tab.
+
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: lint-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   pre-commit:
+    name: hooks
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

@@ -2,7 +2,7 @@ import path from "node:path";
 
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 const THEME_COLOR = "#0c6e51"; // hsl(var(--primary)) in index.css
 
@@ -48,5 +48,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/test/setup.ts"],
     css: false,
+    // Playwright specs under e2e/ run with `make e2e`, not Vitest.
+    exclude: [...configDefaults.exclude, "e2e/**"],
   },
 });

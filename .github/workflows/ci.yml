@@ -1,0 +1,67 @@
+name: ci
+
+# The pipeline, in order. Each stage is its own reusable workflow in this folder, so this file stays
+# a short map and each stage can be read, changed and run on its own (workflow_dispatch).
+#
+#   1. lint                  pre-commit hooks
+#   2. api-ci + web-ci       in parallel, after lint
+#   3. e2e                   after both
+#   4. build-image           after e2e
+#   5. ci-passed             the one required check: green only if every stage above passed
+#
+# Checks show as "ci / <stage> / <job>", e.g. "ci / api / test": GitHub names a called workflow's check
+# after the workflow, the caller job and the called job.
+# Branch protection and deploy.yml require only `ci-passed`, so adding or renaming a stage never
+# means editing the ruleset. A stage runs only if the one before it passed; a skipped stage makes
+# `ci-passed` fail. Concurrency lives here, once, not in the stages.
+
+on:
+  # No path filter: the required check must report on every PR.
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint
+    uses: ./.github/workflows/lint.yml
+
+  api-ci:
+    name: api
+    needs: lint
+    uses: ./.github/workflows/api-ci.yml
+
+  web-ci:
+    name: web
+    needs: lint
+    uses: ./.github/workflows/web-ci.yml
+
+  e2e:
+    name: e2e
+    needs: [api-ci, web-ci]
+    uses: ./.github/workflows/e2e.yml
+
+  build-image:
+    name: image
+    needs: e2e
+    uses: ./.github/workflows/build-image.yml
+
+  ci-passed:
+    if: always()
+    needs: [lint, api-ci, web-ci, e2e, build-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require every stage to have succeeded
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "$RESULTS"
+          echo "$RESULTS" | jq -e 'all(. == "success")' > /dev/null

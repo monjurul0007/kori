@@ -104,6 +104,7 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 | Web lint, format check, types | `make web-lint` |
 | Web auto-fix and format | `make web-fmt` |
 | Web production build | `make web-build` |
+| End-to-end smoke test (needs `make up` and a user, see the Makefile) | `make e2e` |
 | Build and start the whole stack (app + Postgres) at http://localhost:8000 | `make up` |
 | Stop the stack / follow the app logs | `make down` / `make logs` |
 | Create a user in the running stack | `make create-user email=… name=…` |

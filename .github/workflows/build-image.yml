@@ -1,21 +1,18 @@
 name: build-image
 
+# Stage 4 of ci.yml: build the production image and smoke-test the container.
+# Called by ci.yml; it can also be run on its own from the Actions tab.
+
 on:
-  # No path filter on pull_request, for the same reason as web-ci.
-  pull_request:
-  push:
-    branches: [main]
-    paths: ["apps/**", "infra/docker/**", ".dockerignore", ".github/workflows/build-image.yml"]
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: build-image-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build-image:
+    name: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

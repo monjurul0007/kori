@@ -1,6 +1,6 @@
 # Kori (কড়ি)
 
-[![lint](https://github.com/monjurul0007/kori/actions/workflows/lint.yml/badge.svg)](https://github.com/monjurul0007/kori/actions/workflows/lint.yml)
+[![ci](https://github.com/monjurul0007/kori/actions/workflows/ci.yml/badge.svg)](https://github.com/monjurul0007/kori/actions/workflows/ci.yml)
 [![deploy](https://github.com/monjurul0007/kori/actions/workflows/deploy.yml/badge.svg)](https://github.com/monjurul0007/kori/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 

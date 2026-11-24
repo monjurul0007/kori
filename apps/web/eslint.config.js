@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   // Generated code is excluded from lint and format; see src/api/schema.d.ts.
-  { ignores: ["dist", "coverage", "src/api/schema.d.ts"] },
+  { ignores: ["dist", "coverage", "playwright-report", "test-results", "src/api/schema.d.ts"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   jsxA11y.flatConfigs.recommended,

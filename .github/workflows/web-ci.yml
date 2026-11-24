@@ -1,22 +1,18 @@
 name: web-ci
 
+# Stage 2 of ci.yml (parallel with api-ci): web lint, types, tests, build.
+# Called by ci.yml; it can also be run on its own from the Actions tab.
+
 on:
-  # No path filter on pull_request: a skipped workflow reports no status, so a required
-  # `web-ci` check would block every PR that doesn't touch apps/web.
-  pull_request:
-  push:
-    branches: [main]
-    paths: ["apps/web/**", ".github/workflows/web-ci.yml"]
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: web-ci-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   web-ci:
+    name: test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
