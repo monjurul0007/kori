@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Link } from "react-router-dom";
 
@@ -8,16 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { todayInDhaka } from "@/lib/dates";
-import { parseTakaInput } from "@/lib/money";
+import { formatTaka, parseTakaInput } from "@/lib/money";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
-import { toastError } from "@/lib/toast";
+import { toastError, toastSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 import { useCategories, usePaymentMethods, useTags } from "../hooks";
 import type { Transaction } from "../TransactionRow";
 import { CategoryChips } from "./CategoryChips";
 import { DateQuickPick } from "./DateQuickPick";
-import { useCreateTransaction, useDeleteTransaction, useUpdateTransaction } from "./mutations";
+import {
+  useCreateTransaction,
+  useDeleteTransaction,
+  useRemoveTransaction,
+  useUpdateTransaction,
+} from "./mutations";
 import type { TransactionBody } from "./mutations";
 import { PaymentMethodSelect } from "./PaymentMethodSelect";
 import { fieldForLoc, formSchema, poishaOf, type FormValues } from "./schema";
@@ -51,9 +56,22 @@ interface Props {
   onDone: () => void;
   /** Reports whether anything has been typed, so the sheet can guard closing. */
   onDirtyChange?: (dirty: boolean) => void;
+  /** The delete confirmation is owned by the sheet so that Esc can cancel just that step. */
+  confirmingDelete: boolean;
+  onConfirmingDeleteChange: (confirming: boolean) => void;
+  /** Lets the sheet ignore Esc while a delete request is in flight. */
+  onDeletePendingChange: (pending: boolean) => void;
 }
 
-export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirtyChange }: Props) {
+export function TransactionForm({
+  transaction: edit,
+  defaultDate,
+  onDone,
+  onDirtyChange,
+  confirmingDelete: confirming,
+  onConfirmingDeleteChange: setConfirming,
+  onDeletePendingChange,
+}: Props) {
   const uid = useId();
   const categories = useCategories().data ?? [];
   const methods = usePaymentMethods().data ?? [];
@@ -61,7 +79,10 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
   const create = useCreateTransaction();
   const update = useUpdateTransaction(edit?.id ?? "");
   const remove = useDeleteTransaction(edit?.id ?? "");
-  const [confirming, setConfirming] = useState(false);
+  const undoCreate = useRemoveTransaction();
+  const deleteRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const wasConfirming = useRef(false);
   const [formError, setFormError] = useState<string>();
   const [pendingTag, setPendingTag] = useState("");
 
@@ -97,6 +118,15 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
     if (!edit?.is_split) setFocus("amount");
   }, [edit, setFocus]);
   const busy = isSubmitting || remove.isPending;
+  useEffect(() => {
+    onDeletePendingChange(remove.isPending);
+  }, [remove.isPending, onDeletePendingChange]);
+  useEffect(() => {
+    // Keep keyboard users in place: Cancel is the safe choice, and Delete gets focus back.
+    if (confirming) cancelRef.current?.focus();
+    else if (wasConfirming.current) deleteRef.current?.focus();
+    wasConfirming.current = confirming;
+  }, [confirming]);
   const err = (name: keyof FormValues) => (errors[name] ? `${uid}-${name}-error` : undefined);
   const message = (name: keyof FormValues) =>
     errors[name] && (
@@ -153,8 +183,23 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
           : [],
     };
     try {
-      if (edit) await update.mutateAsync({ body, preview });
-      else await create.mutateAsync({ body, preview });
+      if (edit) {
+        await update.mutateAsync({ body, preview });
+        toastSuccess("Saved changes");
+      } else {
+        const created = await create.mutateAsync({ body, preview });
+        const where = split ? "as a split" : `to ${category?.name ?? "your transactions"}`;
+        toastSuccess(`Saved ${formatTaka(amount)} ${where}`, {
+          undo: async () => {
+            try {
+              await undoCreate.mutateAsync(created.id);
+              toastSuccess("Removed");
+            } catch (e) {
+              toastError(e);
+            }
+          },
+        });
+      }
       if (v.paymentMethodId) remember(v.paymentMethodId);
       onDone();
     } catch (e) {
@@ -182,6 +227,9 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
     }
     try {
       await remove.mutateAsync({ body: {} as TransactionBody, preview: edit });
+      const what = edit.merchant || edit.note;
+      // No Undo: re-creating the row would give it a new id and could drop AI source markers.
+      toastSuccess(`Deleted ${formatTaka(edit.amount)}${what ? ` · ${what}` : ""}`);
       onDone();
     } catch (e) {
       setConfirming(false);
@@ -343,6 +391,7 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
         <div className="flex items-center gap-2">
           {edit && !confirming && (
             <Button
+              ref={deleteRef}
               type="button"
               variant="outline"
               disabled={busy}
@@ -360,11 +409,18 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
           <div
             role="alertdialog"
             aria-label="Confirm delete"
+            aria-busy={remove.isPending}
             className="space-y-2 rounded-md border border-over p-3"
           >
             <p className="text-sm">Delete this transaction? This can't be undone.</p>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
+              <Button
+                ref={cancelRef}
+                type="button"
+                variant="outline"
+                disabled={remove.isPending}
+                onClick={() => setConfirming(false)}
+              >
                 Cancel
               </Button>
               <Button
@@ -373,7 +429,7 @@ export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirt
                 disabled={busy}
                 onClick={() => void onDelete()}
               >
-                Confirm delete
+                {remove.isPending ? "Deleting…" : "Confirm delete"}
               </Button>
             </div>
           </div>
