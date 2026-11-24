@@ -171,6 +171,59 @@ describe("categories settings", () => {
     expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(alert.textContent!);
   });
 
+  it("limits a category name to the API's 50 characters, with a counter near the limit", async () => {
+    mockApi([cat("c1", "Food")]);
+    renderApp("/settings/categories");
+    await userEvent.click(await screen.findByRole("button", { name: "Add category" }));
+    const input = screen.getByLabelText("Name");
+    expect(input).toHaveAttribute("maxlength", "50");
+    expect(screen.queryByText("5/50")).not.toBeInTheDocument();
+    await userEvent.type(input, "x".repeat(48));
+    expect(screen.getByText("48/50")).toBeInTheDocument();
+  });
+
+  it("rejects an over-long existing name with a field error and sends no request", async () => {
+    const api = mockApi([cat("c1", "y".repeat(51))]);
+    renderApp("/settings/categories");
+    await userEvent.click(await screen.findByRole("button", { name: /^Edit y+/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Use 50 characters or fewer");
+    expect(api.calls.filter((c) => c.method === "PATCH")).toHaveLength(0);
+  });
+
+  it("shows a server 422 on the name field instead of a toast", async () => {
+    mockApi([cat("c1", "Food")]);
+    server.use(
+      http.post("*/api/v1/categories", () =>
+        HttpResponse.json(
+          {
+            type: "about:blank",
+            title: "Unprocessable Content",
+            status: 422,
+            detail: "Validation failed",
+            request_id: "r",
+            errors: [
+              {
+                loc: ["body", "name"],
+                msg: "String should have at most 50 characters",
+                type: "string_too_long",
+              },
+            ],
+          },
+          { status: 422, headers: { "content-type": "application/problem+json" } },
+        ),
+      ),
+    );
+    renderApp("/settings/categories");
+    await userEvent.click(await screen.findByRole("button", { name: "Add category" }));
+    await userEvent.type(screen.getByLabelText("Name"), "Coffee");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Use 50 characters or fewer");
+    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(alert.textContent!);
+    expect(screen.queryByText("Unprocessable Content")).not.toBeInTheDocument();
+  });
+
   it("archives behind a confirm, then unarchives from the archived list", async () => {
     mockApi([cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })]);
     renderApp("/settings/categories");
@@ -241,6 +294,16 @@ describe("payment methods settings", () => {
       name: "bKash",
       kind: "mobile_wallet",
     });
+  });
+
+  it("limits a payment method name to the API's 40 characters", async () => {
+    mockApi([], [pm("p1", "z".repeat(41))]);
+    renderApp("/settings/payment-methods");
+    await userEvent.click(await screen.findByRole("button", { name: /^Edit z+/ }));
+    const input = screen.getByLabelText("Name");
+    expect(input).toHaveAttribute("maxlength", "40");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Use 40 characters or fewer");
   });
 
   it("renumbers when neighbours share a sort_order", async () => {

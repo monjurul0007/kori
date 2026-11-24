@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { toastError } from "@/lib/toast";
 
+import { COUNTER_WITHIN, friendlyMessage, tooLong } from "./nameLimits";
 import { planMove, type OrderPatch } from "./reorder";
 
 export interface ListItem {
@@ -33,6 +34,8 @@ export interface ListItem {
 interface Props<I extends ListItem, E> {
   /** Singular, lower case: "category", "payment method". */
   noun: string;
+  /** The API's name length limit. */
+  maxNameLength: number;
   items: I[];
   /** Extra fields of the add/rename sheet, and their starting value. */
   initialExtra: (item?: I) => E;
@@ -49,6 +52,7 @@ const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function ReferenceListEditor<I extends ListItem, E>({
   noun,
+  maxNameLength,
   items,
   initialExtra,
   extraFields,
@@ -155,6 +159,7 @@ export function ReferenceListEditor<I extends ListItem, E>({
           // A new key resets the form for each item.
           key={editing.item?.id ?? "new"}
           noun={noun}
+          maxNameLength={maxNameLength}
           item={editing.item}
           initialExtra={initialExtra}
           extraFields={extraFields}
@@ -194,6 +199,7 @@ export function ReferenceListEditor<I extends ListItem, E>({
 
 function EditSheet<I extends ListItem, E>({
   noun,
+  maxNameLength,
   item,
   initialExtra,
   extraFields,
@@ -201,6 +207,7 @@ function EditSheet<I extends ListItem, E>({
   onClose,
 }: {
   noun: string;
+  maxNameLength: number;
   item?: I;
   initialExtra: (item?: I) => E;
   extraFields?: (value: E, set: (value: E) => void) => ReactNode;
@@ -219,6 +226,10 @@ function EditSheet<I extends ListItem, E>({
       setError("Enter a name");
       return;
     }
+    if (trimmed.length > maxNameLength) {
+      setError(tooLong(maxNameLength));
+      return;
+    }
     setSaving(true);
     try {
       await onSave({ item, name: trimmed, extra });
@@ -226,6 +237,13 @@ function EditSheet<I extends ListItem, E>({
     } catch (err) {
       if (err instanceof ApiError && err.response.status === 409) {
         setError(`You already have a ${noun} called ${trimmed}`);
+      } else if (err instanceof ApiError && err.response.status === 422) {
+        const items = Array.isArray(err.problem.errors) ? err.problem.errors : [];
+        const onName = (items as { loc?: unknown[]; msg?: string }[]).find(
+          (i) => i.loc?.[i.loc.length - 1] === "name",
+        );
+        if (onName) setError(friendlyMessage(onName.msg));
+        else toastError(err);
       } else {
         toastError(err);
       }
@@ -247,7 +265,7 @@ function EditSheet<I extends ListItem, E>({
             <Input
               id="ref-name"
               value={name}
-              maxLength={100}
+              maxLength={maxNameLength}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? "ref-name-error" : undefined}
               onChange={(e) => {
@@ -255,6 +273,11 @@ function EditSheet<I extends ListItem, E>({
                 setError(null);
               }}
             />
+            {name.length >= maxNameLength - COUNTER_WITHIN && (
+              <p className="text-right text-xs text-muted-foreground" aria-live="polite">
+                {name.length}/{maxNameLength}
+              </p>
+            )}
             {error && (
               <p id="ref-name-error" role="alert" className="text-sm text-over">
                 {error}

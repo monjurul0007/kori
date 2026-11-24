@@ -10,6 +10,7 @@ import {
   type PaymentMethod,
 } from "./hooks";
 import { nextSortOrder } from "./reorder";
+import { PAYMENT_METHOD_NAME_MAX } from "./nameLimits";
 import { ReferenceListEditor } from "./ReferenceListEditor";
 
 type Kind = PaymentMethod["kind"];
@@ -39,6 +40,7 @@ export function PaymentMethodsSettingsPage() {
       ) : (
         <ReferenceListEditor<PaymentMethod, Extra>
           noun="payment method"
+          maxNameLength={PAYMENT_METHOD_NAME_MAX}
           items={methods.data}
           detail={(m) => KIND_LABELS[m.kind]}
           initialExtra={(m) => ({ kind: m?.kind ?? "cash" })}
