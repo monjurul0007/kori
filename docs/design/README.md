@@ -12,6 +12,8 @@ The approved design for the Kori refresh (owner approval 2026-11-24). It covers 
 | `../brand/kori-logo-kori-coin-alt.svg` | Alternative direction B, kept for reference (not chosen). |
 | `screens/*.png` | One image per screen, in light and dark (`-light.png`, `-dark.png`). |
 
+> **Clean-up when the design refresh is done:** the `screens/*.png` images (about 2.7 MB) and `concept.html` are working references for DR-02 to DR-18 only. Once the last DR card is merged, delete all the design screenshots (`docs/design/screens/`) and anything else here that is no longer needed, keeping `tokens.css` and `../DESIGN.md` as the lasting reference. Add that as a final task when closing the Design Refresh list.
+
 ## Screens and the cards that build them
 
 | Screen | Desktop image | Phone image | Card |

@@ -5,6 +5,8 @@ The reference for any web UI change. The approved mockups are in [docs/design/](
 [docs/brand/](brand/). The decision is [ADR-0008](adr/0008-design-refresh.md). Hex values below are
 copied from [design/tokens.css](design/tokens.css), which is the source of truth.
 
+**Note:** the screenshots in `docs/design/screens/` are temporary. Clear them up (delete them) when the design refresh is done; see [design/README.md](design/README.md).
+
 Mockup amounts, merchants and dates are **example data**, never fixtures.
 
 ## Colour tokens
