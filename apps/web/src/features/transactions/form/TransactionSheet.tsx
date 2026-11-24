@@ -26,6 +26,7 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
   const [dirty, setDirty] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,9 +63,10 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
         ref={contentRef}
         onEscapeKeyDown={(e) => {
           // Esc backs out of "Delete this transaction?" without closing the sheet.
+          // While the request is in flight Esc does nothing, like the disabled buttons.
           if (confirmingDelete) {
             e.preventDefault();
-            setConfirmingDelete(false);
+            if (!deletePending) setConfirmingDelete(false);
           }
         }}
         className="flex h-dvh max-w-none flex-col overflow-hidden rounded-none md:h-auto md:max-h-[90dvh] md:max-w-lg md:rounded-lg"
@@ -83,6 +85,7 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
           onDirtyChange={setDirty}
           confirmingDelete={confirmingDelete}
           onConfirmingDeleteChange={setConfirmingDelete}
+          onDeletePendingChange={setDeletePending}
         />
         {confirming && (
           <div

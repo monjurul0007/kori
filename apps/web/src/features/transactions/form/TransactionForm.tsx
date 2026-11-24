@@ -59,15 +59,8 @@ interface Props {
   /** The delete confirmation is owned by the sheet so that Esc can cancel just that step. */
   confirmingDelete: boolean;
   onConfirmingDeleteChange: (confirming: boolean) => void;
-}
-
-/** "৳320", or the raw text if it somehow isn't a valid amount (never blocks a toast). */
-function takaText(amount: string): string {
-  try {
-    return formatTaka(amount);
-  } catch {
-    return `৳${amount}`;
-  }
+  /** Lets the sheet ignore Esc while a delete request is in flight. */
+  onDeletePendingChange: (pending: boolean) => void;
 }
 
 export function TransactionForm({
@@ -77,6 +70,7 @@ export function TransactionForm({
   onDirtyChange,
   confirmingDelete: confirming,
   onConfirmingDeleteChange: setConfirming,
+  onDeletePendingChange,
 }: Props) {
   const uid = useId();
   const categories = useCategories().data ?? [];
@@ -124,6 +118,9 @@ export function TransactionForm({
     if (!edit?.is_split) setFocus("amount");
   }, [edit, setFocus]);
   const busy = isSubmitting || remove.isPending;
+  useEffect(() => {
+    onDeletePendingChange(remove.isPending);
+  }, [remove.isPending, onDeletePendingChange]);
   useEffect(() => {
     // Keep keyboard users in place: Cancel is the safe choice, and Delete gets focus back.
     if (confirming) cancelRef.current?.focus();
@@ -192,7 +189,7 @@ export function TransactionForm({
       } else {
         const created = await create.mutateAsync({ body, preview });
         const where = split ? "as a split" : `to ${category?.name ?? "your transactions"}`;
-        toastSuccess(`Saved ${takaText(amount)} ${where}`, {
+        toastSuccess(`Saved ${formatTaka(amount)} ${where}`, {
           undo: async () => {
             try {
               await undoCreate.mutateAsync(created.id);
@@ -232,7 +229,7 @@ export function TransactionForm({
       await remove.mutateAsync({ body: {} as TransactionBody, preview: edit });
       const what = edit.merchant || edit.note;
       // No Undo: re-creating the row would give it a new id and could drop AI source markers.
-      toastSuccess(`Deleted ${takaText(edit.amount)}${what ? ` · ${what}` : ""}`);
+      toastSuccess(`Deleted ${formatTaka(edit.amount)}${what ? ` · ${what}` : ""}`);
       onDone();
     } catch (e) {
       setConfirming(false);

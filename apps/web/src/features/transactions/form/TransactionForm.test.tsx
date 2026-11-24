@@ -551,4 +551,23 @@ describe("transaction feedback", () => {
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
+
+  it("ignores Esc while a delete is pending", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    server.use(
+      http.delete("*/api/v1/transactions/:id", async () => {
+        await delay(300);
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+    await screen.findByRole("button", { name: "Deleting…" });
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("button", { name: "Deleting…" })).toBeDisabled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
 });
