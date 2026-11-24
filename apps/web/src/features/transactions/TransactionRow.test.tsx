@@ -92,3 +92,25 @@ describe("TransactionRow", () => {
     expect(onSelect).toHaveBeenCalledWith(tx);
   });
 });
+
+describe("TransactionRow recurring marker", () => {
+  it("shows a labelled repeat icon only for recurring transactions", () => {
+    const { unmount } = render(
+      <ul>
+        <TransactionRow
+          transaction={makeTx("r", { source: "recurring", recurring_rule_id: "rule1" })}
+          onSelect={() => {}}
+        />
+      </ul>,
+    );
+    expect(screen.getByRole("img", { name: "Recurring" })).toBeInTheDocument();
+    unmount();
+
+    render(
+      <ul>
+        <TransactionRow transaction={makeTx("m")} onSelect={() => {}} />
+      </ul>,
+    );
+    expect(screen.queryByRole("img", { name: "Recurring" })).not.toBeInTheDocument();
+  });
+});
