@@ -1,0 +1,360 @@
+<title>Kori Design Refresh</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@75..125,300..800&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<style>
+/* Layout: a left-aligned proposal column (max 1080px); one hero lockup, then paired phone mocks, then tokens. */
+:root {
+  /* Proposed Kori tokens (provisional, to be reconciled into DESIGN.md) */
+  --paper: #F3F6F2;      /* porcelain: page ground, faint green bias */
+  --surface: #FFFFFF;    /* cards, sheets */
+  --ink: #10231D;        /* text: deep green-black */
+  --muted: #53645D;      /* secondary text, 6.1:1 on white */
+  --line: #D8E1DB;       /* hairlines, tracks */
+  --kori: #006A4E;       /* brand: Bangladesh flag green, 6.8:1 on white */
+  --kori-deep: #004B37;  /* pressed, logo slit */
+  --kori-soft: #E2EFE8;  /* selected chips, hero tint */
+  --shell: #EEE2CC;      /* cowrie ivory: logo body and the budget track only */
+  --over: #B3261E;       /* over budget / destructive, 6.3:1 */
+  --income: #04724F;     /* income figures, 6.0:1 */
+  --cat-1: #2E7D5B; --cat-2: #3767CF; --cat-3: #B86E0C; --cat-4: #7650C2;
+  --bezel: #1A2A24;
+  --font-display: "Anek Bangla", "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-body: "Hind Siliguri", "Noto Sans Bengali", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0B1814; --surface: #13231E; --ink: #E5EEE9; --muted: #9FB2A9; --line: #253A32;
+    --kori: #3CBD8A; --kori-deep: #1E7A57; --kori-soft: #183A2E; --shell: #D8C6A4;
+    --over: #F28B82; --income: #5BD6A2;
+    --cat-1: #4FB58A; --cat-2: #7DA2F0; --cat-3: #E2A54B; --cat-4: #A98BEA; --bezel: #050B09;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0B1814; --surface: #13231E; --ink: #E5EEE9; --muted: #9FB2A9; --line: #253A32;
+  --kori: #3CBD8A; --kori-deep: #1E7A57; --kori-soft: #183A2E; --shell: #D8C6A4;
+  --over: #F28B82; --income: #5BD6A2;
+  --cat-1: #4FB58A; --cat-2: #7DA2F0; --cat-3: #E2A54B; --cat-4: #A98BEA; --bezel: #050B09;
+  color-scheme: dark;
+}
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 72px; display: grid; gap: 72px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 650; font-stretch: 105%; }
+h3 { font-size: 1.125rem; font-weight: 600; }
+p { margin: 0; max-width: 64ch; }
+.lede { color: var(--muted); font-size: 1.0625rem; }
+section { display: grid; gap: 24px; min-width: 0; }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--kori); outline-offset: 2px; }
+
+/* Hero lockup */
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center; }
+.hero .mark { width: 152px; height: 152px; }
+.wordmark { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.wordmark .latin { font-family: var(--font-display); font-weight: 760; font-stretch: 118%; font-size: clamp(3rem, 8vw, 5.25rem); line-height: 0.95; letter-spacing: -0.02em; color: var(--kori); }
+.wordmark .bn { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.75rem, 4.5vw, 2.75rem); color: var(--ink); }
+.hero p { margin-top: 14px; }
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; gap: 20px; } .hero .mark { width: 104px; height: 104px; } }
+
+/* Phones */
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; align-items: start; }
+figure { margin: 0; display: grid; gap: 12px; justify-items: center; min-width: 0; }
+figcaption { font-size: 0.9375rem; color: var(--muted); text-align: center; max-width: 34ch; }
+figcaption strong { color: var(--ink); font-weight: 600; }
+.phone { width: 100%; max-width: 340px; aspect-ratio: 340 / 700; border: 10px solid var(--bezel); border-radius: 40px; overflow: hidden; background: var(--paper); position: relative; box-sizing: border-box; }
+.phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+/* App UI inside the proposed phone */
+.app { position: absolute; inset: 0; display: flex; flex-direction: column; font-size: 13px; line-height: 1.4; }
+.app-scroll { flex: 1; overflow: hidden; padding: 14px 14px 0; display: grid; gap: 12px; align-content: start; }
+.topbar { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 720; font-stretch: 112%; font-size: 17px; color: var(--ink); }
+.brand svg { width: 26px; height: 26px; }
+.month { font: 500 12.5px var(--font-body); color: var(--ink); border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 11px; display: inline-flex; gap: 6px; align-items: center; }
+.month svg { width: 12px; height: 12px; }
+.left { background: var(--kori-soft); border-radius: 20px; padding: 16px 16px 14px; display: grid; gap: 8px; }
+.left .label { color: var(--muted); font-size: 12.5px; }
+.left .big { font-family: var(--font-display); font-weight: 680; font-stretch: 122%; font-size: 38px; line-height: 1; letter-spacing: -0.02em; color: var(--ink); }
+.left .big small { font-size: 22px; font-weight: 560; margin-right: 2px; }
+.track { height: 8px; background: var(--shell); border-radius: 999px; overflow: hidden; }
+.track i { display: block; height: 100%; width: 4.4%; min-width: 8px; background: var(--kori); border-radius: inherit; }
+.left .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
+.totals { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.totals div { padding: 9px 10px; display: grid; gap: 1px; }
+.totals div + div { border-left: 1px solid var(--line); }
+.totals span { color: var(--muted); font-size: 11.5px; }
+.totals b { font-family: var(--font-display); font-weight: 620; font-size: 13.5px; font-stretch: 92%; white-space: nowrap; }
+.totals .in { color: var(--income); }
+.alert { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--ink); }
+.alert .dot { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--over); color: var(--surface); display: grid; place-items: center; font-weight: 700; font-size: 12px; margin-top: 1px; }
+.alert b { color: var(--over); font-weight: 600; }
+.block { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 10px; }
+.block-head { display: flex; justify-content: space-between; align-items: baseline; }
+.block-head h4 { margin: 0; font: 600 13.5px var(--font-body); }
+.block-head a { color: var(--kori); font-size: 12px; text-decoration: none; font-weight: 500; }
+.stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack i:nth-child(1) { background: var(--cat-1); flex: 34.1; }
+.stack i:nth-child(2) { background: var(--cat-2); flex: 28.4; }
+.stack i:nth-child(3) { background: var(--cat-3); flex: 22.7; }
+.stack i:nth-child(4) { background: var(--cat-4); flex: 14.8; }
+.cats { display: grid; gap: 6px; }
+.cat { display: grid; grid-template-columns: 10px 1fr auto auto; gap: 8px; align-items: center; font-size: 12.5px; }
+.cat i { width: 10px; height: 10px; border-radius: 3px; }
+.cat .pct { color: var(--muted); width: 3.2em; text-align: right; }
+.rows { display: grid; }
+.day { color: var(--muted); font-size: 11.5px; padding: 2px 0 4px; display: flex; justify-content: space-between; }
+.row { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+.row .ic { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--kori-soft); color: var(--kori); }
+.row .ic svg { width: 16px; height: 16px; }
+.row .t { display: grid; min-width: 0; }
+.row .t b { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .t span { color: var(--muted); font-size: 11.5px; }
+.row .amt { font-family: var(--font-display); font-weight: 600; font-size: 14px; }
+.row .amt.in { color: var(--income); }
+.tabbar { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 4px 10px; }
+.tab { display: grid; justify-items: center; gap: 2px; font-size: 10.5px; color: var(--muted); }
+.tab svg { width: 20px; height: 20px; }
+.tab.on { color: var(--kori); font-weight: 600; }
+.fab { justify-self: center; width: 52px; height: 52px; border-radius: 18px; background: var(--kori); color: var(--surface); display: grid; place-items: center; margin-top: -24px; box-shadow: 0 6px 16px -6px var(--kori); }
+.fab svg { width: 24px; height: 24px; }
+
+/* Add sheet mock */
+.sheet { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 8px 0 16px; }
+.sheet-head h4 { margin: 0; font: 600 15px var(--font-body); }
+.x { width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); }
+.x svg { width: 18px; height: 18px; }
+.sheet-body { flex: 1; overflow: hidden; padding: 4px 16px 0; display: grid; gap: 14px; align-content: start; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--paper); border-radius: 12px; padding: 3px; font-size: 12.5px; }
+.seg span { text-align: center; padding: 7px 0; border-radius: 9px; color: var(--muted); }
+.seg span.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(16, 35, 29, 0.12); }
+.amount { display: flex; align-items: baseline; gap: 4px; border-bottom: 2px solid var(--kori); padding-bottom: 6px; }
+.amount small { font-family: var(--font-display); font-size: 24px; color: var(--muted); }
+.amount b { font-family: var(--font-display); font-weight: 650; font-stretch: 120%; font-size: 44px; line-height: 1; letter-spacing: -0.02em; }
+.amount .caret { width: 2px; height: 36px; background: var(--kori); align-self: center; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 6px; }
+.cbtn { display: grid; justify-items: center; gap: 4px; font-size: 10.5px; color: var(--ink); text-align: center; }
+.cbtn i { width: 44px; height: 44px; border-radius: 14px; background: var(--paper); display: grid; place-items: center; color: var(--muted); border: 1.5px solid transparent; }
+.cbtn i svg { width: 20px; height: 20px; }
+.cbtn.on i { background: var(--kori-soft); color: var(--kori); border-color: var(--kori); }
+.cbtn.on { font-weight: 600; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; color: var(--ink); }
+.chip svg { width: 13px; height: 13px; color: var(--muted); }
+.more { color: var(--kori); font-size: 12.5px; font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.more svg { width: 14px; height: 14px; }
+.sheet-foot { padding: 10px 16px 16px; border-top: 1px solid var(--line); background: var(--surface); }
+.save { display: block; text-align: center; background: var(--kori); color: var(--surface); border-radius: 14px; padding: 13px; font-weight: 600; font-size: 14px; }
+
+/* Notes list beside mocks */
+.notes { display: grid; gap: 14px; padding: 0; margin: 0; list-style: none; }
+.notes li { display: grid; gap: 2px; }
+.notes b { font-weight: 600; }
+.notes span { color: var(--muted); }
+
+/* Palette */
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 14px; }
+.sw { display: grid; gap: 8px; }
+.sw .chipc { height: 64px; border-radius: 14px; border: 1px solid var(--line); }
+.sw b { font-weight: 600; font-size: 0.9375rem; }
+.sw span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
+
+/* Type */
+.type { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+.spec { display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--line); padding-top: 16px; min-width: 0; }
+.spec .sample-num { font-family: var(--font-display); font-weight: 680; font-stretch: 122%; font-size: clamp(2.5rem, 6vw, 3.5rem); line-height: 1; letter-spacing: -0.02em; }
+.spec .sample-bn { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; }
+.spec .sample-body { font-family: var(--font-body); font-size: 1.0625rem; }
+.spec .who { color: var(--muted); font-size: 0.875rem; }
+
+/* Pattern table */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.9375rem; }
+th, td { text-align: left; padding: 12px 16px; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 0.8125rem; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.foot { color: var(--muted); font-size: 0.875rem; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="kori-mark" viewBox="0 0 120 120">
+      <rect width="120" height="120" rx="30" fill="var(--kori)"/>
+      <path d="M60 16c21 0 34 20 34 44s-13 44-34 44-34-20-34-44 13-44 34-44z" fill="var(--shell)"/>
+      <path d="M60 25c-6 10 5 18 0 35s5 25 0 35" fill="none" stroke="var(--kori-deep)" stroke-width="4.5" stroke-linecap="round"/>
+      <g stroke="var(--kori-deep)" stroke-width="3.4" stroke-linecap="round">
+        <path d="M57 35h-8M58 47h-8M57 59h-8M56 71h-8M57 83h-8"/>
+        <path d="M63 41h8M62 53h8M63 65h8M64 77h8M63 89h7"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+  <header class="hero">
+    <svg class="mark" role="img" aria-label="Kori cowrie-shell mark"><use href="#kori-mark"/></svg>
+    <div>
+      <div class="wordmark"><span class="latin">Kori</span><span class="bn" lang="bn">কড়ি</span></div>
+      <p class="lede">A design refresh proposal from the November 2026 UX audit. কড়ি is the cowrie shell, which Bengal used as money for centuries, so the new mark is a cowrie on flag green. The rest of the refresh is about one question the dashboard should answer at a glance: how much is left to spend this month.</p>
+    </div>
+  </header>
+
+  <section aria-labelledby="dash-h">
+    <h2 id="dash-h">Dashboard on a phone</h2>
+    <p class="lede">Today the first card is the budget and the month's total spend appears only inside it. The proposal leads with what's left, keeps spent, income and net one glance below, and turns the over-budget warning into a single line.</p>
+    <div class="pair">
+      <figure>
+        <div class="phone"><img src="before-dashboard.png" alt="Current Kori dashboard on a 375px phone: Budget card, over-budget alert, donut chart and legend." loading="lazy"></div>
+        <figcaption><strong>Today.</strong> Donut, six-month bars with no values, generic rounded cards.</figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="app">
+            <div class="app-scroll">
+              <div class="topbar">
+                <span class="brand"><svg aria-hidden="true"><use href="#kori-mark"/></svg>Kori</span>
+                <span class="month">November 2026<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              </div>
+              <div class="left">
+                <span class="label">Left to spend in November</span>
+                <span class="big num"><small>৳</small>19,119.50</span>
+                <div class="track" role="img" aria-label="4% of the ৳20,000 budget used"><i></i></div>
+                <div class="meta num"><span>৳880.50 of ৳20,000 spent</span><span>6 days left</span></div>
+              </div>
+              <div class="totals num">
+                <div><span>Spent</span><b>৳880.50</b></div>
+                <div><span>Income</span><b class="in">+৳50,000</b></div>
+                <div><span>Net</span><b>+৳49,119.50</b></div>
+              </div>
+              <div class="alert"><span class="dot" aria-hidden="true">!</span><span><b>Groceries &amp; Bazar is ৳100 over</b> its ৳200 budget.</span></div>
+              <div class="block">
+                <div class="block-head"><h4>Where it went</h4><a href="#patterns">By category</a></div>
+                <div class="stack" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                <div class="cats num">
+                  <div class="cat"><i style="background:var(--cat-1)"></i><span>Groceries &amp; Bazar</span><span>৳300</span><span class="pct">34%</span></div>
+                  <div class="cat"><i style="background:var(--cat-2)"></i><span>Food &amp; Dining</span><span>৳250.50</span><span class="pct">28%</span></div>
+                  <div class="cat"><i style="background:var(--cat-3)"></i><span>Shopping</span><span>৳200</span><span class="pct">23%</span></div>
+                </div>
+              </div>
+              <div class="block">
+                <div class="block-head"><h4>Recent</h4><a href="#patterns">See all</a></div>
+                <div class="rows">
+                  <div class="day"><span>Today</span><span class="num">Spent ৳630</span></div>
+                  <div class="row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span><span class="t"><b>Salary</b><span>Salary</span></span><span class="amt in num">+৳50,000</span></div>
+                  <div class="row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14l-1.5 9h-11z"/><path d="M9 11 12 4l3 7"/></svg></span><span class="t"><b>Karwan Bazar</b><span>Groceries, Shopping</span></span><span class="amt num">৳500</span></div>
+                </div>
+              </div>
+            </div>
+            <nav class="tabbar" aria-label="Example navigation">
+              <span class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z"/></svg>Home</span>
+              <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Activity</span>
+              <span class="fab" aria-label="Add expense"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+              <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5 5"/></svg>Budgets</span>
+              <span class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>You</span>
+            </nav>
+          </div>
+        </div>
+        <figcaption><strong>Proposed.</strong> One hero figure, totals strip, a stacked bar that reads at phone size, recent rows with category icons.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="add-h">
+    <h2 id="add-h">Adding an expense</h2>
+    <div class="pair">
+      <figure>
+        <div class="phone"><img src="before-add.png" alt="Current Add transaction sheet on a phone: Save is below the visible area." loading="lazy"></div>
+        <figcaption><strong>Today.</strong> Every field is open and Save sits 127px below the screen.</figcaption>
+      </figure>
+      <figure>
+        <div class="phone">
+          <div class="sheet">
+            <div class="sheet-head"><h4>New expense</h4><span class="x" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div>
+            <div class="sheet-body">
+              <div class="seg"><span class="on">Expense</span><span>Income</span></div>
+              <div class="amount num"><small>৳</small><b>250</b><span class="caret" aria-hidden="true"></span></div>
+              <div class="grid4">
+                <span class="cbtn on"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M16 3c-1.5 2-2 4-2 7h4V3zM18 10v11"/></svg></i>Food</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14l-1.5 9h-11z"/><path d="M9 11 12 4l3 7"/></svg></i>Bazar</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="12" rx="3"/><path d="M4 11h16M8 20l1-4M16 20l-1-4"/></svg></i>Transport</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9H3z"/></svg></i>Rent</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></i>Utilities</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></i>Mobile</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg></i>Health</span>
+                <span class="cbtn"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/></svg></i>More</span>
+              </div>
+              <div class="chips">
+                <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Today</span>
+                <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="2"/></svg>bKash</span>
+                <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>Merchant</span>
+              </div>
+              <span class="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Tags, note or split</span>
+            </div>
+            <div class="sheet-foot"><span class="save">Save ৳250 expense</span></div>
+          </div>
+        </div>
+        <figcaption><strong>Proposed.</strong> Amount, category, Save: three taps, with optional fields one tap away.</figcaption>
+      </figure>
+    </div>
+    <ul class="notes">
+      <li><b>Save is always visible.</b><span>A sticky footer button that names the result ("Save ৳250 expense"), then a toast "Saved ৳250 to Food" with Undo.</span></li>
+      <li><b>Category grid with icons.</b><span>44px tiles the thumb can hit, using the icons people already pick in Settings. "More" opens the full list.</span></li>
+      <li><b>Optional fields as chips.</b><span>Date, payment method and merchant stay one tap away. Tags, note and split sit behind one disclosure.</span></li>
+      <li><b>Drafts survive.</b><span>Closing a half-filled sheet asks "Discard this expense?" instead of clearing it silently.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="pal-h">
+    <h2 id="pal-h">Palette</h2>
+    <p class="lede">Flag green stays the brand colour, with porcelain neutrals that lean green and one warm cowrie ivory used only on the mark and the budget track. Contrast figures are against white (light theme); every text pair passes WCAG AA.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chipc" style="background:var(--kori)"></div><b>Kori green</b><span>#006A4E, 6.8:1<br>Brand, primary actions</span></div>
+      <div class="sw"><div class="chipc" style="background:var(--kori-soft)"></div><b>Leaf</b><span>#E2EFE8<br>Hero tint, selected chips</span></div>
+      <div class="sw"><div class="chipc" style="background:var(--shell)"></div><b>Cowrie</b><span>#EEE2CC<br>Logo body, budget track</span></div>
+      <div class="sw"><div class="chipc" style="background:var(--ink)"></div><b>Ink</b><span>#10231D, 15.6:1<br>Text</span></div>
+      <div class="sw"><div class="chipc" style="background:var(--paper)"></div><b>Porcelain</b><span>#F3F6F2<br>Page ground</span></div>
+      <div class="sw"><div class="chipc" style="background:var(--income)"></div><b>Income</b><span>#04724F, 6.0:1<br>Replaces #059669 (3.8:1)</span></div>
+      <div class="sw"><div class="chipc" style="background:var(--over)"></div><b>Over budget</b><span>#B3261E, 6.3:1<br>Warnings, delete</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="type-h">
+    <h2 id="type-h">Type</h2>
+    <p class="lede">Both families are drawn for Bangla and Latin together, so a Bangla interface or Bangla numerals later needs no new fonts. Numbers use tabular figures so amounts line up in lists.</p>
+    <div class="type">
+      <div class="spec">
+        <span class="sample-num num">৳12,50,000</span>
+        <span class="sample-bn" lang="bn">মাসের বাজেট ৳২০,০০০</span>
+        <span class="who">Anek Bangla, variable width and weight. Amounts, headings and the wordmark, set wide for figures.</span>
+      </div>
+      <div class="spec">
+        <span class="sample-body">Groceries &amp; Bazar is ৳100 over its ৳200 budget, with 6 days left in November.</span>
+        <span class="sample-body" lang="bn">মুদি ও বাজার খরচ বাজেট ছাড়িয়েছে</span>
+        <span class="who">Hind Siliguri 400–600. Body text, labels and controls.</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="patterns" aria-labelledby="pat-h">
+    <h2 id="pat-h">Patterns to standardise</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th scope="col">Pattern</th><th scope="col">Today</th><th scope="col">Proposed</th></tr></thead>
+        <tbody>
+          <tr><td>Form sheets</td><td>Bottom sheet at every width; 1392px inputs on desktop</td><td>One FormSheet: bottom sheet under 768px, right panel (420px) above, sticky footer</td></tr>
+          <tr><td>Feedback</td><td>No success toasts; raw "Unprocessable Content" errors</td><td>Toast for every create, update and delete, with Undo where reversible; field errors mapped from the API</td></tr>
+          <tr><td>Month control</td><td>Invisible month input behind the label, 3 tab stops</td><td>A pill button that opens a 12-month grid and marks months with data</td></tr>
+          <tr><td>Lists with actions</td><td>Four 40px icon buttons per row, names truncated</td><td>Tap the row to edit; reorder mode with drag handles; destructive actions inside the sheet</td></tr>
+          <tr><td>Empty states</td><td>One sentence plus "Add one" for every case</td><td>Separate copy for an empty month, no search matches, and filters with no matches</td></tr>
+          <tr><td>Theme</td><td>Follows the system only</td><td>Light, dark or system in Settings, with tokens shared by app, charts and icon</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">All values here are provisional until they're captured in a DESIGN.md. The mockups are static HTML; nothing in the app has changed.</p>
+  </section>
+</main>
