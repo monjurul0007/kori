@@ -1,6 +1,7 @@
 import {
   addDays,
   addMonths,
+  defaultDateForMonth,
   endOfMonth,
   formatDisplayDate,
   formatMonth,
@@ -51,5 +52,15 @@ describe("addDays", () => {
     expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
     expect(addDays("2024-02-28", 1)).toBe("2024-02-29");
     expect(addDays("2026-09-10", 0)).toBe("2026-09-10");
+  });
+});
+
+describe("defaultDateForMonth", () => {
+  it("is the month's last day for a past month", () => {
+    expect(defaultDateForMonth("2026-10", "2026-11-24")).toBe("2026-10-31");
+    expect(defaultDateForMonth("2024-02", "2026-11-24")).toBe("2024-02-29");
+  });
+  it("is today for the current month", () => {
+    expect(defaultDateForMonth("2026-11", "2026-11-24")).toBe("2026-11-24");
   });
 });

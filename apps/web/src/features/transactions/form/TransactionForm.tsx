@@ -46,12 +46,14 @@ function remember(id: string) {
 
 interface Props {
   transaction?: Transaction;
+  /** Starting date for a new entry; defaults to today (Dhaka). */
+  defaultDate?: string;
   onDone: () => void;
   /** Reports whether anything has been typed, so the sheet can guard closing. */
   onDirtyChange?: (dirty: boolean) => void;
 }
 
-export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Props) {
+export function TransactionForm({ transaction: edit, defaultDate, onDone, onDirtyChange }: Props) {
   const uid = useId();
   const categories = useCategories().data ?? [];
   const methods = usePaymentMethods().data ?? [];
@@ -72,7 +74,7 @@ export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Pr
       lines: edit?.is_split
         ? edit.lines.map((l) => ({ categoryId: l.category.id, amount: l.amount }))
         : [],
-      occurredOn: edit?.occurred_on ?? todayInDhaka(),
+      occurredOn: edit?.occurred_on ?? defaultDate ?? todayInDhaka(),
       merchant: edit?.merchant ?? "",
       paymentMethodId: edit ? (edit.payment_method?.id ?? "") : rememberedMethod(),
       tags: edit?.tags ?? [],

@@ -13,23 +13,22 @@ describe("DayGroup", () => {
     expect(within(group).getAllByRole("listitem")).toHaveLength(2);
   });
 
-  it("subtotals expenses exactly and ignores income", () => {
+  const header = () => screen.getByRole("heading", { name: "Thu, 10 Sep" }).parentElement!;
+
+  it("labels an expense-only day as Spent, summed exactly", () => {
     render(
       <DayGroup
         date="2026-09-10"
-        transactions={[
-          makeTx("a", { amount: "0.10" }),
-          makeTx("b", { amount: "0.20" }),
-          makeTx("c", { type: "income", amount: "5000", merchant: "Salary" }),
-        ]}
+        transactions={[makeTx("a", { amount: "0.10" }), makeTx("b", { amount: "0.20" })]}
         onSelect={() => {}}
       />,
     );
-    const header = screen.getByRole("heading", { name: "Thu, 10 Sep" }).parentElement!;
-    expect(within(header).getByText("৳0.30")).toBeInTheDocument(); // not 0.30000000000000004
+    expect(within(header()).getByText("Spent ৳0.30")).toBeInTheDocument(); // not 0.30000000000000004
+    expect(within(header()).queryByText(/in$/)).not.toBeInTheDocument();
+    expect(within(header()).getByText("Thu, 10 Sep: spent ৳0.30")).toBeInTheDocument();
   });
 
-  it("shows ৳0 for a day with only income", () => {
+  it("shows only income on an income-only day, never a bare ৳0", () => {
     render(
       <DayGroup
         date="2026-09-10"
@@ -37,7 +36,27 @@ describe("DayGroup", () => {
         onSelect={() => {}}
       />,
     );
-    const header = screen.getByRole("heading", { name: "Thu, 10 Sep" }).parentElement!;
-    expect(within(header).getByText("৳0")).toBeInTheDocument();
+    expect(within(header()).getByText("+৳5,000 in")).toBeInTheDocument();
+    expect(within(header()).queryByText(/Spent/)).not.toBeInTheDocument();
+    expect(within(header()).queryByText("৳0")).not.toBeInTheDocument();
+    expect(within(header()).getByText("Thu, 10 Sep: income ৳5,000")).toBeInTheDocument();
+  });
+
+  it("shows both figures on a mixed day", () => {
+    render(
+      <DayGroup
+        date="2026-09-10"
+        transactions={[
+          makeTx("a", { amount: "630" }),
+          makeTx("c", { type: "income", amount: "50000", merchant: "Salary" }),
+        ]}
+        onSelect={() => {}}
+      />,
+    );
+    expect(within(header()).getByText("Spent ৳630")).toBeInTheDocument();
+    expect(within(header()).getByText("+৳50,000 in")).toBeInTheDocument();
+    expect(
+      within(header()).getByText("Thu, 10 Sep: spent ৳630, income ৳50,000"),
+    ).toBeInTheDocument();
   });
 });
