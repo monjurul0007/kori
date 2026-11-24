@@ -19,7 +19,7 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 ## Where things are
 
 - **Backlog:** the Trello board "Kori", https://trello.com/b/yYbrEc3C/kori
-  - Lists: `📌 Start here` · `Backlog` · `Spikes` · `Future Milestones` · one `Milestone <N> · <name>` list per planned milestone (for example `Milestone 2 · Plan it`) · `In Review` · `Done`
+  - Lists: `📌 Start here` · `Backlog` · `Spikes` · `Future Milestones` · `🎨 Design Refresh · Neel and Gada` (DR cards) · one `Milestone <N> · <name>` list per planned milestone (for example `Milestone 2 · Plan it`) · `In Review` · `Done`
   - Reference cards: How we work (https://trello.com/c/h4Mm3VqB), the Project brief
     (https://trello.com/c/bcmnXqx0) and the Kori Engineer Routine (https://trello.com/c/dvZifuoD)
 - **This repo (`kori`):**
@@ -27,12 +27,14 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
   - `apps/web` (React, from M1-11)
   - `infra/`
   - `docs/`
+  - `docs/design/` (approved mockups and tokens) and `docs/brand/` (logos)
 - **AI service:** https://github.com/monjurul0007/kori-ai
 - **Read before coding:**
   - [docs/architecture.md](docs/architecture.md)
   - [ADR-0002 (stack)](docs/adr/0002-tech-stack.md)
   - [ADR-0003 (two-repo split)](docs/adr/0003-two-repo-split.md)
   - [ADR-0004 (money and dates)](docs/adr/0004-money-and-dates.md)
+  - [docs/DESIGN.md](docs/DESIGN.md) and the mockups in [docs/design/](docs/design/README.md), for any web UI change
   - [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Workflow: one card, one session, one PR

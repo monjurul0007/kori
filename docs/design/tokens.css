@@ -1,0 +1,44 @@
+/*
+ * Kori design refresh: "Neel and Gada" colour tokens (proposal, 2026-11-24).
+ * Source of truth for DR-02. Hex values; DR-02 converts them to the HSL-triplet
+ * format used by apps/web/src/index.css (e.g. --primary: 233 53% 39%).
+ * Contrast figures are against #FFFFFF unless noted. No green anywhere.
+ */
+:root {
+  --paper: #F5F6FA;        /* page ground */
+  --surface: #FFFFFF;      /* cards, sheets, inputs */
+  --ink: #161A33;          /* text, 16:1 */
+  --muted: #5A5F78;        /* secondary text, 6.3:1 */
+  --line: #DFE1EC;         /* borders, dividers */
+  --track: #E9EBF3;        /* progress-bar track */
+  --brand: #2F3A99;        /* Neel: primary actions, active nav, links, income, 9.6:1 */
+  --brand-strong: #232C7A; /* pressed / hover */
+  --brand-soft: #E8EAF8;   /* selected chips, active nav background */
+  --on-brand: #FFFFFF;     /* text on --brand */
+  --brand-text: #2F3A99;   /* brand-coloured text on light surfaces */
+  --hero: #2F3A99;         /* "Left to spend" panel, login brand panel */
+  --hero-fg: #FFFFFF;
+  --hero-muted: #C9CEF5;
+  --accent: #F2A93B;       /* Gada (marigold): logo coin, hero progress, near-limit bars. Never text. */
+  --income: #2F3A99;       /* income figures, always with a "+" sign */
+  --over: #B3261E;         /* over budget, errors, destructive, 6.3:1 */
+  --warn: #8A5A00;         /* near-limit text, 5.8:1 */
+  --scrim: rgba(22, 26, 51, 0.45);
+  /* Category colours (charts, category tiles). No green. */
+  --cat-food: #D9480F; --cat-groc: #0F7C99; --cat-trans: #B7791F; --cat-rent: #7048C9;
+  --cat-util: #2563EB; --cat-mob: #C2255C; --cat-health: #A0522D; --cat-shop: #8B5CF6;
+  --cat-other: #6B7280; --cat-salary: #2F3A99;
+}
+.dark {
+  --paper: #0E1022; --surface: #161936; --ink: #E8E9F5; --muted: #A3A7C2; --line: #2A2E52; --track: #23274A;
+  --brand: #8F9BFF; --brand-strong: #6F7CF0; --brand-soft: #23285A; --on-brand: #0E1022; --brand-text: #B3BBFF;
+  --hero: #1C2152; --hero-fg: #E8E9F5; --hero-muted: #A9B0E8;
+  --accent: #F5B04C; --income: #B3BBFF; --over: #F28B82; --warn: #F2B84B; --scrim: rgba(0, 0, 0, 0.6);
+  --cat-food: #FF8A4C; --cat-groc: #4FC3DB; --cat-trans: #E0B04C; --cat-rent: #A98BEA;
+  --cat-util: #7AA2FF; --cat-mob: #F472B6; --cat-health: #E0915F; --cat-shop: #C4A5FF;
+  --cat-other: #A1A7B3; --cat-salary: #B3BBFF;
+}
+/* Type: display "Anek Bangla" (variable wdth 75–125, wght 300–800); body "Hind Siliguri" 400/500/600/700.
+   Scale (px): display 46 (wdth 122, wght 680), title 24 (wght 650), section 14–16 (600), body 15, small 12.
+   Money: font-variant-numeric: tabular-nums everywhere. Radius: cards 16, inputs/buttons 11, chips 999.
+   Spacing: 4px base; card padding 16x18; page padding 22x28 desktop, 14x13 phone. Touch targets >= 44px. */
