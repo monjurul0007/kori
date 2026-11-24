@@ -153,7 +153,7 @@ describe("RecurringRulesPage", () => {
     mockApi([makeRule({ status: "paused", last_error: "category archived" })]);
     renderApp("/settings/recurring");
     const error = await screen.findByText("Paused: category archived");
-    expect(error).toHaveClass("text-red-600");
+    expect(error).toHaveClass("text-over");
   });
 
   it("maps a server 422 to the matching field", async () => {

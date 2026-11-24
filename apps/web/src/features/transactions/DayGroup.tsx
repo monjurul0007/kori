@@ -19,7 +19,7 @@ export function DayGroup({ date, transactions, onSelect }: Props) {
     <section aria-label={formatDisplayDate(date)} className="rounded-lg border bg-background">
       <header className="flex items-center justify-between border-b px-3 py-2 text-xs font-medium text-muted-foreground">
         <h2>{formatDisplayDate(date)}</h2>
-        <span>{formatTaka(spent)}</span>
+        <span className="tabular-nums">{formatTaka(spent)}</span>
       </header>
       <ul className="divide-y">
         {transactions.map((t) => (

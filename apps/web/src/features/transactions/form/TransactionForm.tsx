@@ -98,7 +98,7 @@ export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Pr
   const err = (name: keyof FormValues) => (errors[name] ? `${uid}-${name}-error` : undefined);
   const message = (name: keyof FormValues) =>
     errors[name] && (
-      <p id={`${uid}-${name}-error`} className="text-sm text-red-600">
+      <p id={`${uid}-${name}-error`} className="text-sm text-over">
         {errors[name]?.message as string}
       </p>
     );
@@ -331,7 +331,7 @@ export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Pr
         )}
 
         {formError && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-over">
             {formError}
           </p>
         )}
@@ -358,7 +358,7 @@ export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Pr
           <div
             role="alertdialog"
             aria-label="Confirm delete"
-            className="space-y-2 rounded-md border border-red-600 p-3"
+            className="space-y-2 rounded-md border border-over p-3"
           >
             <p className="text-sm">Delete this transaction? This can't be undone.</p>
             <div className="flex gap-2">
@@ -367,7 +367,7 @@ export function TransactionForm({ transaction: edit, onDone, onDirtyChange }: Pr
               </Button>
               <Button
                 type="button"
-                className="bg-red-600 text-white hover:bg-red-700"
+                className="bg-over text-primary-foreground hover:bg-over/90"
                 disabled={busy}
                 onClick={() => void onDelete()}
               >

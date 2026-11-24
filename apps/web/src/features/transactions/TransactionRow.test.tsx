@@ -76,13 +76,13 @@ describe("TransactionRow", () => {
 
   it("shows income in green with a plus and expenses plain", () => {
     renderRow(makeTx("i", { type: "income", amount: "120000" }));
-    expect(screen.getByText("+৳1,20,000")).toHaveClass("text-emerald-600");
+    expect(screen.getByText("+৳1,20,000")).toHaveClass("text-income");
   });
 
   it("formats expense amounts without a sign", () => {
     renderRow(makeTx("e", { amount: "1250.50" }));
     const amount = screen.getByText("৳1,250.50");
-    expect(amount).not.toHaveClass("text-emerald-600");
+    expect(amount).not.toHaveClass("text-income");
   });
 
   it("reports the transaction when tapped", async () => {

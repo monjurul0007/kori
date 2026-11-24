@@ -256,7 +256,7 @@ function EditSheet<I extends ListItem, E>({
               }}
             />
             {error && (
-              <p id="ref-name-error" role="alert" className="text-sm text-red-600">
+              <p id="ref-name-error" role="alert" className="text-sm text-over">
                 {error}
               </p>
             )}

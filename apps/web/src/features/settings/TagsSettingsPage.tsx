@@ -198,7 +198,7 @@ function RenameSheet({
                 }}
               />
               {error && (
-                <p id="tag-name-error" role="alert" className="text-sm text-red-600">
+                <p id="tag-name-error" role="alert" className="text-sm text-over">
                   {error}
                 </p>
               )}

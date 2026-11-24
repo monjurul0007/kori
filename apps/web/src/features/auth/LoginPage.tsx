@@ -46,7 +46,7 @@ export function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
             {login.error && (
-              <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+              <p role="alert" className="text-sm text-over">
                 {loginErrorMessage(login.error)}
               </p>
             )}
@@ -59,9 +59,7 @@ export function LoginPage() {
                 aria-invalid={!!errors.email}
                 {...register("email")}
               />
-              {errors.email && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-sm text-over">{errors.email.message}</p>}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>
@@ -72,9 +70,7 @@ export function LoginPage() {
                 aria-invalid={!!errors.password}
                 {...register("password")}
               />
-              {errors.password && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
-              )}
+              {errors.password && <p className="text-sm text-over">{errors.password.message}</p>}
             </div>
             <Button type="submit" className="h-11" disabled={login.isPending}>
               {login.isPending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

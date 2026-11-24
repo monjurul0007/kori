@@ -54,7 +54,7 @@ function RuleRow({
           {formatTaka(rule.amount)}
         </span>
       </button>
-      {rule.last_error && <p className="text-xs text-red-600">Paused: {rule.last_error}</p>}
+      {rule.last_error && <p className="text-xs text-over">Paused: {rule.last_error}</p>}
       {rule.status !== "ended" && (
         <div className="flex gap-2">
           <Button
@@ -98,7 +98,7 @@ export function RecurringRulesPage() {
       />
       {rules.isPending && <Skeleton className="h-24 w-full" />}
       {rules.isError && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-over">
           Couldn't load your recurring rules.
         </p>
       )}

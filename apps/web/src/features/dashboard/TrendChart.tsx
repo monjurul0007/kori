@@ -50,7 +50,7 @@ export function TrendChart({ month }: { month: string }) {
                       width={bar}
                       height={height(m.income)}
                       rx="2"
-                      className={current ? "fill-emerald-500" : "fill-emerald-500/40"}
+                      className={current ? "fill-accent" : "fill-accent/40"}
                     />
                     <text
                       x={x}
@@ -72,7 +72,7 @@ export function TrendChart({ month }: { month: string }) {
                 <span className="h-2 w-2 rounded-sm bg-primary" /> Expense
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-sm bg-emerald-500" /> Income
+                <span className="h-2 w-2 rounded-sm bg-accent" /> Income
               </span>
             </p>
             <table className="sr-only">

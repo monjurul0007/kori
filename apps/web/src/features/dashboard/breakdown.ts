@@ -42,11 +42,11 @@ export function groupTop(rows: Row[]): Slice[] {
 
 /** Chart colours, in slice order. Each slice is also labelled in the list, never colour alone. */
 export const SLICE_COLORS = [
-  "#0c6e51",
-  "#2563eb",
-  "#d97706",
-  "#9333ea",
-  "#db2777",
-  "#0891b2",
-  "#6b7280",
+  "hsl(var(--cat-food))",
+  "hsl(var(--cat-groc))",
+  "hsl(var(--cat-trans))",
+  "hsl(var(--cat-rent))",
+  "hsl(var(--cat-util))",
+  "hsl(var(--cat-mob))",
+  "hsl(var(--cat-other))",
 ];

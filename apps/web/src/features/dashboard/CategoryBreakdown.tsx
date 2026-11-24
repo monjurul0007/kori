@@ -24,7 +24,7 @@ function Donut({ slices, total }: { slices: Slice[]; total: string }) {
           cy="50"
           r={RADIUS}
           fill="none"
-          stroke={SLICE_COLORS[i % SLICE_COLORS.length]}
+          style={{ stroke: SLICE_COLORS[i % SLICE_COLORS.length] }}
           strokeWidth="16"
           strokeDasharray={`${lengths[i]} ${CIRCUMFERENCE - (lengths[i] ?? 0)}`}
           strokeDashoffset={-lengths.slice(0, i).reduce((sum, l) => sum + l, 0)}

@@ -79,8 +79,8 @@ describe("transactions list", () => {
     renderApp("/transactions?month=2026-09");
     expect(await screen.findByText("Split · 3 categories")).toBeInTheDocument();
     const income = screen.getByText("+৳5,000");
-    expect(income).toHaveClass("text-emerald-600");
-    expect(screen.getAllByText("৳250").at(-1)).not.toHaveClass("text-emerald-600");
+    expect(income).toHaveClass("text-income");
+    expect(screen.getAllByText("৳250").at(-1)).not.toHaveClass("text-income");
   });
 
   it("switches months through the URL and refetches", async () => {

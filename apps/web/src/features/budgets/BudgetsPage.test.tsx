@@ -131,8 +131,8 @@ describe("BudgetsPage", () => {
 
   it.each([
     ["79.0", "ok", "On track", "bg-primary"],
-    ["80.0", "warning", "Nearly there", "bg-amber-500"],
-    ["100.0", "over", "Over budget", "bg-red-600"],
+    ["80.0", "warning", "Nearly there", "bg-warn/100"],
+    ["100.0", "over", "Over budget", "bg-over"],
   ])("shows %s%% as %s", async (percent, level, text, bar) => {
     mockApi({ budgeted: [{ cat: food, limit: "1000.00", spent: "800.00", percent, level }] });
     renderApp("/budgets");
