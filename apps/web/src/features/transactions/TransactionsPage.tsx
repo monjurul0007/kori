@@ -17,7 +17,7 @@ import { SearchInput } from "./SearchInput";
 import { TotalsBar } from "./TotalsBar";
 import type { Transaction } from "./TransactionRow";
 import { exportHref, useFilters } from "./filters";
-import { useCategories, usePaymentMethods, useTransactions } from "./hooks";
+import { MIN_SEARCH_LENGTH, useCategories, usePaymentMethods, useTransactions } from "./hooks";
 
 function RemovableChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
@@ -80,6 +80,20 @@ export function TransactionsPage() {
     filters.tag && { label: `#${filters.tag}`, clear: { tag: undefined } },
   ].filter((chip) => !!chip);
 
+  const searchText = filters.q.trim();
+  const searchActive = searchText.length >= MIN_SEARCH_LENGTH;
+  const otherFiltersActive =
+    !!filters.type || filters.categoryIds.length > 0 || !!filters.paymentMethodId || !!filters.tag;
+  const hasActiveFilters = searchActive || otherFiltersActive;
+  const clearAll = () =>
+    update({
+      q: "",
+      type: undefined,
+      categoryIds: [],
+      paymentMethodId: undefined,
+      tag: undefined,
+    });
+
   const [editing, setEditing] = useState<Transaction>();
 
   return (
@@ -112,48 +126,76 @@ export function TransactionsPage() {
             ))}
           </div>
         )}
-        {totals && <TotalsBar expense={totals.expense} income={totals.income} />}
-
-        {query.isPending && (
-          <div className="space-y-2" aria-label="Loading transactions">
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-14 w-full" />
-            ))}
-          </div>
-        )}
-        {query.isError && (
-          <div role="alert" className="rounded-lg border p-4 text-sm">
-            <p>
-              {query.error instanceof ApiError
-                ? query.error.message
-                : "Couldn't load transactions."}
-            </p>
-            <Button className="mt-2" size="sm" onClick={() => void query.refetch()}>
-              Try again
-            </Button>
-          </div>
-        )}
-        {query.isSuccess && groups.length === 0 && (
-          <p className="py-8 text-center text-muted-foreground">
-            {filters.month > monthOf(todayInDhaka()) ? (
-              "This month hasn't started yet."
-            ) : (
-              <>
-                No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
-                <button
-                  type="button"
-                  onClick={openAdd}
-                  className="font-medium text-primary underline"
-                >
-                  Add one
-                </button>
-              </>
-            )}
+        {searchText.length > 0 && !searchActive && (
+          <p className="text-sm text-muted-foreground">
+            Type at least {MIN_SEARCH_LENGTH} characters to search
           </p>
         )}
-        {groups.map(([date, items]) => (
-          <DayGroup key={date} date={date} transactions={items} onSelect={setEditing} />
-        ))}
+        <div
+          className={`space-y-3 transition-opacity ${query.isPlaceholderData ? "pointer-events-none opacity-60" : ""}`}
+          aria-busy={query.isPlaceholderData}
+        >
+          {totals && <TotalsBar expense={totals.expense} income={totals.income} />}
+
+          {query.isPending && (
+            <div className="space-y-2" aria-label="Loading transactions">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-14 w-full" />
+              ))}
+            </div>
+          )}
+          {query.isError && (
+            <div role="alert" className="rounded-lg border p-4 text-sm">
+              <p>
+                {query.error instanceof ApiError
+                  ? query.error.message
+                  : "Couldn't load transactions."}
+              </p>
+              <Button className="mt-2" size="sm" onClick={() => void query.refetch()}>
+                Try again
+              </Button>
+            </div>
+          )}
+          {query.isSuccess &&
+            !query.isPlaceholderData &&
+            groups.length === 0 &&
+            hasActiveFilters && (
+              <div className="space-y-3 py-8 text-center text-muted-foreground">
+                <p>
+                  {otherFiltersActive
+                    ? "No transactions match these filters"
+                    : `No transactions match "${searchText}"`}
+                </p>
+                <Button type="button" variant="outline" size="sm" onClick={clearAll}>
+                  {otherFiltersActive ? "Clear filters" : "Clear search"}
+                </Button>
+              </div>
+            )}
+          {query.isSuccess &&
+            !query.isPlaceholderData &&
+            groups.length === 0 &&
+            !hasActiveFilters && (
+              <p className="py-8 text-center text-muted-foreground">
+                {filters.month > monthOf(todayInDhaka()) ? (
+                  "This month hasn't started yet."
+                ) : (
+                  <>
+                    No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
+                    <button
+                      type="button"
+                      onClick={openAdd}
+                      className="font-medium text-primary underline"
+                    >
+                      Add one
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
+          {groups.map(([date, items]) => (
+            <DayGroup key={date} date={date} transactions={items} onSelect={setEditing} />
+          ))}
+        </div>
         <div ref={sentinel} aria-hidden="true" />
         {isFetchingNextPage && <Skeleton className="h-14 w-full" />}
         <TransactionSheet
