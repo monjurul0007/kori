@@ -96,10 +96,39 @@ pg_restore --no-owner -d kori_restore kori.dump
 psql kori_restore -c 'SELECT count(*) FROM transactions;'
 ```
 
+## Scheduled jobs (recurring rules)
+
+[`jobs-tick.yml`](../.github/workflows/jobs-tick.yml) calls `POST /internal/jobs/tick` every day at
+00:10 in Dhaka (18:10 UTC) and on demand (Actions → `jobs-tick` → Run workflow). The tick creates
+the transactions of every recurring rule that is due, once each: a second call, a retry or an
+overlapping run creates nothing new ([ADR-0006](adr/0006-background-jobs.md)). If a cron is late or
+missed, the next time you open the app catches up. A deleted occurrence is skipped, never recreated.
+
+**Set up once.** Create the token, then store it as the environment **secret** `KORI_JOB_TOKEN` in
+the `production` GitHub environment (the same value reaches Cloud Run on the next deploy):
+
+```bash
+openssl rand -base64 32   # at least 32 characters; never commit it or paste it into a chat
+```
+
+Like `KORI_DATABASE_URL`, the token reaches Cloud Run as a plain environment variable written by
+`deploy.yml`, not as a Secret Manager reference. ADR-0006 says "Cloud Run secret"; this is the same
+mechanism the app already uses for its other secret, and moving both to Secret Manager would be its
+own card.
+
+Without it the endpoint answers 404 and the workflow fails, so recurring rules only catch up when
+you open the app. Run the workflow once by hand after the deploy and check the JSON it prints
+(`created`, `failed`, `previous_run_at`). Run it a second time: `created` must be `0`.
+
+**Rotate.** Generate a new value, update the `KORI_JOB_TOKEN` environment secret, run the `deploy`
+workflow, then run `jobs-tick` once to confirm a 200. Between the deploy and the secret update a tick
+gets a 401, which is harmless.
+
 ## Rotate secrets
 
 - **Database password:** reset it in Neon, update the `KORI_DATABASE_URL` environment secret, then
   run the `deploy` workflow (the new value reaches Cloud Run only on deploy).
+- **Job token:** see [Scheduled jobs](#scheduled-jobs-recurring-rules).
 - **Backup key:** generate a new age pair, update `BACKUP_AGE_RECIPIENT`. Keep the old private key
   until the old dumps have expired.
 - There is no stored Google key to rotate: CI uses OIDC.

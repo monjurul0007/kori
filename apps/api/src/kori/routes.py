@@ -6,6 +6,7 @@ from kori.auth.router import router as auth_router
 from kori.budgets.router import router as budgets_router
 from kori.categories.router import router as categories_router
 from kori.health.router import router as health_router
+from kori.jobs.router import router as jobs_router
 from kori.payment_methods.router import router as payment_methods_router
 from kori.recurring.router import router as recurring_router
 from kori.reports.router import router as reports_router
@@ -27,6 +28,12 @@ ROUTERS: list[APIRouter] = [
 ]
 
 
+# Not part of the public API: authenticated by a shared secret, hidden from OpenAPI (ADR-0006).
+INTERNAL_ROUTERS: list[APIRouter] = [jobs_router]
+
+
 def register_routes(app: FastAPI) -> None:
     for router in ROUTERS:
         app.include_router(router, prefix=API_PREFIX)
+    for router in INTERNAL_ROUTERS:
+        app.include_router(router)

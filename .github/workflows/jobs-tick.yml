@@ -1,0 +1,41 @@
+name: jobs-tick
+
+# Daily tick for scheduled work, today the recurring-rules materializer (ADR-0006).
+# Calls POST /internal/jobs/tick on the production app. The call is idempotent, so a retry or a
+# second trigger never duplicates a transaction. Setup and rotation: docs/deploy.md.
+
+on:
+  schedule:
+    - cron: "10 18 * * *" # 00:10 in Dhaka (UTC+6)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jobs-tick-production
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      # The token comes from the `production` environment secret and is passed through the
+      # environment, so Actions masks it. The response (run counts only) is the only thing printed.
+      - name: Call the tick endpoint
+        env:
+          KORI_JOB_TOKEN: ${{ secrets.KORI_JOB_TOKEN }}
+          KORI_APP_ORIGIN: ${{ vars.KORI_APP_ORIGIN }}
+        run: |
+          set -euo pipefail
+          test -n "$KORI_JOB_TOKEN" && test -n "$KORI_APP_ORIGIN"
+          # Cloud Run may be cold and Neon suspended, so allow a slow first response and retry.
+          # --fail-with-body makes any non-2xx response fail the run.
+          curl --silent --show-error --fail-with-body \
+            --max-time 120 --retry 3 --retry-delay 10 --retry-all-errors \
+            --request POST \
+            --header "X-Kori-Job-Token: $KORI_JOB_TOKEN" \
+            "${KORI_APP_ORIGIN%/}/internal/jobs/tick"
+          echo

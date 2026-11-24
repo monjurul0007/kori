@@ -129,10 +129,11 @@ def _save(
     data: TransactionIn,
     source: TransactionSource = TransactionSource.MANUAL,
     category_source: CategorySource = CategorySource.USER,
+    recurring_rule_id: uuid.UUID | None = None,
 ) -> Transaction:
     """Write the transaction, its lines and tags in one savepoint; a failure changes nothing."""
     if tx is None:
-        tx = Transaction(user_id=user.id, source=source)
+        tx = Transaction(user_id=user.id, source=source, recurring_rule_id=recurring_rule_id)
     try:
         with db.begin_nested():
             db.add(tx)
@@ -166,10 +167,12 @@ def create_transaction(
     *,
     source: TransactionSource = TransactionSource.MANUAL,
     category_source: CategorySource = CategorySource.USER,
+    recurring_rule_id: uuid.UUID | None = None,
 ) -> Transaction:
-    """The API always uses the defaults; the seed marks its rows `seed`."""
+    """The API always uses the defaults; the seed marks its rows `seed`, and the recurring
+    materializer (M2-09) sets `recurring_rule_id`, which is not part of the public schema."""
     _validate(db, user, data)
-    return _save(db, user, None, data, source, category_source)
+    return _save(db, user, None, data, source, category_source, recurring_rule_id)
 
 
 def get_transaction(db: Session, user: User, id: uuid.UUID) -> Transaction:
