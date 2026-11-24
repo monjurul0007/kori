@@ -19,7 +19,9 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
 ## Where things are
 
 - **Backlog:** the Trello board "Kori", https://trello.com/b/yYbrEc3C/kori
-  - Lists: `📌 Start here` · `Backlog` · `Spikes` · `Future Milestones` · one `Milestone <N> · <name>` list per planned milestone (for example `Milestone 2 · Plan it`) · `In Review` · `Done`
+  - Lists: `📌 Start here` · `🐞 Triage / Bugs` · `Backlog` · `Spikes` · `Future Milestones` · one `Milestone <N> · <name>` list per planned milestone (for example `Milestone 2 · Plan it`) · `In Review` · `Done`
+  - `🐞 Triage / Bugs` is where the owner reports bugs and triage issues (cards named `BUG-<nn> · …`).
+    **Cards here come before everything else.** See "Pick the next card" below.
   - Reference cards: How we work (https://trello.com/c/h4Mm3VqB), the Project brief
     (https://trello.com/c/bcmnXqx0) and the Kori Engineer Routine (https://trello.com/c/dvZifuoD)
 - **This repo (`kori`):**
@@ -34,6 +36,25 @@ Kori (কড়ি) is a personal expense and budget app for one user in Dhaka, 
   - [ADR-0003 (two-repo split)](docs/adr/0003-two-repo-split.md)
   - [ADR-0004 (money and dates)](docs/adr/0004-money-and-dates.md)
   - [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## Pick the next card: bugs first
+
+Unless the owner names a card, choose work in this order:
+
+1. **`🐞 Triage / Bugs`:** if the list has any card, take the top one. It outranks milestone, spike and
+   backlog cards, whatever their priority. Skip a card only if it is blocked or needs an owner decision;
+   comment the question on it and take the next one.
+2. Then the current milestone list (the lowest-numbered `Milestone <N> · …` list that still has cards),
+   top to bottom.
+
+For a bug card:
+- Reproduce the bug first and confirm it. If it can't be reproduced, comment what you tried and stop;
+  don't guess a fix.
+- Write a failing test first, then the fix. Keep the PR to that one bug.
+- Use the branch and review label on the card. If the card gives none, use `fix/<card-id>-<slug>` and
+  `review:read`.
+- Move the card to **In Review** with the PR link, like any other card. After the PR merges it goes to **Done**.
+- Anything else you find along the way gets its own new card in `🐞 Triage / Bugs`; don't fix it in the same PR.
 
 ## Workflow: one card, one session, one PR
 
