@@ -130,6 +130,43 @@ describe("transactions list", () => {
     expect(await screen.findByRole("dialog")).toHaveTextContent("Add transaction");
   });
 
+  describe("Add one from the viewed month", () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-11-24T10:00:00Z"));
+    });
+    afterEach(() => vi.useRealTimers());
+
+    it("defaults to the last day of a past month", async () => {
+      mockApi(() => page([]));
+      renderApp("/transactions?month=2026-10");
+      await userEvent.click(await screen.findByRole("button", { name: "Add one" }));
+      expect(await screen.findByLabelText("Date")).toHaveValue("2026-10-31");
+    });
+
+    it("defaults to today in the current month", async () => {
+      mockApi(() => page([]));
+      renderApp("/transactions?month=2026-11");
+      await userEvent.click(await screen.findByRole("button", { name: "Add one" }));
+      expect(await screen.findByLabelText("Date")).toHaveValue("2026-11-24");
+    });
+
+    it("uses the viewed month for the shell Add button too", async () => {
+      mockApi(() => page([]));
+      renderApp("/transactions?month=2026-10");
+      await screen.findByRole("button", { name: "Add one" });
+      await userEvent.click(screen.getAllByRole("button", { name: /^Add/ }).at(-1)!);
+      expect(await screen.findByLabelText("Date")).toHaveValue("2026-10-31");
+    });
+
+    it("doesn't offer Add one for a future month", async () => {
+      mockApi(() => page([]));
+      renderApp("/transactions?month=2026-12");
+      expect(await screen.findByText("This month hasn't started yet.")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Add one" })).not.toBeInTheDocument();
+    });
+  });
+
   it("pages in more rows without duplicates", async () => {
     let observe: (() => void) | undefined;
     vi.stubGlobal(

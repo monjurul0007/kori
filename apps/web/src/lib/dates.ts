@@ -37,6 +37,12 @@ export function endOfMonth(month: string): string {
   return fromDate(new Date(Date.UTC(y, m, 0)));
 }
 
+/** The date a new entry starts on while `month` is on screen: today, or the month's last day if past. */
+export function defaultDateForMonth(month: string, today: string = todayInDhaka()): string {
+  const last = endOfMonth(month);
+  return last < today ? last : today;
+}
+
 export function addMonths(month: string, delta: number): string {
   const [y, m] = month.split("-").map(Number);
   if (!y || !m) throw new Error(`Invalid month: ${month}`);

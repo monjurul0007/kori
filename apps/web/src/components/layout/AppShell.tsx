@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import { IosInstallSheet } from "@/pwa/IosInstallSheet";
+import { defaultDateForMonth } from "@/lib/dates";
 import { OfflineBanner } from "@/pwa/OfflineBanner";
 import { TransactionSheet } from "@/features/transactions/form/TransactionSheet";
 
@@ -14,6 +15,14 @@ export interface ShellContext {
 
 export function AppShell() {
   const [adding, setAdding] = useState(false);
+  // While a month of the transactions list is on screen, new entries start in that month.
+  const { pathname, search } = useLocation();
+  const viewedMonth =
+    pathname === "/transactions" ? new URLSearchParams(search).get("month") : null;
+  const defaultDate =
+    viewedMonth && /^\d{4}-(0[1-9]|1[0-2])$/.test(viewedMonth)
+      ? defaultDateForMonth(viewedMonth)
+      : undefined;
   return (
     <div className="flex min-h-dvh">
       <SideNav onAdd={() => setAdding(true)} />
@@ -25,7 +34,7 @@ export function AppShell() {
       </div>
       <IosInstallSheet />
       <BottomNav onAdd={() => setAdding(true)} />
-      <TransactionSheet open={adding} onOpenChange={setAdding} />
+      <TransactionSheet open={adding} onOpenChange={setAdding} defaultDate={defaultDate} />
     </div>
   );
 }

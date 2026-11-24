@@ -7,7 +7,7 @@ import type { ShellContext } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatMonth } from "@/lib/dates";
+import { formatMonth, monthOf, todayInDhaka } from "@/lib/dates";
 
 import { DayGroup } from "./DayGroup";
 import { TransactionSheet } from "./form/TransactionSheet";
@@ -135,10 +135,20 @@ export function TransactionsPage() {
         )}
         {query.isSuccess && groups.length === 0 && (
           <p className="py-8 text-center text-muted-foreground">
-            No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
-            <button type="button" onClick={openAdd} className="font-medium text-primary underline">
-              Add one
-            </button>
+            {filters.month > monthOf(todayInDhaka()) ? (
+              "This month hasn't started yet."
+            ) : (
+              <>
+                No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
+                <button
+                  type="button"
+                  onClick={openAdd}
+                  className="font-medium text-primary underline"
+                >
+                  Add one
+                </button>
+              </>
+            )}
           </p>
         )}
         {groups.map(([date, items]) => (
