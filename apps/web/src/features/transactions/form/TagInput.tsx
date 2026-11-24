@@ -8,18 +8,31 @@ interface Props {
   value: string[];
   onChange: (tags: string[]) => void;
   known: string[];
+  /** Reports text typed but not yet turned into a tag, so a parent can commit it on submit. */
+  onPendingChange?: (text: string) => void;
 }
 
-export function TagInput({ id, value, onChange, known }: Props) {
-  const [text, setText] = useState("");
+/** Add `raw` to `tags`: trims, strips a leading #, ignores blanks and case-insensitive duplicates. */
+export function withTag(tags: string[], raw: string): string[] {
+  const tag = raw.trim().replace(/^#/, "");
+  if (!tag || tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return tags;
+  return [...tags, tag];
+}
+
+export function TagInput({ id, value, onChange, known, onPendingChange }: Props) {
+  const [text, setTextState] = useState("");
+  const setText = (next: string) => {
+    setTextState(next);
+    onPendingChange?.(next);
+  };
   const query = text.trim().replace(/^#/, "").toLowerCase();
   const suggestions = query
     ? known.filter((t) => t.toLowerCase().startsWith(query) && !value.includes(t)).slice(0, 5)
     : [];
 
   const add = (raw: string) => {
-    const tag = raw.trim().replace(/^#/, "");
-    if (tag && !value.some((t) => t.toLowerCase() === tag.toLowerCase())) onChange([...value, tag]);
+    const next = withTag(value, raw);
+    if (next !== value) onChange(next);
     setText("");
   };
 
@@ -30,6 +43,7 @@ export function TagInput({ id, value, onChange, known }: Props) {
         value={text}
         placeholder="Type a tag, press Enter"
         onChange={(e) => setText(e.target.value)}
+        onBlur={() => add(text)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault(); // Enter adds a tag; it must not submit the form.
@@ -43,6 +57,7 @@ export function TagInput({ id, value, onChange, known }: Props) {
             <li key={t}>
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()} // keep focus, so blur doesn't add the half-typed text
                 onClick={() => add(t)}
                 className="rounded-full border px-3 py-1 text-sm hover:bg-muted"
               >

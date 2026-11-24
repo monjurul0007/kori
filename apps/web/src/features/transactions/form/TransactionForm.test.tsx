@@ -385,6 +385,33 @@ describe("transaction form", () => {
     expect(state.posted[0]).toMatchObject({ tags: ["eid", "newtag"] });
   });
 
+  it("saves a tag that was typed but not confirmed with Enter", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "5");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    await userEvent.type(within(dialog).getByLabelText("Tags"), "#lunch");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    expect(state.posted[0]).toMatchObject({ tags: ["lunch"] });
+  });
+
+  it("does not duplicate or add blank pending tag text on save", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "5");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    const tags = within(dialog).getByLabelText("Tags");
+    await userEvent.type(tags, "Lunch{Enter}lunch");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    expect(state.posted[0]).toMatchObject({ tags: ["Lunch"] });
+  });
+
   it("rejects an empty form without calling the API", async () => {
     const state = mockApi();
     renderApp(`/transactions?month=${month}`);
