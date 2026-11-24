@@ -297,13 +297,14 @@ describe("payment methods settings", () => {
   });
 
   it("limits a payment method name to the API's 40 characters", async () => {
-    mockApi([], [pm("p1", "z".repeat(41))]);
+    const api = mockApi([], [pm("p1", "z".repeat(41))]);
     renderApp("/settings/payment-methods");
     await userEvent.click(await screen.findByRole("button", { name: /^Edit z+/ }));
     const input = screen.getByLabelText("Name");
     expect(input).toHaveAttribute("maxlength", "40");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Use 40 characters or fewer");
+    expect(api.calls.filter((c) => c.method === "PATCH")).toHaveLength(0);
   });
 
   it("renumbers when neighbours share a sort_order", async () => {

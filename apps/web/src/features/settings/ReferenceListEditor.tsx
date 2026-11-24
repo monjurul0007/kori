@@ -226,7 +226,7 @@ function EditSheet<I extends ListItem, E>({
       setError("Enter a name");
       return;
     }
-    if (trimmed.length > maxNameLength) {
+    if ([...trimmed].length > maxNameLength) {
       setError(tooLong(maxNameLength));
       return;
     }
@@ -273,9 +273,9 @@ function EditSheet<I extends ListItem, E>({
                 setError(null);
               }}
             />
-            {name.length >= maxNameLength - COUNTER_WITHIN && (
+            {[...name].length >= maxNameLength - COUNTER_WITHIN && (
               <p className="text-right text-xs text-muted-foreground" aria-live="polite">
-                {name.length}/{maxNameLength}
+                {[...name].length}/{maxNameLength}
               </p>
             )}
             {error && (
