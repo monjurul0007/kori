@@ -12,6 +12,7 @@ Status, Context, Decision and Consequences.
 | [0004](0004-money-and-dates.md) | Money and date representation | Accepted |
 | [0005](0005-hosting.md) | Hosting: Cloud Run and Neon | Proposed |
 | [0007](0007-budgets.md) | Budgets: carry-forward model | Accepted |
+| [0008](0008-design-refresh.md) | Design refresh: Neel and Gada | Accepted |
 
 **Upcoming**, from the spikes on the Trello board:
 - 0006: background jobs (S3)

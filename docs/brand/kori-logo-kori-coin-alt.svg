@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Kori">
+  <!-- Alternative direction B (not chosen). -->
+  <circle cx="60" cy="60" r="58" fill="#F2A93B"/>
+  <circle cx="60" cy="60" r="48" fill="none" stroke="#C47A10" stroke-width="3"/>
+  <rect x="43" y="30" width="13" height="60" rx="6.5" fill="#2F3A99"/>
+  <path d="M58 70 L77 51" stroke="#2F3A99" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <path d="M61 67 L79 88" stroke="#2F3A99" stroke-width="13" stroke-linecap="round" fill="none"/>
+</svg>

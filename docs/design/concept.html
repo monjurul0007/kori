@@ -1,0 +1,1089 @@
+<title>Kori Design Refresh</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wdth,wght@75..125,300..800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a left-aligned review document (max 1160px): logo options, desktop frames (scroll sideways on small screens), a phone grid, foundations, patterns. */
+:root {
+  /* Page chrome tokens (follow the viewer's theme) */
+  --bg: #F5F6FA; --fg: #161A33; --muted: #5A5F78; --line: #DFE1EC; --card: #FFFFFF;
+  --brand: #2F3A99; --brand-soft: #E8EAF8; --coin: #F2A93B;
+  --font-display: "Anek Bangla", "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-body: "Hind Siliguri", "Noto Sans Bengali", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0D0F1E; --fg: #E8E9F5; --muted: #A3A7C2; --line: #2A2E52; --card: #151833; --brand: #A9B3FF; --brand-soft: #23285A; --coin: #F5B04C; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0D0F1E; --fg: #E8E9F5; --muted: #A3A7C2; --line: #2A2E52; --card: #151833; --brand: #A9B3FF; --brand-soft: #23285A; --coin: #F5B04C; color-scheme: dark; }
+
+/* Mockup tokens: the proposed app palette "Neel and Gada" (indigo and marigold). Switched by the Light/Dark control. */
+.mock {
+  --a-paper: #F5F6FA; --a-surface: #FFFFFF; --a-ink: #161A33; --a-muted: #5A5F78; --a-line: #DFE1EC; --a-track: #E9EBF3;
+  --a-brand: #2F3A99; --a-brand-strong: #232C7A; --a-brand-soft: #E8EAF8; --a-on-brand: #FFFFFF; --a-brand-text: #2F3A99;
+  --a-hero: #2F3A99; --a-hero-fg: #FFFFFF; --a-hero-muted: #C9CEF5;
+  --a-coin: #F2A93B; --a-income: #2F3A99; --a-over: #B3261E; --a-warn: #8A5A00; --a-scrim: rgba(22, 26, 51, 0.45);
+  --c-food: #D9480F; --c-groc: #0F7C99; --c-trans: #B7791F; --c-rent: #7048C9; --c-util: #2563EB; --c-mob: #C2255C; --c-health: #A0522D; --c-shop: #8B5CF6; --c-other: #6B7280; --c-salary: #2F3A99;
+  background: var(--a-paper); color: var(--a-ink); font-family: var(--font-body);
+}
+[data-mock="dark"] .mock {
+  --a-paper: #0E1022; --a-surface: #161936; --a-ink: #E8E9F5; --a-muted: #A3A7C2; --a-line: #2A2E52; --a-track: #23274A;
+  --a-brand: #8F9BFF; --a-brand-strong: #6F7CF0; --a-brand-soft: #23285A; --a-on-brand: #0E1022; --a-brand-text: #B3BBFF;
+  --a-hero: #1C2152; --a-hero-fg: #E8E9F5; --a-hero-muted: #A9B0E8;
+  --a-coin: #F5B04C; --a-income: #B3BBFF; --a-over: #F28B82; --a-warn: #F2B84B; --a-scrim: rgba(0, 0, 0, 0.6);
+  --c-food: #FF8A4C; --c-groc: #4FC3DB; --c-trans: #E0B04C; --c-rent: #A98BEA; --c-util: #7AA2FF; --c-mob: #F472B6; --c-health: #E0915F; --c-shop: #C4A5FF; --c-other: #A1A7B3; --c-salary: #B3BBFF;
+}
+
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 80px; display: grid; gap: 72px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; font-stretch: 110%; line-height: 1.05; }
+h2 { font-size: 1.75rem; font-weight: 650; font-stretch: 105%; }
+h3 { font-size: 1.125rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+.lede { color: var(--muted); font-size: 1.0625rem; }
+section { display: grid; gap: 24px; min-width: 0; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* Header */
+.top { display: grid; gap: 20px; }
+.top-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.top-row .logo { width: 72px; height: 72px; flex: none; }
+.jump { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 0.9375rem; }
+.jump a { color: var(--brand); text-decoration: none; font-weight: 500; }
+.jump a:hover { text-decoration: underline; }
+.toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--card); gap: 2px; }
+.toggle button { font: 500 0.875rem var(--font-body); border: 0; background: transparent; color: var(--muted); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--brand); color: var(--card); }
+.toggle-wrap { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.875rem; flex-wrap: wrap; }
+
+/* Logo options */
+.logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.lopt { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: grid; gap: 16px; align-content: start; }
+.lopt.pick { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.lopt-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.badge { font-size: 0.75rem; font-weight: 600; color: var(--brand); background: var(--brand-soft); padding: 2px 10px; border-radius: 999px; }
+.sizes { display: flex; align-items: flex-end; gap: 16px; }
+.sizes svg { flex: none; }
+.lockup { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 720; font-stretch: 112%; font-size: 1.75rem; color: var(--fg); }
+.lockup svg { width: 40px; height: 40px; }
+.lockup .bn { font-weight: 500; font-size: 1.25rem; color: var(--muted); font-stretch: 100%; }
+.lopt p { color: var(--muted); font-size: 0.9375rem; }
+
+/* Desktop frames */
+.dframes { display: grid; gap: 48px; }
+.dframe { margin: 0; display: grid; gap: 14px; min-width: 0; }
+.dframe figcaption { display: grid; gap: 4px; }
+.dframe figcaption p { color: var(--muted); font-size: 0.9375rem; }
+.hscroll { overflow-x: auto; border-radius: 16px; }
+.browser { min-width: 1040px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; font-size: 13px; line-height: 1.45; }
+.wbar { height: 32px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: var(--a-surface); border-bottom: 1px solid var(--a-line); }
+.wbar i { width: 10px; height: 10px; border-radius: 50%; background: var(--a-line); }
+.wbar span { margin-left: 10px; font-size: 12px; color: var(--a-muted); }
+.desk { display: grid; grid-template-columns: 216px 1fr; min-height: 640px; position: relative; }
+.side { background: var(--a-surface); border-right: 1px solid var(--a-line); padding: 18px 14px; display: flex; flex-direction: column; gap: 6px; }
+.lock { display: flex; align-items: center; gap: 10px; padding: 2px 6px 14px; font-family: var(--font-display); font-weight: 720; font-stretch: 112%; font-size: 19px; }
+.lock svg { width: 30px; height: 30px; }
+.snav { display: grid; gap: 2px; margin-top: 10px; }
+.nv { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; color: var(--a-muted); font-weight: 500; }
+.nv.on { background: var(--a-brand-soft); color: var(--a-brand-text); font-weight: 600; }
+.side-foot { margin-top: auto; display: flex; align-items: center; gap: 8px; color: var(--a-muted); font-size: 12px; padding: 6px 10px; }
+.side-foot i { width: 8px; height: 8px; border-radius: 50%; background: var(--a-coin); }
+.dmain { padding: 22px 28px 28px; display: grid; gap: 16px; align-content: start; min-width: 0; position: relative; }
+.dmain.flat { position: static; }
+.dhead { display: flex; align-items: center; gap: 14px; }
+.dh1 { font-family: var(--font-display); font-weight: 650; font-stretch: 108%; font-size: 24px; letter-spacing: -0.01em; }
+.sp { flex: 1; }
+
+/* Shared mock components */
+.ic { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 15px; border-radius: 11px; font-weight: 600; font-size: 13px; border: 1px solid transparent; white-space: nowrap; }
+.btn.primary { background: var(--a-brand); color: var(--a-on-brand); }
+.btn.outline { background: var(--a-surface); border-color: var(--a-line); color: var(--a-ink); }
+.btn.danger { background: var(--a-surface); border-color: var(--a-line); color: var(--a-over); }
+.btn.block { width: 100%; box-sizing: border-box; }
+.btn.lg { height: 44px; font-size: 14px; }
+.btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+.btn.grow { flex: 1; }
+.msw { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--a-line); background: var(--a-surface); border-radius: 999px; padding: 2px; }
+.msw b { font-weight: 600; padding: 0 8px; font-size: 13px; }
+.mb { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: var(--a-muted); }
+.dcard { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 16px; padding: 16px 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.ch { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ch b { font-weight: 600; font-size: 14px; }
+.lnk { color: var(--a-brand-text); font-weight: 500; font-size: 12.5px; }
+.lnk.r { justify-self: end; }
+.hero { background: var(--a-hero); color: var(--a-hero-fg); border-color: transparent; }
+.hero .lbl, .hero .meta, .hero .hint { color: var(--a-hero-muted); }
+.lbl { font-size: 12.5px; color: var(--a-muted); }
+.big { font-family: var(--font-display); font-weight: 680; font-stretch: 122%; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.xl { font-size: 46px; }
+.big .of { font-family: var(--font-body); font-size: 14px; font-weight: 500; letter-spacing: 0; font-stretch: 100%; color: var(--a-hero-muted); margin-left: 6px; }
+.track { height: 10px; background: var(--a-track); border-radius: 999px; overflow: hidden; }
+.hero .track { background: rgba(255, 255, 255, 0.18); }
+.track i { display: block; height: 100%; border-radius: inherit; background: var(--a-brand); }
+.hero .track i { background: var(--a-coin); }
+.track.over i { background: var(--a-over); }
+.track.warn i { background: var(--a-coin); }
+.meta { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--a-muted); font-variant-numeric: tabular-nums; }
+.hint { font-size: 13px; }
+.amt { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.amt.in { color: var(--a-income); }
+.tile { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); flex: none; }
+.k-food { --c: var(--c-food); } .k-groc { --c: var(--c-groc); } .k-trans { --c: var(--c-trans); } .k-rent { --c: var(--c-rent); }
+.k-util { --c: var(--c-util); } .k-mob { --c: var(--c-mob); } .k-health { --c: var(--c-health); } .k-shop { --c: var(--c-shop); }
+.k-other { --c: var(--c-other); } .k-salary { --c: var(--c-salary); }
+.stack { display: flex; height: 12px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack i { background: var(--c); }
+.clist { display: grid; gap: 7px; }
+.cl { display: grid; grid-template-columns: 10px 1fr auto 3.6em; gap: 10px; align-items: center; }
+.cl i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+.cl em { font-style: normal; color: var(--a-muted); text-align: right; font-variant-numeric: tabular-nums; }
+.dayh { display: flex; justify-content: space-between; color: var(--a-muted); font-size: 12px; padding-top: 2px; }
+.txr { display: grid; grid-template-columns: 32px 1fr auto; gap: 11px; align-items: center; padding: 6px 0; border-top: 1px solid var(--a-line); }
+.tt { display: grid; min-width: 0; }
+.tt b { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tt small { color: var(--a-muted); font-size: 12px; }
+.att { display: grid; grid-template-columns: 18px 1fr; gap: 9px; align-items: start; font-size: 13px; padding: 8px 10px; border-radius: 10px; }
+.att .ic { margin-top: 2px; }
+.att.over { background: color-mix(in srgb, var(--a-over) 10%, transparent); }
+.att.over .ic, .att.over b { color: var(--a-over); }
+.att.warn { background: color-mix(in srgb, var(--a-coin) 16%, transparent); }
+.att.warn .ic, .att.warn b { color: var(--a-warn); }
+.att.info .ic { color: var(--a-brand-text); }
+.att b { font-weight: 600; }
+.dash { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; }
+.tv-list { display: grid; }
+.tv { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; padding: 9px 0; border-top: 1px solid var(--a-line); align-items: baseline; }
+.tv:first-child { border-top: 0; padding-top: 0; }
+.tv span { color: var(--a-muted); font-size: 12.5px; }
+.tv b { font-size: 19px; }
+.tv small { grid-column: 1 / -1; color: var(--a-muted); font-size: 11.5px; }
+.chart text { fill: var(--a-muted); font-size: 9px; font-family: var(--font-body); }
+.chart .gl { stroke: var(--a-line); stroke-width: 1; }
+.chart .bl { stroke: var(--a-coin); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart .bar0 { fill: color-mix(in srgb, var(--a-brand) 30%, transparent); }
+.chart .bar1 { fill: var(--a-brand); }
+.chart .val { fill: var(--a-ink); font-weight: 600; }
+.chart .blt { fill: var(--a-warn); font-weight: 600; }
+.tbar { display: flex; gap: 8px; align-items: center; }
+.search { flex: 1; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--a-line); background: var(--a-surface); border-radius: 11px; color: var(--a-muted); }
+.dd { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border: 1px solid var(--a-line); background: var(--a-surface); border-radius: 11px; font-weight: 500; white-space: nowrap; }
+.dd .ic { width: 14px; height: 14px; color: var(--a-muted); }
+.tstrip { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 14px; }
+.tstrip div { padding: 10px 16px; display: grid; gap: 1px; }
+.tstrip div + div { border-left: 1px solid var(--a-line); }
+.tstrip span { color: var(--a-muted); font-size: 12px; }
+.tstrip b { font-size: 18px; }
+.tl { padding: 6px 18px 10px; gap: 0; }
+.tl-h, .tl-r { display: grid; grid-template-columns: 32px 1fr 110px 130px 100px; gap: 14px; align-items: center; }
+.tl-h { color: var(--a-muted); font-size: 11.5px; padding: 8px 0; }
+.tl-day { display: flex; justify-content: space-between; padding: 12px 0 6px; font-size: 12px; color: var(--a-muted); border-top: 1px solid var(--a-line); }
+.tl-day b { color: var(--a-ink); font-weight: 600; }
+.tl-r { padding: 7px 0; }
+.r { text-align: right; justify-self: end; }
+.pm { color: var(--a-muted); }
+.tg { color: var(--a-brand-text); font-size: 12px; }
+.toast { position: absolute; right: 28px; bottom: 24px; display: flex; align-items: center; gap: 12px; background: var(--a-ink); color: var(--a-paper); padding: 11px 14px; border-radius: 12px; box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.45); font-size: 13px; }
+.toast b { color: var(--a-coin); font-weight: 600; }
+.toast .ic { color: var(--a-coin); }
+.scrim { position: absolute; inset: 0; background: var(--a-scrim); }
+.panel { position: absolute; top: 0; right: 0; bottom: 0; width: 400px; background: var(--a-surface); border-left: 1px solid var(--a-line); display: flex; flex-direction: column; box-shadow: -20px 0 40px -24px rgba(0, 0, 0, 0.35); }
+.pn-h { display: flex; align-items: center; justify-content: space-between; padding: 12px 10px 4px 20px; }
+.pn-h b { font-size: 16px; font-weight: 600; }
+.xbtn { width: 40px; height: 40px; display: grid; place-items: center; color: var(--a-muted); border-radius: 10px; }
+.pn-b { flex: 1; padding: 6px 20px 14px; display: grid; gap: 14px; align-content: start; overflow: hidden; }
+.pn-f { display: flex; gap: 10px; padding: 12px 20px 16px; border-top: 1px solid var(--a-line); }
+.seg2, .seg3 { display: grid; grid-template-columns: 1fr 1fr; background: var(--a-paper); border: 1px solid var(--a-line); border-radius: 11px; padding: 3px; font-size: 12.5px; }
+.seg3 { grid-template-columns: repeat(3, 1fr); }
+.seg2 span, .seg3 span { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 10px; border-radius: 8px; color: var(--a-muted); }
+.seg2 span.on, .seg3 span.on { background: var(--a-surface); color: var(--a-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(22, 26, 51, 0.14); }
+.seg2.inline { display: inline-grid; }
+.amtin { display: flex; align-items: baseline; gap: 4px; border-bottom: 2px solid var(--a-brand); padding-bottom: 6px; }
+.amtin small { font-family: var(--font-display); font-size: 24px; color: var(--a-muted); }
+.amtin b { font-family: var(--font-display); font-weight: 650; font-stretch: 120%; font-size: 42px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.caret { width: 2px; height: 32px; background: var(--a-brand); align-self: center; }
+.flbl, .frow label { font-size: 12px; font-weight: 600; color: var(--a-muted); }
+.cgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 6px; margin-top: -6px; }
+.cb { display: grid; justify-items: center; gap: 4px; font-size: 11px; text-align: center; }
+.cb .tile { width: 44px; height: 44px; border-radius: 14px; border: 1.5px solid transparent; }
+.cb .tile .ic { width: 20px; height: 20px; }
+.cb.on .tile { border-color: var(--c); }
+.cb.on { font-weight: 600; }
+.frow { display: grid; gap: 5px; }
+.frow.two { grid-template-columns: 1fr 1fr; gap: 10px; }
+.frow.two > div { display: grid; gap: 5px; }
+.inp { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--a-line); border-radius: 10px; background: var(--a-surface); color: var(--a-ink); box-sizing: border-box; }
+.inp.ph { color: var(--a-muted); }
+.inp.focus { border-color: var(--a-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--a-brand) 22%, transparent); }
+.inp.err { border-color: var(--a-over); }
+.ferr { color: var(--a-over); font-size: 12px; }
+.inp .ic { color: var(--a-muted); }
+.chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--a-line); border-radius: 999px; padding: 5px 11px; font-size: 12px; background: var(--a-surface); }
+.chip.on { background: var(--a-brand-soft); border-color: transparent; color: var(--a-brand-text); font-weight: 600; }
+.chip .ic { width: 13px; height: 13px; }
+.tagc { display: inline-flex; align-items: center; gap: 6px; background: var(--a-brand-soft); color: var(--a-brand-text); border-radius: 999px; padding: 2px 4px 2px 9px; font-size: 12px; }
+.tagc .x { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; }
+.tagc .ic { width: 12px; height: 12px; }
+.st { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; justify-self: end; }
+.st.ok { color: var(--a-brand-text); background: var(--a-brand-soft); }
+.st.warn { color: var(--a-warn); background: color-mix(in srgb, var(--a-coin) 18%, transparent); }
+.st.over { color: var(--a-over); background: color-mix(in srgb, var(--a-over) 12%, transparent); }
+.st.full { color: var(--a-muted); background: var(--a-track); }
+.br { display: grid; grid-template-columns: 32px 150px 1fr 140px 104px; gap: 14px; align-items: center; padding: 9px 0; border-top: 1px solid var(--a-line); }
+.br .tile { width: 32px; height: 32px; }
+.br b { font-weight: 500; }
+.br .sum { color: var(--a-muted); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; }
+.nb { display: grid; grid-template-columns: 32px 1fr auto auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--a-line); }
+.note { color: var(--a-muted); font-size: 12px; }
+.bud-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.bud-top > div { display: grid; gap: 8px; }
+.hero .btn.outline { background: transparent; color: var(--a-hero-fg); border-color: rgba(255, 255, 255, 0.35); }
+.set { display: grid; grid-template-columns: 190px 1fr; gap: 22px; align-items: start; }
+.subnav { display: grid; gap: 2px; }
+.sb { padding: 8px 12px; border-radius: 9px; color: var(--a-muted); font-weight: 500; }
+.sb.on { background: var(--a-surface); color: var(--a-ink); font-weight: 600; box-shadow: inset 2px 0 0 var(--a-brand); }
+.set-c { display: grid; gap: 14px; min-width: 0; }
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 10px 16px; font-size: 13px; }
+.kv span:nth-child(odd) { color: var(--a-muted); }
+.orow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.orow > div { display: grid; gap: 2px; }
+.orow small { color: var(--a-muted); font-size: 12px; }
+.sw { width: 38px; height: 22px; border-radius: 999px; background: var(--a-track); position: relative; flex: none; border: 1px solid var(--a-line); }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--a-surface); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+.sr { display: grid; grid-template-columns: 18px 32px 1fr auto 16px; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--a-line); }
+.sr:first-child { border-top: 0; }
+.sr .grip { color: var(--a-muted); opacity: 0.7; }
+.sr .muted { color: var(--a-muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.sr .chev { color: var(--a-muted); }
+.kind { font-size: 11.5px; color: var(--a-muted); border: 1px solid var(--a-line); border-radius: 999px; padding: 2px 9px; }
+.def { font-size: 11px; font-weight: 600; color: var(--a-brand-text); background: var(--a-brand-soft); border-radius: 999px; padding: 2px 8px; margin-left: 8px; }
+.login { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; }
+.lg-brand { background: var(--a-hero); color: var(--a-hero-fg); padding: 48px; display: grid; align-content: center; gap: 18px; }
+.lg-brand svg { width: 84px; height: 84px; }
+.lg-word { font-family: var(--font-display); font-weight: 740; font-stretch: 118%; font-size: 56px; line-height: 1; letter-spacing: -0.02em; display: flex; gap: 14px; align-items: baseline; }
+.lg-word span { font-weight: 500; font-size: 30px; font-stretch: 100%; color: var(--a-coin); }
+.lg-brand p { color: var(--a-hero-muted); font-size: 17px; }
+.lg-form { padding: 48px 64px; display: grid; gap: 14px; align-content: center; }
+.pw .eye { width: 32px; height: 32px; display: grid; place-items: center; color: var(--a-muted); margin-right: -6px; }
+.welcome { display: grid; gap: 10px; }
+
+/* Phones */
+.phones { display: grid; grid-template-columns: repeat(auto-fill, 300px); gap: 36px 28px; justify-content: center; }
+.pfig { margin: 0; display: grid; gap: 10px; justify-items: center; }
+.pfig figcaption { text-align: center; display: grid; gap: 2px; max-width: 290px; }
+.pfig figcaption b { font-weight: 600; }
+.pfig figcaption span { color: var(--muted); font-size: 0.875rem; }
+.phone { width: 300px; height: 640px; border: 9px solid #15182B; border-radius: 38px; overflow: hidden; position: relative; box-sizing: border-box; }
+.pscreen { position: absolute; inset: 0; display: flex; flex-direction: column; font-size: 12.5px; line-height: 1.4; }
+.pbody { flex: 1; overflow: hidden; padding: 14px 13px 0; display: grid; gap: 10px; align-content: start; position: relative; }
+.ptop { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
+.pbrand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 720; font-stretch: 112%; font-size: 17px; }
+.pbrand svg { width: 26px; height: 26px; }
+.ptitle { font-family: var(--font-display); font-weight: 650; font-stretch: 106%; font-size: 20px; }
+.back { display: flex; align-items: center; gap: 2px; }
+.back .bk { width: 34px; height: 34px; display: grid; place-items: center; margin-left: -8px; color: var(--a-ink); }
+.back .bk .ic { width: 20px; height: 20px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-weight: 500; font-size: 12px; border: 1px solid var(--a-line); background: var(--a-surface); border-radius: 999px; padding: 5px 10px; }
+.pill .ic { width: 12px; height: 12px; }
+.pcard { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 14px; padding: 11px 12px; display: grid; gap: 8px; }
+.pcard.hero { background: var(--a-hero); color: var(--a-hero-fg); border-color: transparent; }
+.pbig { font-size: 34px; }
+.pmeta { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--a-hero-muted); }
+.ptot { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 12px; }
+.ptot div { padding: 7px 9px; display: grid; }
+.ptot div + div { border-left: 1px solid var(--a-line); }
+.ptot span { color: var(--a-muted); font-size: 11px; }
+.ptot b { font-size: 13px; font-stretch: 92%; }
+.patt { display: grid; grid-template-columns: 16px 1fr; gap: 7px; font-size: 12px; padding: 7px 9px; border-radius: 10px; background: color-mix(in srgb, var(--a-over) 10%, transparent); }
+.patt .ic { width: 14px; height: 14px; color: var(--a-over); margin-top: 1px; }
+.patt b { color: var(--a-over); font-weight: 600; }
+.pch { display: flex; justify-content: space-between; align-items: baseline; }
+.pch b { font-weight: 600; font-size: 13px; }
+.ptx { display: grid; grid-template-columns: 30px 1fr auto; gap: 9px; align-items: center; padding: 5px 0; border-top: 1px solid var(--a-line); }
+.ptx .tile { width: 30px; height: 30px; border-radius: 9px; }
+.ptabs { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; background: var(--a-surface); border-top: 1px solid var(--a-line); padding: 6px 2px 10px; }
+.tab { display: grid; justify-items: center; gap: 2px; font-size: 10px; color: var(--a-muted); }
+.tab .ic { width: 20px; height: 20px; }
+.tab.on { color: var(--a-brand-text); font-weight: 600; }
+.fab { justify-self: center; width: 50px; height: 50px; border-radius: 17px; background: var(--a-brand); color: var(--a-on-brand); display: grid; place-items: center; margin-top: -22px; box-shadow: 0 8px 18px -8px var(--a-brand); }
+.fab .ic { width: 24px; height: 24px; stroke-width: 2.6; }
+.psearch { display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 11px; border: 1px solid var(--a-line); border-radius: 11px; background: var(--a-surface); color: var(--a-muted); }
+.prow { display: grid; grid-template-columns: 18px 30px 1fr 14px; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--a-line); }
+.prow:first-child { border-top: 0; }
+.prow .tile { width: 30px; height: 30px; border-radius: 9px; }
+.prow .grip, .prow .chev { color: var(--a-muted); }
+.plist { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 14px; padding: 4px 12px; }
+.mrow { display: grid; grid-template-columns: 30px 1fr auto 14px; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--a-line); }
+.mrow:first-child { border-top: 0; }
+.mrow .tile { width: 30px; height: 30px; border-radius: 9px; --c: var(--a-brand); }
+.mrow small { color: var(--a-muted); font-variant-numeric: tabular-nums; }
+.mrow .chev { color: var(--a-muted); }
+.pbr { display: grid; gap: 6px; padding: 9px 0; border-top: 1px solid var(--a-line); }
+.pbr:first-child { border-top: 0; padding-top: 2px; }
+.pbr-h { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; }
+.pbr-h .tile { width: 26px; height: 26px; border-radius: 8px; }
+.pbr-h .tile .ic { width: 14px; height: 14px; }
+.pbr .track { height: 7px; }
+.pbr .meta { font-size: 11.5px; }
+.psheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--a-surface); border-radius: 20px 20px 0 0; padding: 8px 16px 16px; display: grid; gap: 10px; box-shadow: 0 -12px 30px -16px rgba(0, 0, 0, 0.4); }
+.grab { width: 36px; height: 4px; border-radius: 999px; background: var(--a-line); justify-self: center; }
+.pfull { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--a-surface); }
+.pfoot { padding: 10px 14px 14px; border-top: 1px solid var(--a-line); background: var(--a-surface); }
+.pl-top { background: var(--a-hero); color: var(--a-hero-fg); padding: 56px 22px 28px; display: grid; gap: 10px; }
+.pl-top svg { width: 56px; height: 56px; }
+.pl-word { font-family: var(--font-display); font-weight: 740; font-stretch: 118%; font-size: 36px; line-height: 1; display: flex; gap: 10px; align-items: baseline; }
+.pl-word span { font-weight: 500; font-size: 20px; font-stretch: 100%; color: var(--a-coin); }
+.pl-top p { color: var(--a-hero-muted); }
+.pl-form { padding: 22px; display: grid; gap: 12px; }
+.check { display: grid; grid-template-columns: 22px 1fr auto; gap: 9px; align-items: center; padding: 8px 0; border-top: 1px solid var(--a-line); }
+.check:first-child { border-top: 0; }
+.check .cbx { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--a-line); display: grid; place-items: center; }
+.check.done .cbx { background: var(--a-brand); border-color: var(--a-brand); color: var(--a-on-brand); }
+.check.done span:nth-child(2) { color: var(--a-muted); text-decoration: line-through; }
+.check .cbx .ic { width: 12px; height: 12px; stroke-width: 3; }
+.ghost { border: 1.5px dashed var(--a-line); border-radius: 14px; padding: 18px 14px; display: grid; gap: 6px; justify-items: center; text-align: center; color: var(--a-muted); }
+.ghost .ic { width: 28px; height: 28px; color: var(--a-brand-text); }
+.nf { flex: 1; display: grid; align-content: center; justify-items: start; gap: 12px; padding: 0 22px; }
+.nf .code { font-family: var(--font-display); font-weight: 700; font-stretch: 122%; font-size: 64px; line-height: 1; color: var(--a-coin); }
+.nf .t { font-family: var(--font-display); font-weight: 650; font-size: 22px; }
+.nf p { color: var(--a-muted); }
+.ptoast { position: absolute; left: 12px; right: 12px; bottom: 10px; display: flex; align-items: center; gap: 9px; background: var(--a-ink); color: var(--a-paper); padding: 9px 12px; border-radius: 12px; font-size: 12px; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.5); }
+.ptoast b { margin-left: auto; color: var(--a-coin); font-weight: 600; }
+.ptoast .ic { color: var(--a-coin); width: 14px; height: 14px; }
+
+/* Foundations */
+.found { display: grid; gap: 28px; }
+.pal { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 14px; }
+.swa { display: grid; gap: 6px; font-size: 0.8125rem; }
+.swa .chip2 { height: 56px; border-radius: 12px; border: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+.swa b { font-weight: 600; font-size: 0.9375rem; }
+.swa span { color: var(--muted); line-height: 1.35; }
+.type { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+.spec { display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--line); padding-top: 14px; min-width: 0; }
+.spec .n { font-family: var(--font-display); font-weight: 680; font-stretch: 122%; font-size: clamp(2.5rem, 6vw, 3.5rem); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.spec .bn { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; }
+.spec .who { color: var(--muted); font-size: 0.875rem; }
+.scale { display: grid; gap: 6px; }
+.scale div { display: flex; align-items: baseline; gap: 14px; }
+.scale span { color: var(--muted); font-size: 0.8125rem; width: 70px; flex: none; }
+.comp { border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 18px; font-size: 13px; }
+.comp-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.comp-row .inp { width: 220px; }
+.comp-col { display: grid; gap: 5px; }
+.comp .toast { position: static; }
+
+/* Pattern table */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+table { border-collapse: collapse; width: 100%; min-width: 680px; font-size: 0.9375rem; }
+th, td { text-align: left; padding: 12px 16px; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 0.8125rem; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.foot { color: var(--muted); font-size: 0.875rem; }
+@media (prefers-reduced-motion: no-preference) { .toggle button { transition: background-color 0.15s ease, color 0.15s ease; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo-a" viewBox="0 0 120 120">
+      <rect width="120" height="120" rx="30" fill="#2F3A99"/>
+      <rect x="31" y="26" width="17" height="68" rx="8.5" fill="#FFFFFF"/>
+      <path d="M50 62 L83 86" stroke="#FFFFFF" stroke-width="17" stroke-linecap="round" fill="none"/>
+      <circle cx="77" cy="40" r="15.5" fill="#F2A93B"/>
+      <circle cx="77" cy="40" r="9" fill="none" stroke="#C47A10" stroke-width="2.5"/>
+    </symbol>
+    <symbol id="logo-b" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="58" fill="#F2A93B"/>
+      <circle cx="60" cy="60" r="48" fill="none" stroke="#C47A10" stroke-width="3"/>
+      <rect x="43" y="30" width="13" height="60" rx="6.5" fill="#2F3A99"/>
+      <path d="M58 70 L77 51" stroke="#2F3A99" stroke-width="13" stroke-linecap="round" fill="none"/>
+      <path d="M61 67 L79 88" stroke="#2F3A99" stroke-width="13" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="logo-c" viewBox="0 0 120 120">
+      <rect width="120" height="120" rx="30" fill="#2F3A99"/>
+      <text x="60" y="62" text-anchor="middle" dominant-baseline="central" font-family="Anek Bangla, Hind Siliguri, sans-serif" font-weight="700" font-size="82" fill="#F2A93B">৳</text>
+    </symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-food" viewBox="0 0 24 24"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 3c-1.7 1.6-2.5 4-2.5 7H19V3zM19 10v11"/></symbol>
+    <symbol id="i-basket" viewBox="0 0 24 24"><path d="M5 10h14l-1.5 10h-11z"/><path d="m9 10 3-6 3 6"/></symbol>
+    <symbol id="i-bus" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4M8 14h.01M16 14h.01"/></symbol>
+    <symbol id="i-house" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h12v4"/><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16.5 13.5h.01"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></symbol>
+    <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-device" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+    <symbol id="i-split" viewBox="0 0 24 24"><path d="M6 4v6a4 4 0 0 0 4 4h8M14 10l4 4-4 4M6 20v-2"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-install" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7m0 0-3-3m3 3 3-3"/></symbol>
+  </defs>
+</svg>
+
+<main class="wrap" id="review" data-mock="light">
+  <header class="top">
+    <div class="top-row">
+      <svg class="logo" role="img" aria-label="Kori logo, Coin K"><use href="#logo-a"/></svg>
+      <h1>Kori design refresh</h1>
+    </div>
+    <p class="lede">A full refresh of every screen in Kori, on desktop and on a phone. The palette is <strong>Neel and Gada</strong>: Bengal indigo (নীল) for the brand and marigold (গাঁদা) for highlights, with no green anywhere. Income is shown in indigo with a plus sign. Every amount, merchant and date below is example data.</p>
+    <nav class="jump" aria-label="Sections">
+      <a href="#logo">Logo</a><a href="#desktop">Desktop screens</a><a href="#mobile">Phone screens</a><a href="#foundations">Colours, type and components</a><a href="#patterns">Patterns</a>
+    </nav>
+    <div class="toggle-wrap">
+      <span id="mock-theme-label">Show mockups in</span>
+      <div class="toggle" role="group" aria-labelledby="mock-theme-label">
+        <button type="button" id="mock-light" data-mock-btn="light" aria-pressed="true">Light</button>
+        <button type="button" id="mock-dark" data-mock-btn="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <section id="logo" aria-labelledby="logo-h">
+    <h2 id="logo-h">Logo</h2>
+    <p class="lede">Three directions, all drawn as shapes so they render the same on every device. The first is applied throughout the screens below.</p>
+    <div class="logos">
+      <article class="lopt pick">
+        <div class="lopt-head"><h3>Coin K</h3><span class="badge">Recommended</span></div>
+        <div class="sizes" aria-hidden="true"><svg width="96" height="96"><use href="#logo-a"/></svg><svg width="48" height="48"><use href="#logo-a"/></svg><svg width="32" height="32"><use href="#logo-a"/></svg><svg width="16" height="16"><use href="#logo-a"/></svg></div>
+        <div class="lockup"><svg aria-hidden="true"><use href="#logo-a"/></svg>Kori <span class="bn" lang="bn">কড়ি</span></div>
+        <p>A K whose upper arm is a marigold coin. It reads as the initial at favicon size and as money on the home screen.</p>
+      </article>
+      <article class="lopt">
+        <div class="lopt-head"><h3>Kori coin</h3></div>
+        <div class="sizes" aria-hidden="true"><svg width="96" height="96"><use href="#logo-b"/></svg><svg width="48" height="48"><use href="#logo-b"/></svg><svg width="32" height="32"><use href="#logo-b"/></svg><svg width="16" height="16"><use href="#logo-b"/></svg></div>
+        <div class="lockup"><svg aria-hidden="true"><use href="#logo-b"/></svg>kori</div>
+        <p>A struck marigold coin stamped with an indigo k. Friendly and round; strongest as an avatar or app badge.</p>
+      </article>
+      <article class="lopt">
+        <div class="lopt-head"><h3>Taka tile</h3></div>
+        <div class="sizes" aria-hidden="true"><svg width="96" height="96"><use href="#logo-c"/></svg><svg width="48" height="48"><use href="#logo-c"/></svg><svg width="32" height="32"><use href="#logo-c"/></svg><svg width="16" height="16"><use href="#logo-c"/></svg></div>
+        <div class="lockup"><svg aria-hidden="true"><use href="#logo-c"/></svg>Kori</div>
+        <p>The taka sign in marigold on indigo. The most literal option; it would need converting to outlines before shipping.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="desktop" aria-labelledby="desk-h">
+    <h2 id="desk-h">Desktop screens</h2>
+    <p class="lede">Shown at 1280px. On a narrow screen, scroll each frame sideways.</p>
+    <div class="dframes">
+
+      <figure class="dframe">
+        <figcaption><h3>Log in</h3><p>Brand panel on the left, a calm form on the right with show password and a recovery link.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop log in screen mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Log in to Kori</span></div>
+          <div class="login">
+            <div class="lg-brand">
+              <svg aria-hidden="true"><use href="#logo-a"/></svg>
+              <div class="lg-word">Kori <span lang="bn">কড়ি</span></div>
+              <p>Every taka, accounted for.</p>
+            </div>
+            <div class="lg-form">
+              <div class="dh1">Log in</div>
+              <div class="frow"><label>Email</label><span class="inp focus">you@example.com</span></div>
+              <div class="frow"><label>Password</label><span class="inp pw">••••••••••<span class="eye"><svg class="ic"><use href="#i-eye"/></svg></span></span></div>
+              <span class="lnk r">Forgot password?</span>
+              <span class="btn primary block lg">Log in</span>
+              <p class="note">Kori keeps you logged in on this device for 30 days.</p>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Dashboard</h3><p>Leads with what's left to spend, then totals, where the money went, the six-month trend with values and the budget line, what needs attention, and recent entries.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop dashboard mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Dashboard</span></div>
+          <div class="desk" data-nav="dashboard">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Dashboard</span><span class="msw"><span class="mb"><svg class="ic"><use href="#i-chev-l"/></svg></span><b>November 2026</b><span class="mb"><svg class="ic"><use href="#i-chev-r"/></svg></span></span></div>
+              <div class="dash">
+                <div class="dcard hero">
+                  <span class="lbl">Left to spend in November</span>
+                  <span class="big xl">৳12,650</span>
+                  <div class="track"><i style="width:68.4%"></i></div>
+                  <div class="meta"><span>৳27,350 of ৳40,000 spent</span><span>6 days left</span></div>
+                  <p class="hint">Spend up to ৳2,108 a day to finish November on budget.</p>
+                </div>
+                <div class="dcard">
+                  <div class="tv-list">
+                    <div class="tv"><span>Spent</span><b class="amt">৳27,350</b><small>October total: ৳32,750</small></div>
+                    <div class="tv"><span>Income</span><b class="amt in">+৳85,000</b><small>Salary on 1 November</small></div>
+                    <div class="tv"><span>Net</span><b class="amt">+৳57,650</b><small>Kept so far this month</small></div>
+                  </div>
+                </div>
+                <div class="dcard">
+                  <div class="ch"><b>Where it went</b><span class="lnk">All categories</span></div>
+                  <div class="stack"><i class="k-rent" style="flex:54.8"></i><i class="k-groc" style="flex:19"></i><i class="k-food" style="flex:11.5"></i><i class="k-trans" style="flex:6.9"></i><i class="k-util" style="flex:4.9"></i><i class="k-mob" style="flex:2.7"></i></div>
+                  <div class="clist">
+                    <div class="cl k-rent"><i></i><span>Rent</span><b class="amt">৳15,000</b><em>54.8%</em></div>
+                    <div class="cl k-groc"><i></i><span>Groceries &amp; Bazar</span><b class="amt">৳5,200</b><em>19.0%</em></div>
+                    <div class="cl k-food"><i></i><span>Food &amp; Dining</span><b class="amt">৳3,150</b><em>11.5%</em></div>
+                    <div class="cl k-trans"><i></i><span>Transport</span><b class="amt">৳1,900</b><em>6.9%</em></div>
+                    <div class="cl k-util"><i></i><span>Utilities</span><b class="amt">৳1,350</b><em>4.9%</em></div>
+                    <div class="cl k-mob"><i></i><span>Mobile &amp; Internet</span><b class="amt">৳750</b><em>2.7%</em></div>
+                  </div>
+                </div>
+                <div class="dcard">
+                  <div class="ch"><b>Spending, last 6 months</b><span class="lnk">Expenses</span></div>
+                  <svg class="chart" viewBox="0 0 320 170" aria-hidden="true">
+                    <line class="gl" x1="34" y1="140" x2="312" y2="140"/><line class="gl" x1="34" y1="97.3" x2="312" y2="97.3"/><line class="gl" x1="34" y1="54.7" x2="312" y2="54.7"/><line class="gl" x1="34" y1="12" x2="312" y2="12"/>
+                    <text x="28" y="143" text-anchor="end">0</text><text x="28" y="100" text-anchor="end">15k</text><text x="28" y="58" text-anchor="end">30k</text><text x="28" y="15" text-anchor="end">45k</text>
+                    <rect class="bar0" x="45.2" y="51.3" width="24" height="88.7" rx="4"/><rect class="bar0" x="91.5" y="55.1" width="24" height="84.9" rx="4"/><rect class="bar0" x="137.9" y="45" width="24" height="95" rx="4"/><rect class="bar0" x="184.2" y="54.4" width="24" height="85.6" rx="4"/><rect class="bar0" x="230.5" y="46.8" width="24" height="93.2" rx="4"/><rect class="bar1" x="276.9" y="62.2" width="24" height="77.8" rx="4"/>
+                    <line class="bl" x1="34" y1="26.2" x2="312" y2="26.2"/><text class="blt" x="312" y="21" text-anchor="end">Budget ৳40k</text>
+                    <text class="val" x="57.2" y="46.3" text-anchor="middle">31.2k</text><text class="val" x="103.5" y="50.1" text-anchor="middle">29.9k</text><text class="val" x="149.9" y="40" text-anchor="middle">33.4k</text><text class="val" x="196.2" y="49.4" text-anchor="middle">30.1k</text><text class="val" x="242.5" y="41.8" text-anchor="middle">32.8k</text><text class="val" x="288.9" y="57.2" text-anchor="middle">27.4k</text>
+                    <text x="57.2" y="156" text-anchor="middle">Jun</text><text x="103.5" y="156" text-anchor="middle">Jul</text><text x="149.9" y="156" text-anchor="middle">Aug</text><text x="196.2" y="156" text-anchor="middle">Sep</text><text x="242.5" y="156" text-anchor="middle">Oct</text><text class="val" x="288.9" y="156" text-anchor="middle">Nov</text>
+                  </svg>
+                </div>
+                <div class="dcard">
+                  <div class="ch"><b>Recent</b><span class="lnk">See all transactions</span></div>
+                  <div class="dayh"><span>Today</span><span>Spent ৳1,240</span></div>
+                  <div class="txr"><span class="tile k-food"><svg class="ic"><use href="#i-food"/></svg></span><span class="tt"><b>Lunch at office</b><small>Food &amp; Dining, bKash</small></span><span class="amt">৳320</span></div>
+                  <div class="txr"><span class="tile k-groc"><svg class="ic"><use href="#i-basket"/></svg></span><span class="tt"><b>Karwan Bazar</b><small>Groceries &amp; Bazar, Cash</small></span><span class="amt">৳850</span></div>
+                  <div class="txr"><span class="tile k-trans"><svg class="ic"><use href="#i-bus"/></svg></span><span class="tt"><b>Rickshaw</b><small>Transport, Cash</small></span><span class="amt">৳70</span></div>
+                  <div class="dayh"><span>Yesterday</span><span>Spent ৳1,600</span></div>
+                  <div class="txr"><span class="tile k-util"><svg class="ic"><use href="#i-zap"/></svg></span><span class="tt"><b>Electricity, prepaid</b><small>Utilities, Nagad</small></span><span class="amt">৳1,000</span></div>
+                </div>
+                <div class="dcard">
+                  <div class="ch"><b>Needs attention</b></div>
+                  <div class="att over"><svg class="ic"><use href="#i-alert"/></svg><span><b>Food &amp; Dining is ৳150 over</b> its ৳3,000 budget.</span></div>
+                  <div class="att warn"><svg class="ic"><use href="#i-alert"/></svg><span><b>Groceries &amp; Bazar has ৳800 left</b> for the last 6 days.</span></div>
+                  <div class="att info"><svg class="ic"><use href="#i-check"/></svg><span><b>Rent is paid.</b> Its ৳15,000 budget is fully used.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Transactions</h3><p>Filters sit inline as dropdowns on desktop, totals stay on top, days carry a labelled total, and every save ends with a toast that can be undone.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop transactions screen mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Transactions</span></div>
+          <div class="desk" data-nav="transactions">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Transactions</span><span class="msw"><span class="mb"><svg class="ic"><use href="#i-chev-l"/></svg></span><b>November 2026</b><span class="mb"><svg class="ic"><use href="#i-chev-r"/></svg></span></span><span class="sp"></span><span class="btn outline"><svg class="ic"><use href="#i-download"/></svg>Export CSV</span></div>
+              <div class="tbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg>Search merchant or note</span><span class="dd">All types<svg class="ic"><use href="#i-chev-d"/></svg></span><span class="dd">Category<svg class="ic"><use href="#i-chev-d"/></svg></span><span class="dd">Paid with<svg class="ic"><use href="#i-chev-d"/></svg></span><span class="dd">Tag<svg class="ic"><use href="#i-chev-d"/></svg></span></div>
+              <div class="tstrip"><div><span>Spent</span><b class="amt">৳27,350</b></div><div><span>Income</span><b class="amt in">+৳85,000</b></div><div><span>Net</span><b class="amt">+৳57,650</b></div><div><span>Transactions</span><b class="amt">38</b></div></div>
+              <div class="dcard tl">
+                <div class="tl-h"><span></span><span>Merchant and category</span><span>Paid with</span><span>Tags</span><span class="r">Amount</span></div>
+                <div class="tl-day"><b>Today, Tue 24 Nov</b><span>Spent ৳1,240</span></div>
+                <div class="tl-r"><span class="tile k-food"><svg class="ic"><use href="#i-food"/></svg></span><span class="tt"><b>Lunch at office</b><small>Food &amp; Dining</small></span><span class="pm">bKash</span><span class="tg">#office</span><span class="amt r">৳320</span></div>
+                <div class="tl-r"><span class="tile k-groc"><svg class="ic"><use href="#i-basket"/></svg></span><span class="tt"><b>Karwan Bazar</b><small>Groceries &amp; Bazar</small></span><span class="pm">Cash</span><span class="tg">#weekly</span><span class="amt r">৳850</span></div>
+                <div class="tl-r"><span class="tile k-trans"><svg class="ic"><use href="#i-bus"/></svg></span><span class="tt"><b>Rickshaw</b><small>Transport</small></span><span class="pm">Cash</span><span></span><span class="amt r">৳70</span></div>
+                <div class="tl-day"><b>Mon 23 Nov</b><span>Spent ৳1,600</span></div>
+                <div class="tl-r"><span class="tile k-util"><svg class="ic"><use href="#i-zap"/></svg></span><span class="tt"><b>Electricity, prepaid</b><small>Utilities</small></span><span class="pm">Nagad</span><span></span><span class="amt r">৳1,000</span></div>
+                <div class="tl-r"><span class="tile k-mob"><svg class="ic"><use href="#i-phone"/></svg></span><span class="tt"><b>Mobile recharge</b><small>Mobile &amp; Internet</small></span><span class="pm">bKash</span><span></span><span class="amt r">৳300</span></div>
+                <div class="tl-r"><span class="tile k-trans"><svg class="ic"><use href="#i-bus"/></svg></span><span class="tt"><b>CNG to Gulshan</b><small>Transport</small></span><span class="pm">Cash</span><span></span><span class="amt r">৳300</span></div>
+                <div class="tl-day"><b>Sun 22 Nov</b><span>Spent ৳3,600</span></div>
+                <div class="tl-r"><span class="tile k-groc"><svg class="ic"><use href="#i-basket"/></svg></span><span class="tt"><b>Supermarket</b><small>Groceries &amp; Bazar</small></span><span class="pm">Card</span><span class="tg">#weekly</span><span class="amt r">৳2,150</span></div>
+                <div class="tl-r"><span class="tile k-food"><svg class="ic"><use href="#i-food"/></svg></span><span class="tt"><b>Dinner with family</b><small>Food &amp; Dining</small></span><span class="pm">bKash</span><span class="tg">#family</span><span class="amt r">৳1,450</span></div>
+              </div>
+              <div class="toast"><svg class="ic"><use href="#i-check"/></svg><span>Saved ৳70 to Transport</span><b>Undo</b></div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Add transaction</h3><p>Opens as a right-hand panel on desktop. Amount first, an icon grid for categories, the rest laid out below, and Save always visible in the footer.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop add transaction panel mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Transactions</span></div>
+          <div class="desk" data-nav="transactions">
+            <div class="dmain flat">
+              <div class="dhead"><span class="dh1">Transactions</span><span class="msw"><span class="mb"><svg class="ic"><use href="#i-chev-l"/></svg></span><b>November 2026</b><span class="mb"><svg class="ic"><use href="#i-chev-r"/></svg></span></span></div>
+              <div class="tstrip"><div><span>Spent</span><b class="amt">৳27,350</b></div><div><span>Income</span><b class="amt in">+৳85,000</b></div><div><span>Net</span><b class="amt">+৳57,650</b></div><div><span>Transactions</span><b class="amt">38</b></div></div>
+              <div class="dcard tl">
+                <div class="tl-day"><b>Today, Tue 24 Nov</b><span>Spent ৳1,240</span></div>
+                <div class="tl-r"><span class="tile k-groc"><svg class="ic"><use href="#i-basket"/></svg></span><span class="tt"><b>Karwan Bazar</b><small>Groceries &amp; Bazar</small></span><span class="pm">Cash</span><span class="tg">#weekly</span><span class="amt r">৳850</span></div>
+                <div class="tl-r"><span class="tile k-trans"><svg class="ic"><use href="#i-bus"/></svg></span><span class="tt"><b>Rickshaw</b><small>Transport</small></span><span class="pm">Cash</span><span></span><span class="amt r">৳70</span></div>
+              </div>
+              <div class="scrim"></div>
+              <div class="panel">
+                <div class="pn-h"><b>New expense</b><span class="xbtn"><svg class="ic"><use href="#i-x"/></svg></span></div>
+                <div class="pn-b">
+                  <div class="seg2"><span class="on">Expense</span><span>Income</span></div>
+                  <div class="amtin"><small>৳</small><b>320</b><i class="caret"></i></div>
+                  <span class="flbl">Category</span>
+                  <div class="cgrid">
+                    <span class="cb on k-food"><span class="tile"><svg class="ic"><use href="#i-food"/></svg></span>Food</span>
+                    <span class="cb k-groc"><span class="tile"><svg class="ic"><use href="#i-basket"/></svg></span>Bazar</span>
+                    <span class="cb k-trans"><span class="tile"><svg class="ic"><use href="#i-bus"/></svg></span>Transport</span>
+                    <span class="cb k-rent"><span class="tile"><svg class="ic"><use href="#i-house"/></svg></span>Rent</span>
+                    <span class="cb k-util"><span class="tile"><svg class="ic"><use href="#i-zap"/></svg></span>Utilities</span>
+                    <span class="cb k-mob"><span class="tile"><svg class="ic"><use href="#i-phone"/></svg></span>Mobile</span>
+                    <span class="cb k-health"><span class="tile"><svg class="ic"><use href="#i-heart"/></svg></span>Health</span>
+                    <span class="cb k-other"><span class="tile"><svg class="ic"><use href="#i-more"/></svg></span>More</span>
+                  </div>
+                  <div class="frow"><label>Date</label><div class="chips"><span class="chip on">Today</span><span class="chip">Yesterday</span><span class="chip"><svg class="ic"><use href="#i-cal"/></svg>Pick a date</span></div></div>
+                  <div class="frow"><label>Merchant</label><span class="inp">Lunch at office</span></div>
+                  <div class="frow two"><div><label>Paid with</label><span class="inp">bKash<svg class="ic"><use href="#i-chev-d"/></svg></span></div><div><label>Tags</label><span class="inp"><span class="tagc">#office<span class="x"><svg class="ic"><use href="#i-x"/></svg></span></span></span></div></div>
+                  <span class="lnk"><svg class="ic" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-split"/></svg> Split across categories</span>
+                </div>
+                <div class="pn-f"><span class="btn outline">Cancel</span><span class="btn primary grow">Save ৳320 expense</span></div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Budgets</h3><p>One headline for the month with a daily allowance, then category budgets with a clear status, and categories without a budget in their own short list.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop budgets screen mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Budgets</span></div>
+          <div class="desk" data-nav="budgets">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Budgets</span><span class="msw"><span class="mb"><svg class="ic"><use href="#i-chev-l"/></svg></span><b>November 2026</b><span class="mb"><svg class="ic"><use href="#i-chev-r"/></svg></span></span></div>
+              <div class="dcard hero">
+                <div class="bud-top"><div><span class="lbl">Monthly budget</span><span class="big xl">৳12,650<span class="of">left of ৳40,000</span></span></div><span class="btn outline sm">Change limit</span></div>
+                <div class="track"><i style="width:68.4%"></i></div>
+                <div class="meta"><span>৳27,350 spent</span><span>6 days left</span></div>
+                <p class="hint">Spend up to ৳2,108 a day to stay on budget.</p>
+              </div>
+              <div class="dcard">
+                <div class="ch"><b>Category budgets</b><span class="lnk">Add a category budget</span></div>
+                <div class="br k-food"><span class="tile"><svg class="ic"><use href="#i-food"/></svg></span><b>Food &amp; Dining</b><div class="track over"><i style="width:100%"></i></div><span class="sum">৳3,150 of ৳3,000</span><span class="st over">৳150 over</span></div>
+                <div class="br k-rent"><span class="tile"><svg class="ic"><use href="#i-house"/></svg></span><b>Rent</b><div class="track"><i style="width:100%"></i></div><span class="sum">৳15,000 of ৳15,000</span><span class="st full">Fully used</span></div>
+                <div class="br k-groc"><span class="tile"><svg class="ic"><use href="#i-basket"/></svg></span><b>Groceries &amp; Bazar</b><div class="track warn"><i style="width:86.7%"></i></div><span class="sum">৳5,200 of ৳6,000</span><span class="st warn">৳800 left</span></div>
+                <div class="br k-trans"><span class="tile"><svg class="ic"><use href="#i-bus"/></svg></span><b>Transport</b><div class="track"><i style="width:76%"></i></div><span class="sum">৳1,900 of ৳2,500</span><span class="st ok">৳600 left</span></div>
+              </div>
+              <div class="dcard">
+                <div class="ch"><b>No budget yet</b></div>
+                <div class="nb k-util"><span class="tile"><svg class="ic"><use href="#i-zap"/></svg></span><span>Utilities</span><span class="amt">৳1,350 spent</span><span class="btn outline sm">Set budget</span></div>
+                <div class="nb k-mob"><span class="tile"><svg class="ic"><use href="#i-phone"/></svg></span><span>Mobile &amp; Internet</span><span class="amt">৳750 spent</span><span class="btn outline sm">Set budget</span></div>
+                <span class="note">6 more categories have no spending this month.</span>
+              </div>
+              <span class="note">Budgets apply from the month you set them. Past months are read-only.</span>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Settings: General</h3><p>Settings gets its own side menu. General holds the profile, a theme switch, a Bangla numerals option and installing the app.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop settings general screen mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Settings</span></div>
+          <div class="desk" data-nav="settings">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Settings</span></div>
+              <div class="set">
+                <div class="subnav" data-sub="general"></div>
+                <div class="set-c">
+                  <div class="dcard"><div class="ch"><b>Profile</b></div><div class="kv"><span>Email</span><span>you@example.com</span><span>Time zone</span><span>Asia/Dhaka</span><span>Currency</span><span>Taka (৳, BDT)</span></div></div>
+                  <div class="dcard"><div class="ch"><b>Appearance</b></div>
+                    <div class="orow"><div><span>Theme</span><small>System follows your device setting.</small></div><div class="seg3" style="width:300px"><span class="on"><svg class="ic"><use href="#i-device"/></svg>System</span><span><svg class="ic"><use href="#i-sun"/></svg>Light</span><span><svg class="ic"><use href="#i-moon"/></svg>Dark</span></div></div>
+                    <div class="orow"><div><span>Bangla numerals</span><small>Show amounts as ৳১২,৬৫০</small></div><span class="sw"></span></div>
+                  </div>
+                  <div class="dcard"><div class="orow"><div><span><b>Install Kori</b></span><small>Opens like an app and loads without a connection.</small></div><span class="btn outline sm"><svg class="ic"><use href="#i-install"/></svg>Install</span></div></div>
+                  <div><span class="btn danger"><svg class="ic"><use href="#i-logout"/></svg>Log out</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Settings: Categories</h3><p>Tap a row to edit or archive; drag the handle to reorder. Names never truncate, and each row shows this month's spending.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop categories settings mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Categories</span></div>
+          <div class="desk" data-nav="settings">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Settings</span></div>
+              <div class="set">
+                <div class="subnav" data-sub="categories"></div>
+                <div class="set-c">
+                  <div class="orow"><div class="seg2 inline" style="width:220px"><span class="on">Expense</span><span>Income</span></div><span class="btn primary sm"><svg class="ic"><use href="#i-plus"/></svg>Add category</span></div>
+                  <div class="dcard" style="padding-block:6px">
+                    <div class="sr k-food"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-food"/></svg></span><span>Food &amp; Dining</span><span class="muted">৳3,150 this month</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-groc"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-basket"/></svg></span><span>Groceries &amp; Bazar</span><span class="muted">৳5,200 this month</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-trans"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-bus"/></svg></span><span>Transport</span><span class="muted">৳1,900 this month</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-rent"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-house"/></svg></span><span>Rent</span><span class="muted">৳15,000 this month</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-util"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-zap"/></svg></span><span>Utilities</span><span class="muted">৳1,350 this month</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-mob"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-phone"/></svg></span><span>Mobile &amp; Internet</span><span class="muted">৳750 this month</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-health"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-heart"/></svg></span><span>Health &amp; Medicine</span><span class="muted">Nothing yet</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-shop"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-bag"/></svg></span><span>Shopping</span><span class="muted">Nothing yet</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                  </div>
+                  <div class="orow"><span class="note">Drag a handle to reorder. Archived categories stay on past transactions.</span><span class="lnk">Show archived (1)</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Settings: Payment methods</h3><p>Same list pattern as categories, with the kind shown as a label and a default method that new entries start with.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop payment methods settings mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Payment methods</span></div>
+          <div class="desk" data-nav="settings">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Settings</span></div>
+              <div class="set">
+                <div class="subnav" data-sub="payment"></div>
+                <div class="set-c">
+                  <div class="orow"><span class="note">New expenses start with your default method.</span><span class="btn primary sm"><svg class="ic"><use href="#i-plus"/></svg>Add payment method</span></div>
+                  <div class="dcard" style="padding-block:6px">
+                    <div class="sr k-other"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-cash"/></svg></span><span>Cash</span><span class="kind">Cash</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-mob"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-wallet"/></svg></span><span>bKash<span class="def">Default</span></span><span class="kind">Mobile wallet</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-food"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-wallet"/></svg></span><span>Nagad</span><span class="kind">Mobile wallet</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-util"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-card"/></svg></span><span>Card</span><span class="kind">Card</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr k-rent"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-bank"/></svg></span><span>Bank account</span><span class="kind">Bank</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+      <figure class="dframe">
+        <figcaption><h3>Settings: Tags</h3><p>A searchable list with counts. The naming rule is stated up front, and renaming into an existing tag merges the two.</p></figcaption>
+        <div class="hscroll"><div class="browser mock" role="img" aria-label="Desktop tags settings mockup">
+          <div class="wbar"><i></i><i></i><i></i><span>Tags</span></div>
+          <div class="desk" data-nav="settings">
+            <div class="dmain">
+              <div class="dhead"><span class="dh1">Settings</span></div>
+              <div class="set">
+                <div class="subnav" data-sub="tags"></div>
+                <div class="set-c">
+                  <span class="search" style="flex:none"><svg class="ic"><use href="#i-search"/></svg>Find a tag</span>
+                  <div class="dcard" style="padding-block:6px">
+                    <div class="sr"><svg class="ic grip" style="opacity:0"><use href="#i-grip"/></svg><span class="tile k-other"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:13px">#office</span><span class="muted">12 transactions</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr"><svg class="ic grip" style="opacity:0"><use href="#i-grip"/></svg><span class="tile k-other"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:13px">#weekly</span><span class="muted">8 transactions</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr"><svg class="ic grip" style="opacity:0"><use href="#i-grip"/></svg><span class="tile k-other"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:13px">#family</span><span class="muted">5 transactions</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                    <div class="sr"><svg class="ic grip" style="opacity:0"><use href="#i-grip"/></svg><span class="tile k-other"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:13px">#eid</span><span class="muted">3 transactions</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+                  </div>
+                  <span class="note">Tags are saved in lowercase, and spaces become hyphens. Renaming a tag to one that already exists merges them.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </figure>
+
+    </div>
+  </section>
+
+  <section id="mobile" aria-labelledby="mob-h">
+    <h2 id="mob-h">Phone screens</h2>
+    <p class="lede">Shown at 300px wide inside a phone frame. The add button sits in the middle of the tab bar, and every nested screen has a back button.</p>
+    <div class="phones">
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone log in screen mockup">
+          <div class="pl-top"><svg aria-hidden="true"><use href="#logo-a"/></svg><div class="pl-word">Kori <span lang="bn">কড়ি</span></div><p>Every taka, accounted for.</p></div>
+          <div class="pl-form">
+            <div class="frow"><label>Email</label><span class="inp focus">you@example.com</span></div>
+            <div class="frow"><label>Password</label><span class="inp pw">••••••••••<span class="eye"><svg class="ic"><use href="#i-eye"/></svg></span></span></div>
+            <span class="lnk r">Forgot password?</span>
+            <span class="btn primary block lg">Log in</span>
+          </div>
+        </div></div>
+        <figcaption><b>Log in</b><span>Brand on top, the form in thumb reach.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone dashboard mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="pbrand"><svg aria-hidden="true"><use href="#logo-a"/></svg>Kori</span><span class="pill">Nov 2026<svg class="ic"><use href="#i-chev-d"/></svg></span></div>
+            <div class="pcard hero"><span class="lbl" style="color:var(--a-hero-muted)">Left to spend in November</span><span class="big pbig">৳12,650</span><div class="track"><i style="width:68.4%"></i></div><div class="pmeta"><span>৳27,350 of ৳40,000</span><span>6 days left</span></div></div>
+            <div class="ptot"><div><span>Spent</span><b class="amt">৳27,350</b></div><div><span>Income</span><b class="amt in">+৳85,000</b></div><div><span>Net</span><b class="amt">+৳57,650</b></div></div>
+            <div class="patt"><svg class="ic"><use href="#i-alert"/></svg><span><b>Food &amp; Dining is ৳150 over</b> its budget.</span></div>
+            <div class="pcard"><div class="pch"><b>Where it went</b><span class="lnk">All</span></div><div class="stack"><i class="k-rent" style="flex:54.8"></i><i class="k-groc" style="flex:19"></i><i class="k-food" style="flex:11.5"></i><i class="k-trans" style="flex:6.9"></i><i class="k-util" style="flex:4.9"></i><i class="k-mob" style="flex:2.7"></i></div>
+              <div class="clist"><div class="cl k-rent"><i></i><span>Rent</span><b class="amt">৳15,000</b><em>54.8%</em></div><div class="cl k-groc"><i></i><span>Groceries</span><b class="amt">৳5,200</b><em>19.0%</em></div><div class="cl k-food"><i></i><span>Food</span><b class="amt">৳3,150</b><em>11.5%</em></div></div></div>
+            <div class="pcard"><div class="pch"><b>Today</b><span class="lnk">Spent ৳1,240</span></div>
+              <div class="ptx"><span class="tile k-food"><svg class="ic"><use href="#i-food"/></svg></span><span class="tt"><b>Lunch at office</b><small>Food &amp; Dining</small></span><span class="amt">৳320</span></div>
+              <div class="ptx"><span class="tile k-groc"><svg class="ic"><use href="#i-basket"/></svg></span><span class="tt"><b>Karwan Bazar</b><small>Groceries &amp; Bazar</small></span><span class="amt">৳850</span></div></div>
+          </div>
+          <div class="ptabs" data-tab="dashboard"></div>
+        </div></div>
+        <figcaption><b>Dashboard</b><span>What's left first, then totals, alerts, categories and today.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone first-run dashboard mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="pbrand"><svg aria-hidden="true"><use href="#logo-a"/></svg>Kori</span><span class="pill">Nov 2026<svg class="ic"><use href="#i-chev-d"/></svg></span></div>
+            <div class="pcard welcome"><b style="font-family:var(--font-display);font-size:18px;font-weight:650">Welcome to Kori</b><span style="color:var(--a-muted)">Four steps and your month is set up.</span>
+              <div>
+                <div class="check done"><span class="cbx"><svg class="ic"><use href="#i-check"/></svg></span><span>Log in</span><span></span></div>
+                <div class="check"><span class="cbx"></span><span>Add your first expense</span><span class="btn primary sm">Add</span></div>
+                <div class="check"><span class="cbx"></span><span>Set a monthly budget</span><svg class="ic" style="color:var(--a-muted)"><use href="#i-chev-r"/></svg></div>
+                <div class="check"><span class="cbx"></span><span>Check your categories</span><svg class="ic" style="color:var(--a-muted)"><use href="#i-chev-r"/></svg></div>
+                <div class="check"><span class="cbx"></span><span>Install Kori on this phone</span><svg class="ic" style="color:var(--a-muted)"><use href="#i-chev-r"/></svg></div>
+              </div>
+            </div>
+            <div class="ghost"><svg class="ic"><use href="#i-target"/></svg><b style="color:var(--a-ink)">Your spending will show here</b><span>Trends appear after your first month.</span></div>
+          </div>
+          <div class="ptabs" data-tab="dashboard"></div>
+        </div></div>
+        <figcaption><b>First run</b><span>A checklist instead of four empty cards.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone transactions mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="ptitle">Transactions</span><span class="pill">Nov 2026<svg class="ic"><use href="#i-chev-d"/></svg></span></div>
+            <div class="psearch"><svg class="ic"><use href="#i-search"/></svg>Search merchant or note</div>
+            <div class="chips"><span class="chip on">All</span><span class="chip">Expenses</span><span class="chip">Income</span><span class="chip"><svg class="ic"><use href="#i-sliders"/></svg>Filters</span></div>
+            <div class="ptot"><div><span>Spent</span><b class="amt">৳27,350</b></div><div><span>Income</span><b class="amt in">+৳85,000</b></div><div><span>Net</span><b class="amt">+৳57,650</b></div></div>
+            <div class="pcard"><div class="pch"><b>Today</b><span style="color:var(--a-muted);font-size:11.5px">Spent ৳1,240</span></div>
+              <div class="ptx"><span class="tile k-food"><svg class="ic"><use href="#i-food"/></svg></span><span class="tt"><b>Lunch at office</b><small>Food &amp; Dining, bKash</small></span><span class="amt">৳320</span></div>
+              <div class="ptx"><span class="tile k-groc"><svg class="ic"><use href="#i-basket"/></svg></span><span class="tt"><b>Karwan Bazar</b><small>Groceries, Cash</small></span><span class="amt">৳850</span></div>
+              <div class="ptx"><span class="tile k-trans"><svg class="ic"><use href="#i-bus"/></svg></span><span class="tt"><b>Rickshaw</b><small>Transport, Cash</small></span><span class="amt">৳70</span></div></div>
+            <div class="pcard"><div class="pch"><b>Yesterday</b><span style="color:var(--a-muted);font-size:11.5px">Spent ৳1,600</span></div>
+              <div class="ptx"><span class="tile k-util"><svg class="ic"><use href="#i-zap"/></svg></span><span class="tt"><b>Electricity, prepaid</b><small>Utilities, Nagad</small></span><span class="amt">৳1,000</span></div></div>
+            <div class="ptoast"><svg class="ic"><use href="#i-check"/></svg><span>Saved ৳70 to Transport</span><b>Undo</b></div>
+          </div>
+          <div class="ptabs" data-tab="transactions"></div>
+        </div></div>
+        <figcaption><b>Transactions</b><span>Quick type chips, labelled day totals, an undo toast.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone add expense sheet mockup">
+          <div class="pfull">
+            <div class="pn-h"><b>New expense</b><span class="xbtn"><svg class="ic"><use href="#i-x"/></svg></span></div>
+            <div class="pn-b" style="padding-inline:14px;gap:12px">
+              <div class="seg2"><span class="on">Expense</span><span>Income</span></div>
+              <div class="amtin"><small>৳</small><b>320</b><i class="caret"></i></div>
+              <div class="cgrid" style="margin-top:2px">
+                <span class="cb on k-food"><span class="tile"><svg class="ic"><use href="#i-food"/></svg></span>Food</span>
+                <span class="cb k-groc"><span class="tile"><svg class="ic"><use href="#i-basket"/></svg></span>Bazar</span>
+                <span class="cb k-trans"><span class="tile"><svg class="ic"><use href="#i-bus"/></svg></span>Transport</span>
+                <span class="cb k-rent"><span class="tile"><svg class="ic"><use href="#i-house"/></svg></span>Rent</span>
+                <span class="cb k-util"><span class="tile"><svg class="ic"><use href="#i-zap"/></svg></span>Utilities</span>
+                <span class="cb k-mob"><span class="tile"><svg class="ic"><use href="#i-phone"/></svg></span>Mobile</span>
+                <span class="cb k-health"><span class="tile"><svg class="ic"><use href="#i-heart"/></svg></span>Health</span>
+                <span class="cb k-other"><span class="tile"><svg class="ic"><use href="#i-more"/></svg></span>More</span>
+              </div>
+              <div class="chips"><span class="chip"><svg class="ic"><use href="#i-cal"/></svg>Today</span><span class="chip"><svg class="ic"><use href="#i-wallet"/></svg>bKash</span><span class="chip"><svg class="ic"><use href="#i-list"/></svg>Merchant</span></div>
+              <span class="lnk"><svg class="ic" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-plus"/></svg> Tags, note or split</span>
+            </div>
+            <div class="pfoot"><span class="btn primary block lg">Save ৳320 expense</span></div>
+          </div>
+        </div></div>
+        <figcaption><b>Add expense</b><span>Amount, category, Save. Three taps, no scrolling.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone budgets mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="ptitle">Budgets</span><span class="pill">Nov 2026<svg class="ic"><use href="#i-chev-d"/></svg></span></div>
+            <div class="pcard hero"><span class="lbl" style="color:var(--a-hero-muted)">Monthly budget</span><span class="big pbig">৳12,650</span><span class="pmeta" style="margin-top:-4px"><span>left of ৳40,000</span></span><div class="track"><i style="width:68.4%"></i></div><div class="pmeta"><span>Up to ৳2,108 a day</span><span>6 days left</span></div></div>
+            <div class="pcard">
+              <div class="pbr k-food"><div class="pbr-h"><span class="tile"><svg class="ic"><use href="#i-food"/></svg></span><b style="font-weight:500">Food &amp; Dining</b><span class="st over">৳150 over</span></div><div class="track over"><i style="width:100%"></i></div><div class="meta"><span>৳3,150 of ৳3,000</span></div></div>
+              <div class="pbr k-groc"><div class="pbr-h"><span class="tile"><svg class="ic"><use href="#i-basket"/></svg></span><b style="font-weight:500">Groceries &amp; Bazar</b><span class="st warn">৳800 left</span></div><div class="track warn"><i style="width:86.7%"></i></div><div class="meta"><span>৳5,200 of ৳6,000</span></div></div>
+              <div class="pbr k-trans"><div class="pbr-h"><span class="tile"><svg class="ic"><use href="#i-bus"/></svg></span><b style="font-weight:500">Transport</b><span class="st ok">৳600 left</span></div><div class="track"><i style="width:76%"></i></div><div class="meta"><span>৳1,900 of ৳2,500</span></div></div>
+              <div class="pbr k-rent"><div class="pbr-h"><span class="tile"><svg class="ic"><use href="#i-house"/></svg></span><b style="font-weight:500">Rent</b><span class="st full">Fully used</span></div><div class="track"><i style="width:100%"></i></div><div class="meta"><span>৳15,000 of ৳15,000</span></div></div>
+            </div>
+          </div>
+          <div class="ptabs" data-tab="budgets"></div>
+        </div></div>
+        <figcaption><b>Budgets</b><span>Daily allowance up top, status on every category.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone settings mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="ptitle">Settings</span></div>
+            <div class="pcard" style="grid-template-columns:36px 1fr;align-items:center"><span class="tile" style="--c:var(--a-brand);width:36px;height:36px;border-radius:50%"><svg class="ic"><use href="#i-user"/></svg></span><span class="tt"><b>you@example.com</b><small>Asia/Dhaka, Taka</small></span></div>
+            <div class="pcard"><span class="flbl">Theme</span><div class="seg3"><span class="on">System</span><span>Light</span><span>Dark</span></div><div class="orow"><span>Bangla numerals</span><span class="sw"></span></div></div>
+            <div class="plist">
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-list"/></svg></span><span>Categories</span><small>16</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-wallet"/></svg></span><span>Payment methods</span><small>5</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-tag"/></svg></span><span>Tags</span><small>4</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-install"/></svg></span><span>Install Kori</span><small></small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+            </div>
+            <span class="btn danger block"><svg class="ic"><use href="#i-logout"/></svg>Log out</span>
+          </div>
+          <div class="ptabs" data-tab="settings"></div>
+        </div></div>
+        <figcaption><b>Settings</b><span>Profile, theme, the lists you manage, log out.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone categories settings mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="back"><span class="bk"><svg class="ic"><use href="#i-chev-l"/></svg></span><span class="ptitle">Categories</span></span><span class="lnk" style="font-size:13px">Add</span></div>
+            <div class="seg2"><span class="on">Expense</span><span>Income</span></div>
+            <div class="plist">
+              <div class="prow k-food"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-food"/></svg></span><span>Food &amp; Dining</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-groc"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-basket"/></svg></span><span>Groceries &amp; Bazar</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-trans"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-bus"/></svg></span><span>Transport</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-rent"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-house"/></svg></span><span>Rent</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-util"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-zap"/></svg></span><span>Utilities</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-mob"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-phone"/></svg></span><span>Mobile &amp; Internet</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-health"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-heart"/></svg></span><span>Health &amp; Medicine</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="prow k-shop"><svg class="ic grip"><use href="#i-grip"/></svg><span class="tile"><svg class="ic"><use href="#i-bag"/></svg></span><span>Shopping</span><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+            </div>
+            <span class="lnk" style="justify-self:center">Show archived (1)</span>
+          </div>
+          <div class="ptabs" data-tab="settings"></div>
+        </div></div>
+        <figcaption><b>Categories</b><span>Back button, full names, drag to reorder.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone tags settings with rename sheet mockup">
+          <div class="pbody">
+            <div class="ptop"><span class="back"><span class="bk"><svg class="ic"><use href="#i-chev-l"/></svg></span><span class="ptitle">Tags</span></span></div>
+            <div class="plist">
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:12.5px">#office</span><small>12</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:12.5px">#weekly</span><small>8</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:12.5px">#family</span><small>5</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+              <div class="mrow"><span class="tile"><svg class="ic"><use href="#i-tag"/></svg></span><span class="tg" style="font-size:12.5px">#eid</span><small>3</small><svg class="ic chev"><use href="#i-chev-r"/></svg></div>
+            </div>
+          </div>
+          <div class="ptabs" data-tab="settings"></div>
+          <div class="scrim"></div>
+          <div class="psheet">
+            <span class="grab"></span>
+            <b style="font-size:15px">Rename #office</b>
+            <div class="frow"><label>New name</label><span class="inp focus">Office Lunch</span><span class="note">Saved as #office-lunch</span></div>
+            <div style="display:flex;gap:8px"><span class="btn outline grow">Cancel</span><span class="btn primary grow">Rename</span></div>
+            <span class="btn danger block sm">Delete tag</span>
+          </div>
+        </div></div>
+        <figcaption><b>Tags</b><span>The rename sheet previews the saved name.</span></figcaption>
+      </figure>
+
+      <figure class="pfig">
+        <div class="phone"><div class="pscreen mock" role="img" aria-label="Phone page not found mockup">
+          <div class="pbody" style="display:flex;flex-direction:column">
+            <div class="ptop"><span class="pbrand"><svg aria-hidden="true"><use href="#logo-a"/></svg>Kori</span></div>
+            <div class="nf"><span class="code">404</span><span class="t">This page doesn't exist</span><p>The link may be old or mistyped. Your data is safe.</p><span class="btn primary">Go to dashboard</span><span class="lnk">Go back</span></div>
+          </div>
+          <div class="ptabs" data-tab="none"></div>
+        </div></div>
+        <figcaption><b>Page not found</b><span>A real 404 with a way home, inside the app.</span></figcaption>
+      </figure>
+
+    </div>
+  </section>
+
+  <section id="foundations" aria-labelledby="found-h">
+    <h2 id="found-h">Colours, type and components</h2>
+    <div class="found">
+      <div class="pal">
+        <div class="swa"><div class="chip2"><span style="background:#2F3A99"></span><span style="background:#8F9BFF"></span></div><b>Neel</b><span>#2F3A99, 9.6:1 on white<br>Dark: #8F9BFF<br>Brand, actions, income</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#F2A93B"></span><span style="background:#F5B04C"></span></div><b>Gada</b><span>#F2A93B<br>Logo coin, highlights, near-limit bars. Not for text</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#E8EAF8"></span><span style="background:#23285A"></span></div><b>Neel tint</b><span>#E8EAF8 / #23285A<br>Selected chips, active nav</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#161A33"></span><span style="background:#E8E9F5"></span></div><b>Ink</b><span>#161A33, 16:1<br>Text</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#5A5F78"></span><span style="background:#A3A7C2"></span></div><b>Muted</b><span>#5A5F78, 6.3:1<br>Secondary text</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#F5F6FA"></span><span style="background:#0E1022"></span></div><b>Paper</b><span>#F5F6FA / #0E1022<br>Page ground</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#B3261E"></span><span style="background:#F28B82"></span></div><b>Over budget</b><span>#B3261E, 6.3:1<br>Errors, delete</span></div>
+        <div class="swa"><div class="chip2"><span style="background:#8A5A00"></span><span style="background:#F2B84B"></span></div><b>Near limit</b><span>#8A5A00, 5.8:1<br>Warning text</span></div>
+      </div>
+      <p class="foot">Left half of each swatch is the light theme, right half the dark theme. Category colours avoid green too: orange, cyan, mustard, violet, blue, pink, sienna and lilac.</p>
+      <div class="type">
+        <div class="spec"><span class="n">৳12,50,000</span><span class="bn" lang="bn">মাসের বাজেট ৳৪০,০০০</span><span class="who">Anek Bangla, wide and semi-bold for amounts, titles and the wordmark.</span></div>
+        <div class="spec">
+          <div class="scale">
+            <div><span>Display 46</span><b style="font-family:var(--font-display);font-size:46px;font-stretch:122%;font-weight:680;line-height:1">৳12,650</b></div>
+            <div><span>Title 24</span><b style="font-family:var(--font-display);font-size:24px;font-weight:650">Transactions</b></div>
+            <div><span>Body 15</span><span style="width:auto;color:var(--fg);font-size:15px">Food &amp; Dining is ৳150 over its budget.</span></div>
+            <div><span>Small 12</span><span style="width:auto;font-size:12px">৳27,350 of ৳40,000 spent</span></div>
+          </div>
+          <span class="who">Hind Siliguri for body text and controls. Both families include Bangla.</span>
+        </div>
+      </div>
+      <div class="comp mock" role="img" aria-label="Component samples: buttons, inputs, chips, status labels and a toast">
+        <div class="comp-row"><span class="btn primary">Save ৳320 expense</span><span class="btn outline">Cancel</span><span class="btn danger">Delete</span><span class="lnk">Forgot password?</span></div>
+        <div class="comp-row">
+          <div class="comp-col"><label class="flbl">Merchant</label><span class="inp">Karwan Bazar</span></div>
+          <div class="comp-col"><label class="flbl">Amount</label><span class="inp focus">৳ 850</span></div>
+          <div class="comp-col"><label class="flbl">Category name</label><span class="inp err">A very long category name that goes on…</span><span class="ferr">Use 50 characters or fewer.</span></div>
+        </div>
+        <div class="comp-row"><span class="chip on">Today</span><span class="chip">Yesterday</span><span class="tagc">#office<span class="x"><svg class="ic"><use href="#i-x"/></svg></span></span><span class="st ok">৳600 left</span><span class="st warn">৳800 left</span><span class="st over">৳150 over</span><span class="st full">Fully used</span></div>
+        <div class="comp-row"><span class="seg2 inline" style="width:200px"><span class="on">Expense</span><span>Income</span></span><span class="toast"><svg class="ic"><use href="#i-check"/></svg><span>Budget removed for Transport</span><b>Undo</b></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="patterns" aria-labelledby="pat-h">
+    <h2 id="pat-h">Patterns</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th scope="col">Pattern</th><th scope="col">Today</th><th scope="col">In the refresh</th></tr></thead>
+        <tbody>
+          <tr><td>Forms</td><td>Bottom sheet at every width; 1392px inputs on desktop; Save below the fold</td><td>Right panel on desktop, full-height sheet on phones, footer with Save always visible, discard guard</td></tr>
+          <tr><td>Feedback</td><td>No success toasts; raw "Unprocessable Content" and "Value error" text</td><td>A toast with Undo after every save, change and delete; errors under the field that caused them</td></tr>
+          <tr><td>Month control</td><td>Invisible month input behind the label, three tab stops</td><td>A pill button that opens a month grid</td></tr>
+          <tr><td>Lists you manage</td><td>Four 40px icon buttons per row, names cut off on phones</td><td>Tap a row to edit, drag handle to reorder, delete and archive inside the edit sheet</td></tr>
+          <tr><td>Navigation</td><td>No back button on settings sub-pages; generic error screen for bad links</td><td>Settings side menu on desktop, back button on phones, a real 404 page</td></tr>
+          <tr><td>Empty states</td><td>One sentence and "Add one" for every case</td><td>First-run checklist; separate copy for no matches and for active filters</td></tr>
+          <tr><td>Theme</td><td>Follows the device only; green brand</td><td>System, Light or Dark in Settings; Neel and Gada palette in both themes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">All values are proposals until they're written into a DESIGN.md. Nothing in the app has changed.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var NAV = [["dashboard", "Dashboard", "i-home"], ["transactions", "Transactions", "i-list"], ["budgets", "Budgets", "i-target"], ["settings", "Settings", "i-gear"]];
+  function icon(id) { return '<svg class="ic"><use href="#' + id + '"/></svg>'; }
+  document.querySelectorAll(".desk[data-nav]").forEach(function (d) {
+    var active = d.getAttribute("data-nav");
+    var html = '<aside class="side"><div class="lock"><svg aria-hidden="true"><use href="#logo-a"/></svg><span>Kori</span></div>' +
+      '<span class="btn primary block">' + icon("i-plus") + 'Add expense</span><div class="snav">' +
+      NAV.map(function (n) { return '<span class="nv' + (n[0] === active ? " on" : "") + '">' + icon(n[2]) + n[1] + "</span>"; }).join("") +
+      '</div><div class="side-foot"><i></i>Works offline</div></aside>';
+    d.insertAdjacentHTML("afterbegin", html);
+  });
+  var SUB = [["general", "General"], ["categories", "Categories"], ["payment", "Payment methods"], ["tags", "Tags"]];
+  document.querySelectorAll(".subnav[data-sub]").forEach(function (s) {
+    var active = s.getAttribute("data-sub");
+    s.innerHTML = SUB.map(function (n) { return '<span class="sb' + (n[0] === active ? " on" : "") + '">' + n[1] + "</span>"; }).join("");
+  });
+  var TABS = [["dashboard", "Dashboard", "i-home"], ["transactions", "Transactions", "i-list"], null, ["budgets", "Budgets", "i-target"], ["settings", "Settings", "i-gear"]];
+  document.querySelectorAll(".ptabs[data-tab]").forEach(function (t) {
+    var active = t.getAttribute("data-tab");
+    t.innerHTML = TABS.map(function (n) {
+      if (!n) return '<span class="fab">' + icon("i-plus") + "</span>";
+      return '<span class="tab' + (n[0] === active ? " on" : "") + '">' + icon(n[2]) + n[1] + "</span>";
+    }).join("");
+  });
+  var root = document.getElementById("review");
+  var buttons = document.querySelectorAll("[data-mock-btn]");
+  function setMock(mode) {
+    root.setAttribute("data-mock", mode);
+    buttons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-mock-btn") === mode)); });
+  }
+  buttons.forEach(function (b) { b.addEventListener("click", function () { setMock(b.getAttribute("data-mock-btn")); }); });
+  var t = document.documentElement.getAttribute("data-theme");
+  var prefersDark = false;
+  try { prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) {}
+  setMock(t === "dark" || (!t && prefersDark) ? "dark" : "light");
+})();
+</script>
