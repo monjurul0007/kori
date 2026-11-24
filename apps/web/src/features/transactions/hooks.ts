@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { api, unwrap } from "@/api/client";
 
@@ -6,6 +6,9 @@ import type { Filters } from "./filters";
 
 /** The API rejects searches shorter than 2 characters, so those are not sent. */
 const MIN_SEARCH = 2;
+
+/** A search only applies once it has this many characters (after trimming). */
+export const MIN_SEARCH_LENGTH = MIN_SEARCH;
 
 export function useTransactions(filters: Filters) {
   const q = filters.q.trim();
@@ -29,6 +32,8 @@ export function useTransactions(filters: Filters) {
         }),
       ),
     getNextPageParam: (last) => last.next_cursor ?? undefined,
+    // Keep the old rows on screen while a new query loads, so typing doesn't flash skeletons.
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -204,3 +204,66 @@ describe("transactions list", () => {
     expect(await screen.findByText("Shop a")).toBeInTheDocument();
   });
 });
+
+describe("transactions search states", () => {
+  it("shows a 'no match' state with Clear search instead of the month empty state", async () => {
+    mockApi((url) => (url.searchParams.get("q") ? page([]) : page([tx("a")])));
+    renderApp("/transactions?month=2026-09&q=zzzz");
+    expect(await screen.findByText('No transactions match "zzzz"')).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add one" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    expect(await screen.findByText("Shop a")).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "Search transactions" })).toHaveValue("");
+  });
+
+  it("shows a 'no match' state with Clear filters when a filter matches nothing", async () => {
+    mockApi((url) => (url.searchParams.get("tag") ? page([]) : page([tx("a")])));
+    renderApp("/transactions?month=2026-09&tag=eid");
+    expect(await screen.findByText("No transactions match these filters")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add one" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(await screen.findByText("Shop a")).toBeInTheDocument();
+  });
+
+  it("keeps the month empty state when nothing is filtered", async () => {
+    mockApi(() => page([]));
+    renderApp("/transactions?month=2026-09");
+    expect(await screen.findByText(/No transactions in September/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add one" })).toBeInTheDocument();
+    expect(screen.queryByText(/No transactions match/)).not.toBeInTheDocument();
+  });
+
+  it("hints at the 2-character minimum for a 1-character search", async () => {
+    mockApi(() => page([tx("a")]));
+    renderApp("/transactions?month=2026-09&q=Q");
+    expect(await screen.findByText("Type at least 2 characters to search")).toBeInTheDocument();
+    await userEvent.type(screen.getByRole("searchbox"), "u");
+    await waitFor(() =>
+      expect(screen.queryByText("Type at least 2 characters to search")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("keeps the previous rows, dimmed, while a new query loads", async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    server.use(
+      http.get("*/api/v1/auth/me", () => HttpResponse.json(user)),
+      http.get("*/api/v1/categories", () => HttpResponse.json([food, bills])),
+      http.get("*/api/v1/payment-methods", () => HttpResponse.json([])),
+      http.get("*/api/v1/transactions", async ({ request }) => {
+        if (new URL(request.url).searchParams.get("q")) await gate;
+        return HttpResponse.json(page([tx("a")]));
+      }),
+    );
+    renderApp("/transactions?month=2026-09");
+    expect(await screen.findByText("Shop a")).toBeInTheDocument();
+    await userEvent.type(screen.getByRole("searchbox"), "shop");
+    await waitFor(() => expect(document.querySelector("[aria-busy='true']")).toBeInTheDocument());
+    expect(screen.getByText("Shop a")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Loading transactions")).not.toBeInTheDocument();
+    release();
+    await waitFor(() =>
+      expect(document.querySelector("[aria-busy='true']")).not.toBeInTheDocument(),
+    );
+  });
+});
