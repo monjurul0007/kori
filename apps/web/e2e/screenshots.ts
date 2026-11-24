@@ -14,7 +14,9 @@
  *
  * The GIF is stitched from screenshot frames with ffmpeg (needs `ffmpeg` on PATH); the exact command
  * is in `makeGif` below. Run `oxipng -o4 --strip safe docs/media/*.png` afterwards to shrink the
- * PNGs. The script sets two demo budgets and three demo recurring rules through the API, so the
+ * PNGs. The script refuses to run unless it targets demo@kori.local on localhost (override with
+ * SHOT_I_KNOW_THIS_IS_DEMO=1 for a throwaway demo server). It sets demo budgets and three demo
+ * recurring rules through the API, so the
  * budgets and recurring pages have something to show. It touches only the demo user.
  *
  * Runs on Node 22+ without a build step: `node --experimental-strip-types e2e/screenshots.ts`.
@@ -34,6 +36,16 @@ const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..
 
 if (!PASSWORD) {
   throw new Error("Set SHOT_PASSWORD to the demo user's password (see the header of this file).");
+}
+
+// Safety guard: this script replaces the user's budgets and deletes all their recurring rules, and
+// it adds transactions. Only ever run it against a local demo stack, never real data.
+const isLocal = ["localhost", "127.0.0.1"].includes(new URL(BASE).hostname);
+if (!(EMAIL === "demo@kori.local" && isLocal) && process.env.SHOT_I_KNOW_THIS_IS_DEMO !== "1") {
+  throw new Error(
+    `Refusing to run: it needs SHOT_EMAIL=demo@kori.local on localhost (got ${EMAIL} at ${BASE}). ` +
+      "It overwrites budgets and deletes recurring rules. Set SHOT_I_KNOW_THIS_IS_DEMO=1 only for a throwaway demo server.",
+  );
 }
 
 const phone = devices["Pixel 7"];
