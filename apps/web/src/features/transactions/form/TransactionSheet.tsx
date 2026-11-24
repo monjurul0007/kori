@@ -17,10 +17,12 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   /** Present for edit mode, absent for create mode. */
   transaction?: Transaction;
+  /** Starting date for a new entry (create mode); defaults to today. */
+  defaultDate?: string;
 }
 
 /** Full-screen under `md`, a centred dialog above. Asks before discarding typed input. */
-export function TransactionSheet({ open, onOpenChange, transaction }: Props) {
+export function TransactionSheet({ open, onOpenChange, transaction, defaultDate }: Props) {
   const [dirty, setDirty] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -67,6 +69,7 @@ export function TransactionSheet({ open, onOpenChange, transaction }: Props) {
         <TransactionForm
           key={transaction?.id ?? "new"}
           transaction={transaction}
+          defaultDate={defaultDate}
           onDone={close}
           onDirtyChange={setDirty}
         />
