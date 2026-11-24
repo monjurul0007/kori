@@ -1,7 +1,7 @@
 # Compose reads its ${VARS} from apps/api/.env too, so all dev settings live in one file.
 COMPOSE = docker compose $(if $(wildcard apps/api/.env),--env-file apps/api/.env)
 
-.PHONY: up down logs create-user seed api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build
+.PHONY: up down logs create-user seed api-dev api-test api-lint api-fmt db-up migrate makemigration openapi web-install web-dev web-test web-lint web-fmt web-build e2e
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -61,3 +61,8 @@ web-fmt:
 
 web-build:
 	cd apps/web && pnpm build
+
+# Needs the stack (`make up`) and a user: make create-user email=e2e@kori.local name=E2E (password e2e-test-password),
+# or set E2E_EMAIL and E2E_PASSWORD. Chromium once: cd apps/web && pnpm exec playwright install chromium
+e2e:
+	cd apps/web && pnpm e2e
