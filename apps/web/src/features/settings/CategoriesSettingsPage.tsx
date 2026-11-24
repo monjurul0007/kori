@@ -13,6 +13,7 @@ import {
   type Category,
 } from "./hooks";
 import { nextSortOrder } from "./reorder";
+import { CATEGORY_NAME_MAX } from "./nameLimits";
 import { ReferenceListEditor } from "./ReferenceListEditor";
 
 type Extra = { icon: string | null; color: string | null };
@@ -60,6 +61,7 @@ export function CategoriesSettingsPage() {
       ) : (
         <ReferenceListEditor<Category, Extra>
           noun="category"
+          maxNameLength={CATEGORY_NAME_MAX}
           items={ofKind}
           leading={(c) => <CategoryIcon icon={c.icon} color={c.color} />}
           initialExtra={(c) => ({ icon: c?.icon ?? null, color: c?.color ?? null })}
