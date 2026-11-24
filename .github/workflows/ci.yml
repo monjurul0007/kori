@@ -1,11 +1,20 @@
 name: ci
 
-# One pipeline, in order: lint, then api-ci and web-ci in parallel, then the e2e smoke test, then
-# the production image build. A stage runs only if the one before it passed. Job ids are the
-# check names that deploy.yml's ci-gate and the branch ruleset require, so keep them as they are.
+# The pipeline, in order. Each stage is its own reusable workflow in this folder, so this file stays
+# a short map and each stage can be read, changed and run on its own (workflow_dispatch).
+#
+#   1. lint                  pre-commit hooks
+#   2. api-ci + web-ci       in parallel, after lint
+#   3. e2e                   after both
+#   4. build-image           after e2e
+#   5. ci-passed             the one required check: green only if every stage above passed
+#
+# Branch protection and deploy.yml require only `ci-passed`, so adding or renaming a stage never
+# means editing the ruleset. A stage runs only if the one before it passed; a skipped stage makes
+# `ci-passed` fail. Concurrency lives here, once, not in the stages.
 
 on:
-  # No path filter: every required check must report on every PR.
+  # No path filter: the required check must report on every PR.
   pull_request:
   push:
     branches: [main]
@@ -18,266 +27,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0 # gitleaks scans history
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - uses: actions/setup-go@v7 # gitleaks hook builds from Go source
-        with:
-          go-version: stable
-          cache: false
-
-      - name: Cache pre-commit environments
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - name: Install pre-commit
-        run: pip install pre-commit
-
-      - name: Run all hooks
-        run: pre-commit run --all-files --show-diff-on-failure --color=always
+  lint:
+    uses: ./.github/workflows/lint.yml
 
   api-ci:
-    runs-on: ubuntu-latest
-    needs: pre-commit
-    timeout-minutes: 10
-    # These credentials belong to a throwaway service container that exists only for this job and
-    # is unreachable from outside it, so they are not secrets. Service containers cannot read the
-    # `env` context, so the values are repeated in KORI_DATABASE_URL below. Real credentials
-    # (deploy, production) must come from GitHub secrets, never from this file.
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_USER: kori
-          POSTGRES_PASSWORD: kori
-          POSTGRES_DB: kori
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U kori -d kori"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-    env:
-      KORI_DATABASE_URL: postgresql+psycopg://kori:kori@localhost:5432/kori
-    defaults:
-      run:
-        working-directory: apps/api
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-          cache-dependency-glob: apps/api/uv.lock
-
-      - uses: pnpm/action-setup@v6
-        with:
-          package_json_file: apps/web/package.json
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: pnpm
-          cache-dependency-path: apps/web/pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: uv sync --frozen
-
-      - name: Ruff check
-        run: uv run ruff check .
-
-      - name: Ruff format
-        run: uv run ruff format --check .
-
-      - name: Mypy
-        run: uv run mypy
-
-      - name: Migrate from a clean database
-        run: uv run alembic upgrade head
-
-      - name: Check models match migrations
-        run: uv run alembic check
-
-      - name: Tests
-        run: uv run pytest --cov-fail-under=85
-
-      - name: Regenerate OpenAPI spec and web client
-        working-directory: .
-        run: |
-          (cd apps/api && uv run python scripts/export_openapi.py ../../openapi.json)
-          (cd apps/web && pnpm install --frozen-lockfile && pnpm gen:api)
-
-      - name: OpenAPI drift check
-        working-directory: .
-        run: git diff --exit-code openapi.json apps/web/src/api/schema.d.ts
+    needs: lint
+    uses: ./.github/workflows/api-ci.yml
 
   web-ci:
-    runs-on: ubuntu-latest
-    needs: pre-commit
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: pnpm/action-setup@v6
-        with:
-          package_json_file: apps/web/package.json
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: pnpm
-          cache-dependency-path: apps/web/pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Lint and format check
-        run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Tests
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+    needs: lint
+    uses: ./.github/workflows/web-ci.yml
 
   e2e:
-    runs-on: ubuntu-latest
     needs: [api-ci, web-ci]
-    timeout-minutes: 15
-    env:
-      # Test-only credentials for a throwaway user in a throwaway database. Not secrets.
-      E2E_EMAIL: e2e@kori.local
-      E2E_PASSWORD: e2e-test-password
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Start the stack
-        run: docker compose up -d --build --wait
-
-      - name: Create the CI user
-        # The password is read from stdin twice (prompt and confirmation). -T: no TTY in CI.
-        run: |
-          printf '%s\n%s\n' "$E2E_PASSWORD" "$E2E_PASSWORD" |
-            docker compose exec -T app kori create-user --email "$E2E_EMAIL" --name "E2E"
-
-      - uses: pnpm/action-setup@v6
-        with:
-          package_json_file: apps/web/package.json
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: pnpm
-          cache-dependency-path: apps/web/pnpm-lock.yaml
-
-      - name: Install dependencies
-        working-directory: apps/web
-        run: pnpm install --frozen-lockfile
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/pnpm-lock.yaml') }}
-
-      - name: Install Chromium
-        working-directory: apps/web
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Playwright
-        working-directory: apps/web
-        run: pnpm e2e
-
-      # The report and traces hold test data only (a throwaway user and one E2E expense).
-      - name: Upload the report and traces
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report
-          path: |
-            apps/web/playwright-report/
-            apps/web/test-results/
-          retention-days: 7
-
-      - name: Show the app logs
-        if: failure()
-        run: docker compose logs app
-
-      - name: Stop the stack
-        if: always()
-        run: docker compose down -v
+    uses: ./.github/workflows/e2e.yml
 
   build-image:
-    runs-on: ubuntu-latest
     needs: e2e
-    timeout-minutes: 15
+    uses: ./.github/workflows/build-image.yml
+
+  ci-passed:
+    if: always()
+    needs: [lint, api-ci, web-ci, e2e, build-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - uses: actions/checkout@v7
-
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Build the image (not pushed)
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: infra/docker/Dockerfile
-          load: true
-          push: false
-          tags: kori:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Check the image runs as non-root and stays under 300 MB
+      - name: Require every stage to have succeeded
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
         run: |
-          user="$(docker image inspect kori:ci --format '{{.Config.User}}')"
-          size="$(docker image inspect kori:ci --format '{{.Size}}')"
-          echo "user=$user size=$((size / 1000000)) MB"
-          test "$user" = "kori"
-          test "$size" -lt 300000000
-
-      - name: Start Postgres and the container
-        run: |
-          docker network create kori-ci
-          docker run -d --name db --network kori-ci \
-            -e POSTGRES_USER=kori -e POSTGRES_PASSWORD=kori -e POSTGRES_DB=kori \
-            pgvector/pgvector:pg16
-          for _ in $(seq 30); do
-            docker exec db pg_isready -U kori -d kori && break
-            sleep 2
-          done
-          docker run -d --name app --network kori-ci -p 8000:8000 \
-            -e KORI_ENV=development \
-            -e KORI_DATABASE_URL=postgresql+psycopg://kori:kori@db:5432/kori \
-            kori:ci
-
-      - name: Smoke test
-        run: |
-          for _ in $(seq 30); do
-            curl -fsS http://localhost:8000/api/v1/healthz && break
-            sleep 2
-          done
-          curl -fsS http://localhost:8000/api/v1/healthz
-          curl -fsS -H 'Accept: text/html' http://localhost:8000/ | grep -q '<div id="root">'
-          curl -fsS -H 'Accept: text/html' 'http://localhost:8000/transactions?month=2026-09' | grep -q '<div id="root">'
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/api/v1/nope)" = 404
-
-      - name: Container logs on failure
-        if: failure()
-        run: docker logs app
+          echo "$RESULTS"
+          echo "$RESULTS" | jq -e 'all(. == "success")' > /dev/null

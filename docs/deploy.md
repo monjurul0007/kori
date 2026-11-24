@@ -6,7 +6,7 @@ Hosting is Google Cloud Run (Singapore) with Neon Postgres (Singapore), see
 
 ## What a deploy does
 
-1. **Gate.** The merged PR must have green `pre-commit`, `api-ci`, `web-ci`, `e2e` and `build-image`, all jobs of the `ci` workflow.
+1. **Gate.** The merged PR must have a green `ci-passed` check of the `ci` workflow (lint, then api-ci and web-ci, then e2e, then build-image).
 2. **Build once** and push `ghcr.io/monjurul0007/kori:<sha>` and `:main`, plus the same image to
    Artifact Registry (Cloud Run can't pull from GHCR directly).
 3. **Migrate** with the one-off Cloud Run job `kori-migrate` (`alembic upgrade head`).
