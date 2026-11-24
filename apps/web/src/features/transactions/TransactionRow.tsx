@@ -1,3 +1,5 @@
+import { Repeat } from "lucide-react";
+
 import type { components } from "@/api/schema";
 import { formatTaka } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -27,7 +29,16 @@ export function TransactionRow({ transaction: t, onSelect }: Props) {
         className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{title}</p>
+          <p className="flex items-center gap-1 text-sm font-medium">
+            <span className="truncate">{title}</span>
+            {t.source === "recurring" && (
+              <Repeat
+                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                role="img"
+                aria-label="Recurring"
+              />
+            )}
+          </p>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
             <span className="rounded-full bg-muted px-2 py-0.5">{category}</span>
             {t.payment_method && <span>{t.payment_method.name}</span>}

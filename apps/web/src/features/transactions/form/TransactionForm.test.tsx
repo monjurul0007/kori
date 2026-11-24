@@ -450,3 +450,27 @@ describe("transaction form", () => {
     }
   });
 });
+
+describe("TransactionForm on a recurring transaction", () => {
+  it("links to the rule, and a manual transaction has no such link", async () => {
+    mockApi([
+      makeTx("a", { source: "recurring", recurring_rule_id: "rule1" }),
+      makeTx("b", { merchant: "Manual shop" }),
+    ]);
+    const { router } = renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    const link = await screen.findByRole("link", { name: "Edit rule" });
+    expect(link).toHaveAttribute("href", "/settings/recurring?rule=rule1");
+    await userEvent.click(link);
+    await waitFor(() => expect(router.state.location.pathname).toBe("/settings/recurring"));
+    expect(router.state.location.search).toBe("?rule=rule1");
+  });
+
+  it("shows no rule link for a manual transaction", async () => {
+    mockApi([makeTx("b", { merchant: "Manual shop" })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Manual shop"));
+    await screen.findByRole("heading", { name: "Edit transaction" });
+    expect(screen.queryByRole("link", { name: "Edit rule" })).not.toBeInTheDocument();
+  });
+});

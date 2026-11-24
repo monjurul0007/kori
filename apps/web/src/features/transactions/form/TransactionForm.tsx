@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -308,6 +309,19 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
         <Input id={`${uid}-note`} aria-describedby={err("note")} {...register("note")} />
         {message("note")}
       </div>
+
+      {edit?.recurring_rule_id && (
+        <p className="text-sm text-muted-foreground">
+          Added automatically. Changes here apply to this occurrence only.{" "}
+          <Link
+            to={`/settings/recurring?rule=${edit.recurring_rule_id}`}
+            onClick={onDone}
+            className="font-medium text-foreground underline"
+          >
+            Edit rule
+          </Link>
+        </p>
+      )}
 
       {formError && (
         <p role="alert" className="text-sm text-red-600">
