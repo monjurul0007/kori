@@ -85,3 +85,21 @@ export function useDeleteTransaction(id: string) {
     ...optimistic,
   });
 }
+
+/** Delete by id, for Undo on a row that was just created (no optimistic update needed). */
+export function useRemoveTransaction() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) =>
+      unwrapEmpty(
+        await api.DELETE("/api/v1/transactions/{transaction_id}", {
+          params: { path: { transaction_id: id } },
+        }),
+      ),
+    onSettled: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ["transactions"] }),
+        client.invalidateQueries({ queryKey: REPORTS_KEY }),
+      ]),
+  });
+}

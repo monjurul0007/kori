@@ -25,6 +25,7 @@ interface Props {
 export function TransactionSheet({ open, onOpenChange, transaction, defaultDate }: Props) {
   const [dirty, setDirty] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
   const close = useCallback(() => {
     setDirty(false);
     setConfirming(false);
+    setConfirmingDelete(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -58,6 +60,13 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         ref={contentRef}
+        onEscapeKeyDown={(e) => {
+          // Esc backs out of "Delete this transaction?" without closing the sheet.
+          if (confirmingDelete) {
+            e.preventDefault();
+            setConfirmingDelete(false);
+          }
+        }}
         className="flex h-dvh max-w-none flex-col overflow-hidden rounded-none md:h-auto md:max-h-[90dvh] md:max-w-lg md:rounded-lg"
       >
         <DialogHeader>
@@ -72,6 +81,8 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
           defaultDate={defaultDate}
           onDone={close}
           onDirtyChange={setDirty}
+          confirmingDelete={confirmingDelete}
+          onConfirmingDeleteChange={setConfirmingDelete}
         />
         {confirming && (
           <div

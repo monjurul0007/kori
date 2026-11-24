@@ -13,3 +13,11 @@ export function toastError(error: unknown) {
     description: error instanceof Error ? error.message : undefined,
   });
 }
+
+/** A plain success toast; with `undo`, it carries an "Undo" action. */
+export function toastSuccess(message: string, options: { undo?: () => void | Promise<void> } = {}) {
+  toast.success(
+    message,
+    options.undo ? { action: { label: "Undo", onClick: () => void options.undo?.() } } : undefined,
+  );
+}

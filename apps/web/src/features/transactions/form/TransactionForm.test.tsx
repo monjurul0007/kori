@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
+import { toast } from "sonner";
 
 import { todayInDhaka } from "@/lib/dates";
 import { renderApp } from "@/test/renderApp";
@@ -472,5 +473,82 @@ describe("TransactionForm on a recurring transaction", () => {
     await userEvent.click(await screen.findByText("Manual shop"));
     await screen.findByRole("heading", { name: "Edit transaction" });
     expect(screen.queryByRole("link", { name: "Edit rule" })).not.toBeInTheDocument();
+  });
+});
+
+describe("transaction feedback", () => {
+  beforeEach(() => {
+    toast.dismiss(); // toasts are global, so an earlier test's toast must not leak in
+  });
+
+  it("confirms a create with a toast, and Undo deletes the new row", async () => {
+    const state = mockApi();
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "1250.5");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    expect(await screen.findByText("Saved ৳1,250.50 to Food & Dining")).toBeInTheDocument();
+    // fireEvent: sonner's swipe handling needs setPointerCapture, which jsdom lacks.
+    fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(state.deleted).toEqual(["new"]));
+    expect(await screen.findByText("Removed")).toBeInTheDocument();
+  });
+
+  it("confirms an edit with a toast", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    const amount = await screen.findByLabelText("Amount (৳)");
+    await userEvent.clear(amount);
+    await userEvent.type(amount, "300");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByText("Saved changes")).toBeInTheDocument();
+  });
+
+  it("confirms a delete with a toast that has no Undo", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+    expect(await screen.findByText("Deleted ৳250 · Shop a")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Undo" })).not.toBeInTheDocument();
+  });
+
+  it("moves focus to Cancel in the confirm row, and Esc cancels only the confirm", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    const del = await screen.findByRole("button", { name: "Delete" });
+    await userEvent.click(del);
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("alertdialog", { name: "Confirm delete" })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Delete" })).toHaveFocus();
+  });
+
+  it("shows Deleting… and disables the buttons while the delete is pending", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    server.use(
+      http.delete("*/api/v1/transactions/:id", async () => {
+        await delay(300);
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+    const busy = await screen.findByRole("button", { name: "Deleting…" });
+    expect(busy).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(screen.getByRole("alertdialog", { name: "Confirm delete" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 });
