@@ -1,6 +1,6 @@
-import { isRouteErrorResponse, useRouteError } from "react-router-dom";
+import { isRouteErrorResponse, Link, useRouteError } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 /** Route-level error UI. React Router renders it when a route throws while rendering. */
 export function RouteError() {
@@ -17,7 +17,13 @@ export function RouteError() {
       <p role="alert" className="text-sm text-muted-foreground">
         {message}
       </p>
-      <Button onClick={() => window.location.reload()}>Reload</Button>
+      <p className="text-sm text-muted-foreground">Reload the page, or go back to the dashboard.</p>
+      <div className="flex gap-2">
+        <Button onClick={() => window.location.reload()}>Reload</Button>
+        <Link to="/dashboard" className={buttonVariants({ variant: "outline" })}>
+          Go to dashboard
+        </Link>
+      </div>
     </main>
   );
 }
