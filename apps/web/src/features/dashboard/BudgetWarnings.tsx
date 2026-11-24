@@ -22,9 +22,7 @@ export function BudgetWarnings({ month }: { month: string }) {
             key={c.category.id}
             className={cn(
               "flex items-start gap-2 rounded-lg border p-3 text-sm",
-              over
-                ? "border-red-300 bg-red-50 text-red-900"
-                : "border-amber-300 bg-amber-50 text-amber-900",
+              over ? "border-over/30 bg-over/10 text-over" : "border-warn/30 bg-warn/10 text-warn",
             )}
           >
             <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />

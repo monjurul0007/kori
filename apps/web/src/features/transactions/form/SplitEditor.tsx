@@ -112,7 +112,7 @@ export function SplitEditor({ form, categories, onCollapse }: Props) {
                 </Button>
               </div>
               {(categoryError ?? amountError) && (
-                <p className="text-sm text-red-600">{categoryError ?? amountError}</p>
+                <p className="text-sm text-over">{categoryError ?? amountError}</p>
               )}
             </li>
           );
@@ -132,12 +132,12 @@ export function SplitEditor({ form, categories, onCollapse }: Props) {
         </Button>
         <p
           aria-live="polite"
-          className={`ml-auto text-sm font-medium ${remaining !== null && remaining < 0n ? "text-red-600" : ""}`}
+          className={`ml-auto text-sm font-medium ${remaining !== null && remaining < 0n ? "text-over" : ""}`}
         >
           {status}
         </p>
       </div>
-      {rootError && <p className="text-sm text-red-600">{rootError}</p>}
+      {rootError && <p className="text-sm text-over">{rootError}</p>}
     </div>
   );
 }

@@ -40,8 +40,8 @@ describe("BudgetSummaryCard", () => {
 
   it.each([
     ["ok", "bg-primary"],
-    ["warning", "bg-amber-500"],
-    ["over", "bg-red-600"],
+    ["warning", "bg-warn/100"],
+    ["over", "bg-over"],
   ])("colours the bar for level %s", async (level, cls) => {
     mockGet("/api/v1/reports/budget-status", status(overall({ level })));
     renderCard(<BudgetSummaryCard month="2026-09" />);

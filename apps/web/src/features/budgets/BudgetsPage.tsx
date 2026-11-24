@@ -64,7 +64,7 @@ function BudgetRow({ name, limit, spent, remaining, percent, level, note, onEdit
           style={{ width: `${width}%` }}
         />
       </div>
-      <p className="flex flex-wrap justify-between gap-x-3 text-sm text-muted-foreground">
+      <p className="flex flex-wrap justify-between gap-x-3 text-sm tabular-nums text-muted-foreground">
         <span>
           {formatTaka(spent)} spent ·{" "}
           {over ? `${formatTaka(remaining.slice(1))} over` : `${formatTaka(remaining)} left`}

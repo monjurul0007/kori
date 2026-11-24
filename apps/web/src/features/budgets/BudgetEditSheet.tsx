@@ -87,7 +87,7 @@ export function BudgetEditSheet({ month, target, onClose }: Props) {
               }}
             />
             {error && (
-              <p id="budget-amount-error" role="alert" className="text-sm text-red-600">
+              <p id="budget-amount-error" role="alert" className="text-sm text-over">
                 {error}
               </p>
             )}

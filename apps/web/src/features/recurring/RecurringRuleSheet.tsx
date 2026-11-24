@@ -66,7 +66,7 @@ export function RecurringRuleSheet({ rule, onClose }: Props) {
   const err = (name: keyof RuleFormValues) => (errors[name] ? `${uid}-${name}-error` : undefined);
   const message = (name: keyof RuleFormValues) =>
     errors[name] && (
-      <p id={`${uid}-${name}-error`} role="alert" className="text-sm text-red-600">
+      <p id={`${uid}-${name}-error`} role="alert" className="text-sm text-over">
         {errors[name]?.message as string}
       </p>
     );

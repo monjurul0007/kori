@@ -8,7 +8,7 @@ interface Props {
 export function TotalsBar({ expense, income }: Props) {
   const items = [
     { label: "Spent", value: formatTaka(expense), className: "" },
-    { label: "Income", value: formatTaka(income), className: "text-emerald-600" },
+    { label: "Income", value: formatTaka(income), className: "text-income" },
     {
       label: "Net",
       value: formatTaka(fromPoisha(toPoisha(income) - toPoisha(expense))),
@@ -20,7 +20,7 @@ export function TotalsBar({ expense, income }: Props) {
       {items.map((item) => (
         <div key={item.label}>
           <dt className="text-xs text-muted-foreground">{item.label}</dt>
-          <dd className={`text-sm font-semibold ${item.className}`}>{item.value}</dd>
+          <dd className={`text-sm font-semibold tabular-nums ${item.className}`}>{item.value}</dd>
         </div>
       ))}
     </dl>

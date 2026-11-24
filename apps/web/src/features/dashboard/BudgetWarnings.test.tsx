@@ -35,9 +35,9 @@ describe("BudgetWarnings", () => {
     const items = await screen.findAllByRole("listitem");
     expect(items).toHaveLength(2);
     expect(items[0]).toHaveTextContent("Warning: Food is at 85% of ৳12,000 with 9 days left");
-    expect(items[0]).toHaveClass("bg-amber-50");
+    expect(items[0]).toHaveClass("bg-warn/10");
     expect(items[1]).toHaveTextContent("Over budget: Rent is at 100% of ৳12,000");
-    expect(items[1]).toHaveClass("bg-red-50");
+    expect(items[1]).toHaveClass("bg-over/10");
     items.forEach((li) => expect(li.querySelector("svg")).not.toBeNull());
   });
 

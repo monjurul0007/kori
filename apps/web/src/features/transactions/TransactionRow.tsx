@@ -49,10 +49,7 @@ export function TransactionRow({ transaction: t, onSelect }: Props) {
           </p>
         </div>
         <span
-          className={cn(
-            "shrink-0 text-sm font-semibold tabular-nums",
-            income && "text-emerald-600",
-          )}
+          className={cn("shrink-0 text-sm font-semibold tabular-nums", income && "text-income")}
         >
           {income ? "+" : ""}
           {formatTaka(t.amount)}

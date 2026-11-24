@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { configDefaults, defineConfig } from "vitest/config";
 
-const THEME_COLOR = "#0c6e51"; // hsl(var(--primary)) in index.css
+const THEME_COLOR = "#2F3A99"; // --brand in docs/design/tokens.css
 
 export default defineConfig({
   plugins: [
@@ -34,7 +34,7 @@ export default defineConfig({
       },
       workbox: {
         // App shell only: no runtime caching, and /api is never answered by the shell.
-        globPatterns: ["**/*.{js,css,html,png,svg,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,png,svg,webmanifest,woff2}"],
         navigateFallbackDenylist: [/^\/api\//, /^\/internal\//],
       },
     }),

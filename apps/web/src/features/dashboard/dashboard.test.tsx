@@ -158,10 +158,10 @@ describe("dashboard", () => {
     const list = await screen.findByRole("list", { name: "Budget warnings" });
     const [amber, red] = within(list).getAllByRole("listitem");
     expect(amber).toHaveTextContent("Food & Dining is at 85% of ৳12,000 with 9 days left");
-    expect(amber).toHaveClass("bg-amber-50");
+    expect(amber).toHaveClass("bg-warn/10");
     expect(amber!.querySelector("svg")).not.toBeNull();
     expect(red).toHaveTextContent("Over budget: Rent is at 120% of ৳12,000");
-    expect(red).toHaveClass("bg-red-50");
+    expect(red).toHaveClass("bg-over/10");
     expect(within(list).getAllByRole("listitem")).toHaveLength(2);
   });
 
