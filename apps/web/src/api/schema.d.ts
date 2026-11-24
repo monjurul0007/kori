@@ -254,6 +254,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/recurring-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Rules
+         * @description Active and paused rules; `include_ended=true` adds the ended ones.
+         */
+        get: operations["list_rules_api_v1_recurring_rules_get"];
+        put?: never;
+        /** Create Rule */
+        post: operations["create_rule_api_v1_recurring_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Rule */
+        get: operations["get_rule_api_v1_recurring_rules__rule_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Rule */
+        delete: operations["delete_rule_api_v1_recurring_rules__rule_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Rule */
+        patch: operations["update_rule_api_v1_recurring_rules__rule_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/recurring-rules/{rule_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Rule */
+        post: operations["pause_rule_api_v1_recurring_rules__rule_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring-rules/{rule_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume Rule
+         * @description Missed occurrences are skipped; the next one is the first on or after today.
+         */
+        post: operations["resume_rule_api_v1_recurring_rules__rule_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/budget-status": {
         parameters: {
             query?: never;
@@ -743,6 +820,11 @@ export interface components {
             /** Sort Order */
             sort_order?: number | null;
         };
+        /**
+         * RecurrenceFrequency
+         * @enum {string}
+         */
+        RecurrenceFrequency: "weekly" | "monthly" | "yearly";
         /** ReportCategory */
         ReportCategory: {
             /**
@@ -758,6 +840,130 @@ export interface components {
             kind: components["schemas"]["CategoryKind"];
             /** Name */
             name: string;
+        };
+        /**
+         * RuleIn
+         * @description `start_on` anchors the schedule: its weekday (weekly), day of month (monthly) or day and
+         *     month (yearly). Creating a rule never adds transactions for dates before today.
+         */
+        RuleIn: {
+            /**
+             * Amount
+             * @example 1250.50
+             */
+            amount: string;
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            /** End On */
+            end_on?: string | null;
+            frequency: components["schemas"]["RecurrenceFrequency"];
+            /**
+             * Interval
+             * @description Every N weeks, months or years
+             * @default 1
+             */
+            interval: number;
+            /** Merchant */
+            merchant?: string | null;
+            /**
+             * Name
+             * @example Rent
+             */
+            name: string;
+            /** Note */
+            note?: string | null;
+            /** Payment Method Id */
+            payment_method_id?: string | null;
+            /**
+             * Start On
+             * Format: date
+             */
+            start_on: string;
+            type: components["schemas"]["TransactionType"];
+        };
+        /** RuleOut */
+        RuleOut: {
+            /** Amount */
+            amount: string;
+            category: components["schemas"]["CategoryRef"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** End On */
+            end_on: string | null;
+            frequency: components["schemas"]["RecurrenceFrequency"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Interval */
+            interval: number;
+            /** Last Error */
+            last_error: string | null;
+            /** Merchant */
+            merchant: string | null;
+            /** Name */
+            name: string;
+            /** Next Due On */
+            next_due_on: string | null;
+            /** Note */
+            note: string | null;
+            /** Paused At */
+            paused_at: string | null;
+            payment_method: components["schemas"]["PaymentMethodRef"] | null;
+            /**
+             * Start On
+             * Format: date
+             */
+            start_on: string;
+            status: components["schemas"]["RuleStatus"];
+            type: components["schemas"]["TransactionType"];
+            /** Upcoming */
+            upcoming: string[];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * RuleStatus
+         * @enum {string}
+         */
+        RuleStatus: "active" | "paused" | "ended";
+        /**
+         * RuleUpdate
+         * @description Send only the fields to change. The type of a rule can't change.
+         *
+         *     Name, amount, category, payment method, merchant, note and `end_on` apply to future occurrences
+         *     only. Changing `frequency`, `interval` or `start_on` recomputes the next due date from today.
+         */
+        RuleUpdate: {
+            /** Amount */
+            amount?: string | null;
+            /** Category Id */
+            category_id?: string | null;
+            /** End On */
+            end_on?: string | null;
+            frequency?: components["schemas"]["RecurrenceFrequency"] | null;
+            /** Interval */
+            interval?: number | null;
+            /** Merchant */
+            merchant?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Payment Method Id */
+            payment_method_id?: string | null;
+            /** Start On */
+            start_on?: string | null;
         };
         /**
          * SpendingReport
@@ -883,6 +1089,8 @@ export interface components {
              */
             occurred_on: string;
             payment_method: components["schemas"]["PaymentMethodRef"] | null;
+            /** Recurring Rule Id */
+            recurring_rule_id: string | null;
             source: components["schemas"]["TransactionSource"];
             /** Tags */
             tags: string[];
@@ -1008,7 +1216,12 @@ export type SchemaPaymentMethodKind = components['schemas']['PaymentMethodKind']
 export type SchemaPaymentMethodOut = components['schemas']['PaymentMethodOut'];
 export type SchemaPaymentMethodRef = components['schemas']['PaymentMethodRef'];
 export type SchemaPaymentMethodUpdate = components['schemas']['PaymentMethodUpdate'];
+export type SchemaRecurrenceFrequency = components['schemas']['RecurrenceFrequency'];
 export type SchemaReportCategory = components['schemas']['ReportCategory'];
+export type SchemaRuleIn = components['schemas']['RuleIn'];
+export type SchemaRuleOut = components['schemas']['RuleOut'];
+export type SchemaRuleStatus = components['schemas']['RuleStatus'];
+export type SchemaRuleUpdate = components['schemas']['RuleUpdate'];
 export type SchemaSpendingReport = components['schemas']['SpendingReport'];
 export type SchemaTagOut = components['schemas']['TagOut'];
 export type SchemaTagUpdate = components['schemas']['TagUpdate'];
@@ -1519,6 +1732,227 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    list_rules_api_v1_recurring_rules_get: {
+        parameters: {
+            query?: {
+                include_ended?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_rule_api_v1_recurring_rules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rule_api_v1_recurring_rules__rule_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_rule_api_v1_recurring_rules__rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_rule_api_v1_recurring_rules__rule_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_rule_api_v1_recurring_rules__rule_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_rule_api_v1_recurring_rules__rule_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

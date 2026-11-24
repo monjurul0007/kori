@@ -41,6 +41,11 @@ class Transaction(UuidPk, UserOwned, Timestamps, Base):
             text("created_at DESC"),
             text("id DESC"),
         ),
+        # Idempotency backstop for the recurring materializer (M2-09). NULLs are distinct, so
+        # manual transactions are unaffected.
+        UniqueConstraint(
+            "recurring_rule_id", "occurred_on", name="uq_transactions_recurring_rule_id_occurred_on"
+        ),
         Index(
             "ix_transactions_merchant_trgm",
             "merchant",
@@ -65,6 +70,10 @@ class Transaction(UuidPk, UserOwned, Timestamps, Base):
     note: Mapped[str | None] = mapped_column(String(500))
     payment_method_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("payment_methods.id", ondelete="RESTRICT")
+    )
+    # The rule that created this transaction. The link is dropped if the rule is deleted.
+    recurring_rule_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recurring_rules.id", ondelete="SET NULL")
     )
     source: Mapped[TransactionSource] = mapped_column(
         pg_enum(TransactionSource, "transaction_source"),

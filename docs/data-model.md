@@ -62,7 +62,24 @@ erDiagram
         date occurred_on "local date"
         bigint amount_minor "poisha"
         uuid payment_method_id FK
+        uuid recurring_rule_id FK "NULL = not from a rule"
         transaction_source source
+    }
+    recurring_rules {
+        uuid id PK
+        uuid user_id FK
+        text name
+        transaction_type type
+        bigint amount_minor "poisha"
+        uuid category_id FK
+        uuid payment_method_id FK
+        recurrence_frequency frequency "weekly, monthly, yearly"
+        smallint interval "1 to 12"
+        date start_on "the anchor"
+        date end_on
+        date next_due_on "cursor, NULL = ended"
+        timestamptz paused_at
+        text last_error
     }
     transaction_lines {
         uuid id PK
@@ -122,6 +139,17 @@ erDiagram
   cleared, so history is never deleted. `category_id IS NULL` is the overall limit, and the unique
   constraint is `NULLS NOT DISTINCT` so that slot also has one row per month. `effective_from` is
   checked to be the 1st of a month. See [ADR-0007](adr/0007-budgets.md).
+- **Recurring rules.** A `recurring_rules` row is a template: what to add (name, type, amount,
+  category, payment method, merchant, note) and when (`frequency` weekly, monthly or yearly, every
+  `interval` units, anchored on `start_on`, optionally until `end_on`). Every occurrence is computed
+  from the anchor, never from the previous one, so a monthly rule on the 31st falls on Apr 30 and
+  returns to May 31, and a yearly rule on Feb 29 falls on Feb 28 in non-leap years.
+  `next_due_on` is the materializer's cursor (M2-09): the next occurrence not yet created, NULL once
+  the rule has ended. Creating a rule never backfills past dates, and resuming a paused rule skips
+  what was missed. A partial index on `next_due_on WHERE paused_at IS NULL AND next_due_on IS NOT NULL`
+  serves the scan. `transactions.recurring_rule_id` (`ON DELETE SET NULL`) links a transaction to its
+  rule, and `UNIQUE (recurring_rule_id, occurred_on)` stops one rule creating the same date twice;
+  manual transactions have a NULL rule and are unaffected, since NULLs are distinct.
 
 ## Known consequences and open questions
 

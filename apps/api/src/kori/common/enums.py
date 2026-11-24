@@ -40,3 +40,9 @@ class CategorySource(StrEnum):
     AI = "ai"
     RULE = "rule"
     SEED = "seed"
+
+
+class RecurrenceFrequency(StrEnum):
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
