@@ -266,4 +266,28 @@ describe("transactions search states", () => {
       expect(document.querySelector("[aria-busy='true']")).not.toBeInTheDocument(),
     );
   });
+  it("doesn't describe the new query with the previous empty result while loading", async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    server.use(
+      http.get("*/api/v1/auth/me", () => HttpResponse.json(user)),
+      http.get("*/api/v1/categories", () => HttpResponse.json([food, bills])),
+      http.get("*/api/v1/payment-methods", () => HttpResponse.json([])),
+      http.get("*/api/v1/transactions", async ({ request }) => {
+        if (new URL(request.url).searchParams.get("q")) {
+          await gate;
+          return HttpResponse.json(page([tx("a")]));
+        }
+        return HttpResponse.json(page([]));
+      }),
+    );
+    renderApp("/transactions?month=2026-09");
+    expect(await screen.findByRole("button", { name: "Add one" })).toBeInTheDocument();
+    await userEvent.type(screen.getByRole("searchbox"), "ab");
+    await waitFor(() => expect(document.querySelector("[aria-busy='true']")).toBeInTheDocument());
+    expect(screen.queryByText(/No transactions match/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add one" })).not.toBeInTheDocument();
+    release();
+    expect(await screen.findByText("Shop a")).toBeInTheDocument();
+  });
 });

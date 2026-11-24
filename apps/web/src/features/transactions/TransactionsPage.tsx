@@ -132,7 +132,7 @@ export function TransactionsPage() {
           </p>
         )}
         <div
-          className={`space-y-3 transition-opacity ${query.isPlaceholderData ? "opacity-60" : ""}`}
+          className={`space-y-3 transition-opacity ${query.isPlaceholderData ? "pointer-events-none opacity-60" : ""}`}
           aria-busy={query.isPlaceholderData}
         >
           {totals && <TotalsBar expense={totals.expense} income={totals.income} />}
@@ -156,36 +156,42 @@ export function TransactionsPage() {
               </Button>
             </div>
           )}
-          {query.isSuccess && groups.length === 0 && hasActiveFilters && (
-            <div className="space-y-3 py-8 text-center text-muted-foreground">
-              <p>
-                {otherFiltersActive
-                  ? "No transactions match these filters"
-                  : `No transactions match "${searchText}"`}
+          {query.isSuccess &&
+            !query.isPlaceholderData &&
+            groups.length === 0 &&
+            hasActiveFilters && (
+              <div className="space-y-3 py-8 text-center text-muted-foreground">
+                <p>
+                  {otherFiltersActive
+                    ? "No transactions match these filters"
+                    : `No transactions match "${searchText}"`}
+                </p>
+                <Button type="button" variant="outline" size="sm" onClick={clearAll}>
+                  {otherFiltersActive ? "Clear filters" : "Clear search"}
+                </Button>
+              </div>
+            )}
+          {query.isSuccess &&
+            !query.isPlaceholderData &&
+            groups.length === 0 &&
+            !hasActiveFilters && (
+              <p className="py-8 text-center text-muted-foreground">
+                {filters.month > monthOf(todayInDhaka()) ? (
+                  "This month hasn't started yet."
+                ) : (
+                  <>
+                    No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
+                    <button
+                      type="button"
+                      onClick={openAdd}
+                      className="font-medium text-primary underline"
+                    >
+                      Add one
+                    </button>
+                  </>
+                )}
               </p>
-              <Button type="button" variant="outline" size="sm" onClick={clearAll}>
-                {otherFiltersActive ? "Clear filters" : "Clear search"}
-              </Button>
-            </div>
-          )}
-          {query.isSuccess && groups.length === 0 && !hasActiveFilters && (
-            <p className="py-8 text-center text-muted-foreground">
-              {filters.month > monthOf(todayInDhaka()) ? (
-                "This month hasn't started yet."
-              ) : (
-                <>
-                  No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
-                  <button
-                    type="button"
-                    onClick={openAdd}
-                    className="font-medium text-primary underline"
-                  >
-                    Add one
-                  </button>
-                </>
-              )}
-            </p>
-          )}
+            )}
           {groups.map(([date, items]) => (
             <DayGroup key={date} date={date} transactions={items} onSelect={setEditing} />
           ))}
