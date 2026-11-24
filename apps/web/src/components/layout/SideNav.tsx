@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
+import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,7 @@ export function SideNav({ onAdd }: { onAdd: () => void }) {
       aria-label="Main"
       className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-1 border-r p-3 md:flex"
     >
-      <p className="px-3 py-2 text-lg font-semibold">Kori · কড়ি</p>
+      <Wordmark className="px-1 py-2 text-lg" />
       <Button onClick={onAdd} className="mb-2 h-11 justify-start">
         <Plus className="h-4 w-4" aria-hidden="true" />
         Add transaction

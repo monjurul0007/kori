@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#0c6e51"/><text x="256" y="256" font-family="DejaVu Sans, Arial, sans-serif" font-size="320" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central">K</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Kori">
+  <rect width="120" height="120" rx="30" fill="#2F3A99"/>
+  <rect x="31" y="26" width="17" height="68" rx="8.5" fill="#FFFFFF"/>
+  <path d="M50 62 L83 86" stroke="#FFFFFF" stroke-width="17" stroke-linecap="round" fill="none"/>
+  <circle cx="77" cy="40" r="15.5" fill="#F2A93B"/>
+  <circle cx="77" cy="40" r="9" fill="none" stroke="#C47A10" stroke-width="2.5"/>
+</svg>

@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 
+import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,9 @@ export function LoginPage() {
     <main className="mx-auto flex min-h-dvh max-w-md items-center p-4">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Kori · কড়ি</CardTitle>
+          <CardTitle>
+            <Wordmark markSize={36} className="text-2xl" />
+          </CardTitle>
           <CardDescription>Log in to your expenses.</CardDescription>
         </CardHeader>
         <CardContent>
