@@ -214,3 +214,14 @@ All 29 BUG-owned findings have a comment naming their BUG card.
 - **Closing findings:** when a BUG card merges, the findings under its "Closes" list move to Done.
 - The routine card (dvZifuoD) and "How we work" (h4Mm3VqB) describe the same rules.
 - **The last routine run (2026-11-24 15:59 UTC) failed with "usage limit reached"**. Nothing ran. The next scheduled run is 2026-11-25 00:37 UTC.
+
+### Board tidy-up (2026-11-24, owner request)
+- **"🐞 Triage / Bugs"** now holds only BUG-01 … BUG-15, in order. They had been shuffled when they were created.
+- **New list "🔎 UX audit · Nov 2026 (reference)"** sits right after Triage. It holds all 49 raw audit records in their original order (#1–36 findings, #37–49 proposals), with an "About this list" card at the top.
+  - The owner chose this over polishing the records in place or archiving them.
+  - The records are evidence, not work. Each one still moves to Done when the BUG or DR card that owns it merges.
+- **Updated to match:**
+  - the routine prompt (section 3e, and the step 1.4 note)
+  - "How we work" (the Lists section)
+  - the routine card
+- The stale "Cowrie mark" text in the login proposal (NUzZBvyV) now says Coin K.
