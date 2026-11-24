@@ -126,3 +126,41 @@ Concept page (private artifact): https://claude.ai/artifact/HYiSuqv16Dn7MLt93mEy
 - Tags now: `qa-tag-renamed` (was qa-tag, on QA-Café), `qa-mixed-case`, `qa-second-tag` (both on QA-From settings)
 - Budgets (from Nov 2026 onward): **Overall ৳20,000**, **Groceries & Bazar ৳200**. Food & Dining (1000→1500→1200) and Transport (500) were set and then removed.
 - Failed-login records for fake emails qa-notanemail, qa-unknown1/2@example.invalid, qa-throttle1/2@example.invalid, qa-bbb…@x.io (server login_attempts table)
+
+## Design Refresh implementation track (2026-11-24)
+The owner approved the refresh and asked for implementation cards the Kori Engineer Routine can pick alongside milestone work. No code was written in this session.
+
+- **New Trello list:** "🎨 Design Refresh · Neel and Gada" with 18 task cards in the house format (goal, design materials, context, in/out of scope, test plan, acceptance criteria, review focus, dependencies, resolves, branch/PR, kickoff prompt), each with its review-colour label:
+
+| Card | Title | Review | Blocked by | Resolves (audit cards) |
+|---|---|---|---|---|
+| DR-01 https://trello.com/c/2xF8ao1x | docs: design refresh materials, DESIGN.md and ADR | skim | none | — |
+| DR-02 https://trello.com/c/v3QGErpy | Neel and Gada tokens, fonts, motion | read | DR-01 | vDKK9R6H, E1vrnG62, rIHN2GES, wdAcXdeP, dz5GrAVE |
+| DR-03 https://trello.com/c/QOLoMBtD | Coin K logo, icons, wordmark | skim | DR-02 | uhmhZld5, yyybM8Tf |
+| DR-04 https://trello.com/c/rE8ajqfQ | shared UI primitives | read | DR-02 | VMR7UVAk, hJsyKlt3, jMUGveTv, mrxuDHHz |
+| DR-05 https://trello.com/c/ZBqHe5N7 | app shell, headers, titles, skip link, 404 | read | DR-03, DR-04 | VbiF8mCu, Z6JpcC5e, Ad6KB5xx, UMBnOcqJ |
+| DR-06 https://trello.com/c/hvAHyygc | accessible month picker | skim | DR-04 | LcnWdE8e |
+| DR-07 https://trello.com/c/GLRztf4D | quick-entry Add transaction sheet | scrutinize | DR-04 | Ma6z3Yfn, KWISRgGu, si4kFUcH, WZlzL0qv, 0V0v8vv7 |
+| DR-08 https://trello.com/c/BKdEifgg | edit/delete in sheet, tag suggestions | read | DR-07 | 5BcZbPOU, PewFRAmt, ZJC15AHr, YHZTqceM |
+| DR-09 https://trello.com/c/5LFWwPYC | dashboard hero, totals, attention, recent | read | DR-05 | hIzqrdCy, DMnxPczY |
+| DR-10 https://trello.com/c/9UzXhprw | dashboard breakdown and trend chart | read | DR-09 | IY2YQgo6, oVYDSBW4, JTUER2AI |
+| DR-11 https://trello.com/c/nnfttmue | transactions list redesign | read | DR-05, DR-04 | akvTYrVH, 9bObm26U, aWn28l4Y, 1rBVkCLf, AEuCn7N2 |
+| DR-12 https://trello.com/c/aPNIiAwN | budgets redesign | read | DR-05, DR-04 | 6nCzKgv3, yTinCNEe |
+| DR-13 https://trello.com/c/7sMakpay | settings layout, General, theme switch | read | DR-05 | kcUkxUuR |
+| DR-14 https://trello.com/c/I1zgEMvn | settings lists | read | DR-13, DR-04 | PtcVc4gz, rQCXvk7N, sJwU4O5o |
+| DR-15 https://trello.com/c/pT2vk2vy | login redesign | read | DR-03, DR-04 | sr9qITy2, C2NEUSve, shfVcgPb, KzXTSKs9, NUzZBvyV |
+| DR-16 https://trello.com/c/qAJZQvQx | first-run checklist | skim | DR-09 | cakx9gQ8 |
+| DR-17 https://trello.com/c/FIxn7B6X | PWA shortcut, id, screenshots | skim | DR-03, DR-07 | 9KOtT5fe |
+| DR-18 https://trello.com/c/Obq4MeA0 | automated a11y and layout e2e checks | read | DR-08, DR-10, DR-11, DR-12, DR-14, DR-15, DR-16 | t1HmfBMa |
+
+- **All 49 audit cards** got a "Planned in DR-xx … moves to Done when DR-xx merges" comment.
+- **Design materials for the cards:**
+  - this folder's `design-concept/`: `index.html`, `tokens.css`, `brand/*.svg`, 41 `screens/*.png` in light and dark, and a `README.md` mapping each screen to its card
+  - DR-01 copies it to `docs/design/` and `docs/brand/` on `main`
+- **Kori Engineer routine (`trig_01VheUWTDMwu9TYrWntboCrY`) prompt updated:**
+  - BUG- cards first; audit "[Severity] [Area]" cards are never picked directly
+  - then it alternates Track M (current milestone) and Track D (Design Refresh)
+  - DR cards: it reads DESIGN.md and opens the reference images, and PRs include light/dark screenshots
+  - when a DR card merges, the audit cards it resolves move to Done
+  - The routine card (dvZifuoD) and "How we work" (h4Mm3VqB) were updated to match.
+- **Keep branch `claude/focused-wright-iatxgr`** until DR-01 merges; it holds the materials.
