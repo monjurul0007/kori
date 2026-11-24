@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build-image:
-    name: build and container smoke test
+    name: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

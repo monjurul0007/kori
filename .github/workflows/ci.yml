@@ -9,8 +9,8 @@ name: ci
 #   4. build-image           after e2e
 #   5. ci-passed             the one required check: green only if every stage above passed
 #
-# Checks show as "<stage> / <what it does>", e.g. "API / ruff, mypy, migrations, tests", because a
-# called workflow's check is named after the caller job and the called job.
+# Checks show as "ci / <stage> / <job>", e.g. "ci / api / test": GitHub names a called workflow's check
+# after the workflow, the caller job and the called job.
 # Branch protection and deploy.yml require only `ci-passed`, so adding or renaming a stage never
 # means editing the ruleset. A stage runs only if the one before it passed; a skipped stage makes
 # `ci-passed` fail. Concurrency lives here, once, not in the stages.
@@ -30,26 +30,26 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
+    name: lint
     uses: ./.github/workflows/lint.yml
 
   api-ci:
-    name: API
+    name: api
     needs: lint
     uses: ./.github/workflows/api-ci.yml
 
   web-ci:
-    name: Web
+    name: web
     needs: lint
     uses: ./.github/workflows/web-ci.yml
 
   e2e:
-    name: E2E
+    name: e2e
     needs: [api-ci, web-ci]
     uses: ./.github/workflows/e2e.yml
 
   build-image:
-    name: Image
+    name: image
     needs: e2e
     uses: ./.github/workflows/build-image.yml
 
