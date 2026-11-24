@@ -21,7 +21,7 @@ import type { TransactionBody } from "./mutations";
 import { PaymentMethodSelect } from "./PaymentMethodSelect";
 import { fieldForLoc, formSchema, poishaOf, type FormValues } from "./schema";
 import { remainingPoisha, SplitEditor } from "./SplitEditor";
-import { TagInput } from "./TagInput";
+import { TagInput, withTag } from "./TagInput";
 
 const LAST_METHOD_KEY = "kori.lastPaymentMethod";
 
@@ -58,6 +58,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
   const remove = useDeleteTransaction(edit?.id ?? "");
   const [confirming, setConfirming] = useState(false);
   const [formError, setFormError] = useState<string>();
+  const [pendingTag, setPendingTag] = useState("");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -102,6 +103,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
       return;
     }
     setFormError(undefined);
+    const tags = withTag(v.tags, pendingTag); // text typed but not confirmed with Enter
     const amount = parseTakaInput(v.amount) ?? v.amount;
     const lines = v.lines.map((l) => ({
       category_id: l.categoryId,
@@ -114,7 +116,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
       merchant: v.merchant.trim() || null,
       note: v.note.trim() || null,
       payment_method_id: v.paymentMethodId || null,
-      tags: v.tags,
+      tags,
       ...(lines.length ? { lines } : { category_id: v.categoryId }),
     };
     const category = categories.find((c) => c.id === v.categoryId);
@@ -131,7 +133,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
       merchant: body.merchant ?? null,
       note: body.note ?? null,
       payment_method: methods.find((m) => m.id === v.paymentMethodId) ?? null,
-      tags: v.tags,
+      tags,
       lines: lines.length
         ? lines.flatMap((l) => {
             const c = categories.find((x) => x.id === l.category_id);
@@ -295,6 +297,7 @@ export function TransactionForm({ transaction: edit, onDone }: Props) {
           id={`${uid}-tags`}
           value={watch("tags")}
           onChange={(t) => setValue("tags", t)}
+          onPendingChange={setPendingTag}
           known={knownTags}
         />
         {message("tags")}

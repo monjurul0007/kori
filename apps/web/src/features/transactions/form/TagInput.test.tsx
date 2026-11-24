@@ -51,4 +51,21 @@ describe("TagInput", () => {
     await userEvent.type(screen.getByRole("textbox"), "x{Enter}");
     expect(onSubmit).not.toHaveBeenCalled();
   });
+
+  it("adds typed text as a chip when the field loses focus", async () => {
+    render(<Harness />);
+    await userEvent.type(screen.getByRole("textbox"), "#lunch");
+    await userEvent.tab();
+    expect(screen.getByRole("list", { name: "Selected tags" })).toHaveTextContent("#lunch");
+    expect(screen.getByRole("textbox")).toHaveValue("");
+  });
+
+  it("adds nothing on blur for whitespace-only text or a duplicate", async () => {
+    render(<Harness initial={["Trip"]} />);
+    await userEvent.type(screen.getByRole("textbox"), "   ");
+    await userEvent.tab();
+    await userEvent.type(screen.getByRole("textbox"), "trip");
+    await userEvent.tab();
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  });
 });
