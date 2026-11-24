@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Kori">
+  <!-- One-colour mark for small inline use; inherits currentColor. -->
+  <rect x="31" y="26" width="17" height="68" rx="8.5" fill="currentColor"/>
+  <path d="M50 62 L83 86" stroke="currentColor" stroke-width="17" stroke-linecap="round" fill="none"/>
+  <circle cx="77" cy="40" r="15.5" fill="currentColor"/>
+</svg>

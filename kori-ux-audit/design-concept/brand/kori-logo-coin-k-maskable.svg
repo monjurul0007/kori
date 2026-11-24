@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Kori">
+  <!-- Maskable: full-bleed tile, mark scaled to 72% so it sits inside the 80% safe zone. -->
+  <rect width="120" height="120" fill="#2F3A99"/>
+  <g transform="translate(60 60) scale(0.72) translate(-60 -60)">
+    <rect x="31" y="26" width="17" height="68" rx="8.5" fill="#FFFFFF"/>
+    <path d="M50 62 L83 86" stroke="#FFFFFF" stroke-width="17" stroke-linecap="round" fill="none"/>
+    <circle cx="77" cy="40" r="15.5" fill="#F2A93B"/>
+    <circle cx="77" cy="40" r="9" fill="none" stroke="#C47A10" stroke-width="2.5"/>
+  </g>
+</svg>
