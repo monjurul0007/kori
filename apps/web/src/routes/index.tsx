@@ -6,6 +6,7 @@ import { BudgetsPage } from "@/features/budgets/BudgetsPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
+import { NotFoundPage } from "@/features/not-found/NotFoundPage";
 import { RecurringRulesPage } from "@/features/recurring/RecurringRulesPage";
 import { CategoriesSettingsPage } from "@/features/settings/CategoriesSettingsPage";
 import { PaymentMethodsSettingsPage } from "@/features/settings/PaymentMethodsSettingsPage";
@@ -34,6 +35,7 @@ export const routes: RouteObject[] = [
               { path: "/settings/payment-methods", element: <PaymentMethodsSettingsPage /> },
               { path: "/settings/tags", element: <TagsSettingsPage /> },
               { path: "/settings/recurring", element: <RecurringRulesPage /> },
+              { path: "*", element: <NotFoundPage /> },
             ],
           },
         ],
