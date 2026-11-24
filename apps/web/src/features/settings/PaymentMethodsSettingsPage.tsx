@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SETTINGS_PARENT } from "./parent";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -32,7 +33,7 @@ export function PaymentMethodsSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Payment methods" />
+      <PageHeader title="Payment methods" parent={SETTINGS_PARENT} />
       {methods.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : methods.isError ? (

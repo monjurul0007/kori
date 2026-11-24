@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SETTINGS_PARENT } from "./parent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ export function CategoriesSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Categories" />
+      <PageHeader title="Categories" parent={SETTINGS_PARENT} />
       <div role="tablist" aria-label="Category type" className="mb-4 flex gap-2">
         {KINDS.map((k) => (
           <button

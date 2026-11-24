@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SETTINGS_PARENT } from "./parent";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,7 +43,7 @@ export function TagsSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Tags" />
+      <PageHeader title="Tags" parent={SETTINGS_PARENT} />
       {tags.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : tags.isError ? (
