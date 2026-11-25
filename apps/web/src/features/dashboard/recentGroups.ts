@@ -32,3 +32,15 @@ export function groupByDay(transactions: Transaction[], today: string): DayGroup
     transactions: items,
   }));
 }
+
+/** Keeps the first `maxRows` rows across the groups; each group's total still covers all of its rows. */
+export function limitRows(groups: DayGroup[], maxRows: number): DayGroup[] {
+  let remaining = maxRows;
+  const limited: DayGroup[] = [];
+  for (const group of groups) {
+    if (remaining <= 0) break;
+    limited.push({ ...group, transactions: group.transactions.slice(0, remaining) });
+    remaining -= group.transactions.length;
+  }
+  return limited;
+}

@@ -117,8 +117,8 @@ describe("dashboard", () => {
   it("shows what is left to spend, the budget used and days left", async () => {
     mockApi();
     renderApp("/dashboard?month=2026-09");
-    const hero = await screen.findByRole("region", { name: "Left to spend" });
-    expect(await within(hero).findByText("Left to spend in September")).toBeInTheDocument();
+    await screen.findByText("Left to spend in September");
+    const hero = screen.getByRole("region", { name: "Left to spend" });
     expect(within(hero).getByText("৳12,000")).toBeInTheDocument();
     expect(within(hero).getByText("৳8,000 of ৳20,000 spent")).toBeInTheDocument();
     expect(within(hero).getByText("9 days left")).toBeInTheDocument();
@@ -142,8 +142,8 @@ describe("dashboard", () => {
       }),
     });
     renderApp("/dashboard?month=2026-09");
-    const hero = await screen.findByRole("region", { name: "Left to spend" });
-    expect(await within(hero).findByText("Over budget in September")).toBeInTheDocument();
+    await screen.findByText("Over budget in September");
+    const hero = screen.getByRole("region", { name: "Left to spend" });
     expect(within(hero).getByText("৳2,000")).toBeInTheDocument();
     expect(within(hero).getByText("over")).toBeInTheDocument();
     expect(within(hero).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
@@ -158,6 +158,31 @@ describe("dashboard", () => {
       "href",
       "/budgets",
     );
+  });
+
+  it("shows an error with a retry when the spending report fails and there is no budget", async () => {
+    mockApi({ status: status({ overall: null }) });
+    let fail = true;
+    server.use(
+      http.get("*/api/v1/reports/spending", () =>
+        fail
+          ? HttpResponse.json({ title: "Boom", status: 500 }, { status: 500 })
+          : HttpResponse.json({
+              from: "2026-09-01",
+              to: "2026-09-30",
+              type: "expense",
+              total: "8000",
+              count: 1,
+              by_category: [],
+            }),
+      ),
+    );
+    renderApp("/dashboard?month=2026-09");
+    const hero = await screen.findByRole("alert", { name: "Left to spend" });
+    expect(hero).toHaveTextContent("Couldn't load your budget.");
+    fail = false;
+    await userEvent.click(within(hero).getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("region", { name: "Spent in September" })).toBeInTheDocument();
   });
 
   it("always shows spent, income and net, with last month's spending", async () => {

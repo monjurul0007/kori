@@ -1,5 +1,5 @@
 import type { components } from "@/api/schema";
-import { formatTaka, toPoisha } from "@/lib/money";
+import { formatTaka, fromPoisha, toPoisha } from "@/lib/money";
 
 type CategoryStatus = components["schemas"]["CategoryBudgetStatus"];
 
@@ -29,7 +29,7 @@ function describe(c: CategoryStatus, kind: AttentionKind, daysLeft: number): Att
   const limit = formatTaka(c.limit);
   const base = { kind, categoryId: c.category.id };
   if (kind === "over") {
-    const over = formatTaka(c.remaining.replace("-", ""));
+    const over = formatTaka(fromPoisha(-toPoisha(c.remaining)));
     return { ...base, lead: `${name} is ${over} over`, rest: ` its ${limit} budget.` };
   }
   if (kind === "fully-used") {

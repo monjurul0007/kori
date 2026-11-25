@@ -19,7 +19,7 @@ export interface Hero {
 const POISHA_PER_TAKA = 100n;
 
 /** Whole taka you can spend each remaining day, rounded down; null when there is no sensible figure. */
-function dailyAllowancePoisha(leftPoisha: bigint, daysLeft: number): bigint | null {
+function dailyAllowanceTaka(leftPoisha: bigint, daysLeft: number): bigint | null {
   if (leftPoisha <= 0n || daysLeft < 1) return null;
   return leftPoisha / POISHA_PER_TAKA / BigInt(daysLeft);
 }
@@ -32,7 +32,7 @@ export function computeHero(
   const leftPoisha = toPoisha(overall.remaining);
   const isOver = leftPoisha < 0n;
   const isCurrentMonth = month === monthOf(today);
-  const allowance = isCurrentMonth ? dailyAllowancePoisha(leftPoisha, daysLeft) : null;
+  const allowance = isCurrentMonth ? dailyAllowanceTaka(leftPoisha, daysLeft) : null;
   return {
     amount: fromPoisha(isOver ? -leftPoisha : leftPoisha),
     isOver,

@@ -39,6 +39,20 @@ describe("RecentTransactions", () => {
     expect(screen.getByText("৳1,170.50")).toBeInTheDocument();
   });
 
+  it("totals every expense of a day, not only the rows shown", async () => {
+    mockGet("/api/v1/transactions", {
+      items: Array.from({ length: 8 }, (_, i) =>
+        makeTx(`t${i}`, { occurred_on: "2026-09-10", amount: "100" }),
+      ),
+      next_cursor: null,
+      totals: { expense: "0", income: "0", count: 8 },
+    });
+    renderCard(<RecentTransactions month="2026-09" />);
+    expect(await screen.findByText("Shop t5")).toBeInTheDocument();
+    expect(screen.queryByText("Shop t6")).not.toBeInTheDocument();
+    expect(screen.getByText("৳800")).toBeInTheDocument();
+  });
+
   it("says so when the month is empty", async () => {
     mockGet("/api/v1/transactions", page([]));
     renderCard(<RecentTransactions month="2026-09" />);

@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { TransactionSheet } from "../transactions/form/TransactionSheet";
 import { useCategories, useTransactions } from "../transactions/hooks";
 import type { Transaction } from "../transactions/TransactionRow";
-import { groupByDay } from "./recentGroups";
+import { groupByDay, limitRows } from "./recentGroups";
 
 const RECENT = 6;
 
@@ -58,8 +58,8 @@ function RecentRow({
 export function RecentTransactions({ month, className }: { month: string; className?: string }) {
   const query = useTransactions({ month, categoryIds: [], q: "" });
   const [editing, setEditing] = useState<Transaction>();
-  const items = query.data?.pages[0]?.items.slice(0, RECENT) ?? [];
-  const groups = groupByDay(items, todayInDhaka());
+  const items = query.data?.pages[0]?.items ?? [];
+  const groups = limitRows(groupByDay(items, todayInDhaka()), RECENT);
   return (
     <section
       aria-labelledby="recent-heading"

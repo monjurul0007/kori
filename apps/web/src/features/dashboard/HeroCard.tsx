@@ -15,42 +15,48 @@ function plural(days: number): string {
   return `${days} ${days === 1 ? "day" : "days"} left`;
 }
 
+function HeroError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <section aria-label="Left to spend" role="alert" className={SHELL}>
+      <p>Couldn&apos;t load your budget.</p>
+      <Button
+        size="sm"
+        variant="outline"
+        className="mt-2 border-hero-foreground text-hero-foreground hover:bg-white/10"
+        onClick={onRetry}
+      >
+        Try again
+      </Button>
+    </section>
+  );
+}
+
+function HeroLoading() {
+  return (
+    <section aria-label="Left to spend" className={SHELL}>
+      <Skeleton aria-label="Loading left to spend" className="h-32 w-full bg-white/10" />
+    </section>
+  );
+}
+
 /** The answer to "how much can I still spend this month?"; without a budget, how much was spent. */
 export function HeroCard({ month }: { month: string }) {
   const status = useBudgetStatus(month);
   const spending = useSpending(month);
   const name = monthName(month);
 
-  if (status.isError) {
-    return (
-      <section aria-label="Left to spend" role="alert" className={SHELL}>
-        <p>Couldn&apos;t load your budget.</p>
-        <Button
-          size="sm"
-          variant="outline"
-          className="mt-2 border-hero-foreground text-hero-foreground hover:bg-white/10"
-          onClick={() => void status.refetch()}
-        >
-          Try again
-        </Button>
-      </section>
-    );
-  }
-  if (!status.data) {
-    return (
-      <section aria-label="Left to spend" className={SHELL}>
-        <Skeleton aria-label="Loading left to spend" className="h-32 w-full bg-white/10" />
-      </section>
-    );
-  }
+  if (status.isError) return <HeroError onRetry={() => void status.refetch()} />;
+  if (!status.data) return <HeroLoading />;
 
   const overall = status.data.overall;
   if (!overall) {
+    if (spending.isError) return <HeroError onRetry={() => void spending.refetch()} />;
+    if (!spending.data) return <HeroLoading />;
     return (
       <section aria-label={`Spent in ${name}`} className={SHELL}>
         <p className="text-sm text-hero-muted">Spent in {name}</p>
         <p className="mt-2 font-display text-5xl font-bold leading-none tabular-nums">
-          {spending.data ? <Money amount={spending.data.total} /> : "…"}
+          <Money amount={spending.data.total} />
         </p>
         <Link
           to="/budgets"
