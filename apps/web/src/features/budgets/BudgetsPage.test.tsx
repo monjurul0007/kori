@@ -97,6 +97,14 @@ function mockApi({ overall = null, budgeted = [], spending = [] }: Setup = {}) {
 }
 
 describe("BudgetsPage", () => {
+  it("goes from the page h1 to h2 card titles without skipping a level", async () => {
+    mockApi({ spending: [{ cat: rent, amount: "12000.00" }] });
+    renderApp("/budgets");
+    await screen.findByRole("heading", { level: 2, name: "No budget" });
+    expect(screen.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(screen.queryAllByRole("heading", { level: 3 })).toHaveLength(0);
+  });
+
   it("sets a category budget with PUT and refreshes", async () => {
     const puts = mockApi({ spending: [{ cat: rent, amount: "12000.00" }] });
     renderApp("/budgets");

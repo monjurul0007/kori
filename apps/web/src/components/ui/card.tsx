@@ -15,11 +15,19 @@ export function CardHeader({ className, ...props }: React.ComponentProps<"div">)
   return <div className={cn("flex flex-col gap-1.5 p-6", className)} {...props} />;
 }
 
-export function CardTitle({ className, children, ...props }: React.ComponentProps<"h3">) {
+type CardTitleLevel = "h2" | "h3";
+
+/** Defaults to h2 so a card follows the page h1; pass `as="h3"` when the card sits under an h2. */
+export function CardTitle({
+  as: Heading = "h2",
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"h2"> & { as?: CardTitleLevel }) {
   return (
-    <h3 className={cn("text-lg font-semibold leading-none", className)} {...props}>
+    <Heading className={cn("text-lg font-semibold leading-none", className)} {...props}>
       {children}
-    </h3>
+    </Heading>
   );
 }
 

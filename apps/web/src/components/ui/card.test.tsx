@@ -18,6 +18,16 @@ describe("Card", () => {
     expect(screen.getByText("৳12,50,000")).toBeInTheDocument();
   });
 
+  it("renders the title as an h2 by default", () => {
+    render(<CardTitle>September</CardTitle>);
+    expect(screen.getByRole("heading", { level: 2, name: "September" })).toBeInTheDocument();
+  });
+
+  it("renders the title as an h3 when the card is nested under an h2", () => {
+    render(<CardTitle as="h3">September</CardTitle>);
+    expect(screen.getByRole("heading", { level: 3, name: "September" })).toBeInTheDocument();
+  });
+
   it("merges a custom className", () => {
     render(<Card data-testid="card" className="max-w-sm" />);
     expect(screen.getByTestId("card")).toHaveClass("max-w-sm", "rounded-lg", "border");
