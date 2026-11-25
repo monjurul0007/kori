@@ -79,7 +79,4 @@ export function validateAmount(input: string): string | null {
   return null;
 }
 
-/** The API's pydantic prefix isn't meant for people ("Value error, Amount is too large"). */
-export function stripValueErrorPrefix(message: string): string {
-  return message.replace(/^Value error, /, "");
-}
+export { stripValueErrorPrefix } from "./problem";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { DiscardPrompt } from "@/components/ui/discard-prompt";
 import {
   Dialog,
   DialogContent,
@@ -88,24 +88,11 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
           onDeletePendingChange={setDeletePending}
         />
         {confirming && (
-          <div
-            role="alertdialog"
-            aria-label="Discard this transaction?"
-            className="absolute inset-0 z-10 flex items-center justify-center bg-background/90 p-6"
-          >
-            <div className="w-full max-w-sm space-y-4 rounded-lg border bg-background p-4 shadow-lg">
-              <p className="font-medium">Discard this transaction?</p>
-              <p className="text-sm text-muted-foreground">What you typed will be lost.</p>
-              <div className="flex gap-2">
-                <Button type="button" className="flex-1" onClick={keepEditing}>
-                  Keep editing
-                </Button>
-                <Button type="button" variant="outline" className="flex-1" onClick={close}>
-                  Discard
-                </Button>
-              </div>
-            </div>
-          </div>
+          <DiscardPrompt
+            title="Discard this transaction?"
+            onKeepEditing={keepEditing}
+            onDiscard={close}
+          />
         )}
       </DialogContent>
     </Dialog>

@@ -71,14 +71,15 @@ At least 44×44px on phones, including close buttons, tag remove and links in li
 
 | Component | Status | Notes |
 |---|---|---|
-| Buttons, inputs, chips, status labels | planned in DR-02/DR-04 | See `foundations-light.png`, `components-dark.png` |
-| FormSheet | planned in DR-04 | Right panel at ≥768px, full-height sheet on phones, Save in a fixed footer |
-| Field | planned in DR-04 | Label, input, hint and error linked with `aria-describedby` |
-| IconButton | planned in DR-04 | 44px target, accessible name required |
-| Money | planned in DR-04 | Decimal-string in, tabular figures, "+" for income, never floats |
-| EmptyState | planned in DR-04 | Say what this is and the next step |
+| Buttons, inputs, chips, status labels | partly built (DR-02); restyle in each page card | See `foundations-light.png`, `components-dark.png` |
+| FormSheet | built (DR-04) | `components/ui/form-sheet.tsx`. Right panel at ≥768px, full-height sheet on phones, Save in a fixed footer, "Discard changes?" guard when `dirty` |
+| Field | built (DR-04) | `components/ui/field.tsx`. Render prop hands `id`, `aria-invalid` and `aria-describedby` to the control |
+| IconButton, RemovableChip | built (DR-04) | `icon-button.tsx` (44px on touch, `aria-label` required), `removable-chip.tsx` (32px remove button) |
+| Money | built (DR-04) | `money.tsx`. Decimal-string in, tabular figures, "+" for income, never floats |
+| EmptyState | built (DR-04) | `empty-state.tsx`. Variants empty, no-results, error |
 | MonthPicker | planned in DR-06 | Accessible month control in the page header |
-| Toasts | planned in DR-04 | Name the result, Undo where possible |
+| Toasts | built (DR-04) | `toastSuccess(message, { undo })` in `lib/toast.ts` |
+| Form errors | built (DR-04) | `problemFieldErrors` (`lib/problem.ts`) maps 422s to fields; `moneyAmount` (`lib/moneySchema.ts`) validates amounts |
 
 ## Patterns
 

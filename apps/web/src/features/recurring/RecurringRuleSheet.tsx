@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +13,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatDisplayDate, todayInDhaka } from "@/lib/dates";
-import { parseTakaInput, stripValueErrorPrefix } from "@/lib/money";
+import { parseTakaInput } from "@/lib/money";
+import { problemFieldErrors } from "@/lib/problem";
 import { toastError } from "@/lib/toast";
 import { CategoryChips } from "@/features/transactions/form/CategoryChips";
 import { PaymentMethodSelect } from "@/features/transactions/form/PaymentMethodSelect";
@@ -90,20 +90,9 @@ export function RecurringRuleSheet({ rule, onClose }: Props) {
         : await create.mutateAsync({ ...common, type: v.type });
       setSaved(result);
     } catch (e) {
-      const items =
-        e instanceof ApiError && e.response.status === 422 && Array.isArray(e.problem.errors)
-          ? (e.problem.errors as { loc?: unknown[]; msg?: string }[])
-          : [];
-      let mapped = false;
-      for (const item of items) {
-        const field = fieldForLoc(item.loc ?? []);
-        if (field) {
-          setError(field, {
-            message: item.msg ? stripValueErrorPrefix(item.msg) : "Invalid value",
-          });
-          mapped = true;
-        }
-      }
+      const problems = problemFieldErrors(e, fieldForLoc);
+      for (const { field, message } of problems) setError(field, { message });
+      const mapped = problems.length > 0;
       if (!mapped) toastError(e);
     }
   });

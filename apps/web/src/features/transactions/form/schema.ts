@@ -2,6 +2,7 @@ import type { Path } from "react-hook-form";
 import { z } from "zod";
 
 import { parseTakaInput, toPoisha, validateAmount } from "@/lib/money";
+import { moneyAmount } from "@/lib/moneySchema";
 
 export const MAX_LINES = 20;
 
@@ -9,10 +10,7 @@ const lineSchema = z.object({ categoryId: z.string(), amount: z.string() });
 
 const baseSchema = z.object({
   type: z.enum(["expense", "income"]),
-  amount: z.string().superRefine((v, ctx) => {
-    const message = validateAmount(v);
-    if (message) ctx.addIssue({ code: "custom", message });
-  }),
+  amount: moneyAmount,
   categoryId: z.string(),
   lines: z.array(lineSchema).max(MAX_LINES),
   occurredOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a date"),
