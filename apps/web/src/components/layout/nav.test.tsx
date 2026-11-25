@@ -41,6 +41,9 @@ describe("navItems", () => {
     expect(await screen.findByRole("button", { name: "Add expense" })).toBeInTheDocument();
     const tabBarAdd = screen.getByRole("button", { name: "Add transaction" });
     expect(tabBarAdd).toHaveClass("h-14", "w-14");
+    const tabBar = tabBarAdd.closest("nav");
+    const centreChild = tabBar?.children[2];
+    expect(centreChild).toBe(tabBarAdd);
   });
 
   it("shows the offline footer in the side nav", async () => {
