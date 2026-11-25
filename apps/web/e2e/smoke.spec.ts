@@ -15,11 +15,11 @@ test("log in, add an expense and see it on the dashboard", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
   await page.getByRole("button", { name: "Add transaction" }).click();
-  const sheet = page.getByRole("dialog", { name: "Add transaction" });
+  const sheet = page.getByRole("dialog", { name: "New expense" });
   await sheet.getByLabel("Amount (৳)").fill("250");
   await sheet.getByRole("radio", { name: "Food & Dining" }).click();
   await sheet.getByLabel("Merchant").fill(merchant);
-  await sheet.getByRole("button", { name: "Save" }).click();
+  await sheet.getByRole("button", { name: /^Save/ }).click();
   await expect(sheet).toBeHidden();
 
   // The dashboard refetches after the save: the row is in Recent transactions...
