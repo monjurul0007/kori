@@ -6,54 +6,27 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { todayInDhaka } from "@/lib/dates";
-import { formatTaka, parseTakaInput } from "@/lib/money";
+import { formatTaka } from "@/lib/money";
 import { problemFieldErrors } from "@/lib/problem";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 import { toastError, toastSuccess } from "@/lib/toast";
-import { withTag } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 
 import { useCategories, usePaymentMethods, useTags } from "../hooks";
 import type { Transaction } from "../TransactionRow";
 import { CategoryChips } from "./CategoryChips";
 import { DateQuickPick } from "./DateQuickPick";
-import {
-  useCreateTransaction,
-  useDeleteTransaction,
-  useRemoveTransaction,
-  useUpdateTransaction,
-} from "./mutations";
+import { useDeleteTransaction, useUpdateTransaction } from "./mutations";
 import type { TransactionBody } from "./mutations";
+import { rememberMethod } from "./lastPaymentMethod";
 import { PaymentMethodSelect } from "./PaymentMethodSelect";
-import { fieldForLoc, formSchema, poishaOf, type FormValues } from "./schema";
+import { fieldForLoc, formSchema, initialSplitLines, type FormValues } from "./schema";
 import { remainingPoisha, SplitEditor } from "./SplitEditor";
+import { buildSubmission } from "./submission";
 import { TagInput } from "./TagInput";
 
-const LAST_METHOD_KEY = "kori.lastPaymentMethod";
-
-function rememberedMethod(): string {
-  try {
-    return localStorage.getItem(LAST_METHOD_KEY) ?? "";
-  } catch (e) {
-    console.warn("Couldn't read the last payment method", e);
-    return "";
-  }
-}
-
-function remember(id: string) {
-  try {
-    localStorage.setItem(LAST_METHOD_KEY, id);
-  } catch (e) {
-    // Storage can be blocked (private mode); saving must still work, so only warn.
-    console.warn("Couldn't remember the payment method", e);
-  }
-}
-
 interface Props {
-  transaction?: Transaction;
-  /** Starting date for a new entry; defaults to today (Dhaka). */
-  defaultDate?: string;
+  transaction: Transaction;
   onDone: () => void;
   /** Reports whether anything has been typed, so the sheet can guard closing. */
   onDirtyChange?: (dirty: boolean) => void;
@@ -66,7 +39,6 @@ interface Props {
 
 export function TransactionForm({
   transaction: edit,
-  defaultDate,
   onDone,
   onDirtyChange,
   confirmingDelete: confirming,
@@ -77,10 +49,8 @@ export function TransactionForm({
   const categories = useCategories().data ?? [];
   const methods = usePaymentMethods().data ?? [];
   const knownTags = (useTags().data ?? []).map((t) => t.name);
-  const create = useCreateTransaction();
-  const update = useUpdateTransaction(edit?.id ?? "");
-  const remove = useDeleteTransaction(edit?.id ?? "");
-  const undoCreate = useRemoveTransaction();
+  const update = useUpdateTransaction(edit.id);
+  const remove = useDeleteTransaction(edit.id);
   const deleteRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const wasConfirming = useRef(false);
@@ -90,17 +60,17 @@ export function TransactionForm({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: edit?.type ?? "expense",
-      amount: edit?.amount ?? "",
-      categoryId: edit?.lines[0]?.category.id ?? "",
-      lines: edit?.is_split
+      type: edit.type,
+      amount: edit.amount,
+      categoryId: edit.lines[0]?.category.id ?? "",
+      lines: edit.is_split
         ? edit.lines.map((l) => ({ categoryId: l.category.id, amount: l.amount }))
         : [],
-      occurredOn: edit?.occurred_on ?? defaultDate ?? todayInDhaka(),
-      merchant: edit?.merchant ?? "",
-      paymentMethodId: edit ? (edit.payment_method?.id ?? "") : rememberedMethod(),
-      tags: edit?.tags ?? [],
-      note: edit?.note ?? "",
+      occurredOn: edit.occurred_on,
+      merchant: edit.merchant ?? "",
+      paymentMethodId: edit.payment_method?.id ?? "",
+      tags: edit.tags,
+      note: edit.note ?? "",
     },
   });
   const { register, handleSubmit, control, setValue, setError, setFocus, formState } = form;
@@ -116,7 +86,7 @@ export function TransactionForm({
   const remaining = split ? remainingPoisha(values.amount, values.lines) : null;
   const unbalanced = split && remaining !== 0n;
   useEffect(() => {
-    if (!edit?.is_split) setFocus("amount");
+    if (!edit.is_split) setFocus("amount");
   }, [edit, setFocus]);
   const busy = isSubmitting || remove.isPending;
   useEffect(() => {
@@ -143,65 +113,16 @@ export function TransactionForm({
       return;
     }
     setFormError(undefined);
-    const tags = withTag(v.tags, pendingTag); // text typed but not confirmed with Enter
-    const amount = parseTakaInput(v.amount) ?? v.amount;
-    const lines = v.lines.map((l) => ({
-      category_id: l.categoryId,
-      amount: parseTakaInput(l.amount) ?? l.amount,
-    }));
-    const body: TransactionBody = {
-      type: v.type,
-      amount,
-      occurred_on: v.occurredOn,
-      merchant: v.merchant.trim() || null,
-      note: v.note.trim() || null,
-      payment_method_id: v.paymentMethodId || null,
-      tags,
-      ...(lines.length ? { lines } : { category_id: v.categoryId }),
-    };
-    const category = categories.find((c) => c.id === v.categoryId);
-    const preview: Transaction = {
-      id: edit?.id ?? `pending-${crypto.randomUUID()}`,
-      source: edit?.source ?? "manual",
-      recurring_rule_id: edit?.recurring_rule_id ?? null,
-      created_at: edit?.created_at ?? new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_split: split,
-      type: v.type,
-      amount,
-      occurred_on: v.occurredOn,
-      merchant: body.merchant ?? null,
-      note: body.note ?? null,
-      payment_method: methods.find((m) => m.id === v.paymentMethodId) ?? null,
-      tags,
-      lines: lines.length
-        ? lines.flatMap((l) => {
-            const c = categories.find((x) => x.id === l.category_id);
-            return c ? [{ category: c, amount: l.amount, category_source: "user" as const }] : [];
-          })
-        : category
-          ? [{ category, amount, category_source: "user" as const }]
-          : [],
-    };
+    const { body, preview } = buildSubmission(v, {
+      categories,
+      methods,
+      pendingTag,
+      existing: edit,
+    });
     try {
-      if (edit) {
-        await update.mutateAsync({ body, preview });
-        toastSuccess("Saved changes");
-      } else {
-        const created = await create.mutateAsync({ body, preview });
-        const where = split ? "as a split" : `to ${category?.name ?? "your transactions"}`;
-        toastSuccess(`Saved ${formatTaka(amount)} ${where}`, {
-          undo: async () => {
-            try {
-              await undoCreate.mutateAsync(created.id);
-              toastSuccess("Removed");
-            } catch (e) {
-              toastError(e);
-            }
-          },
-        });
-      }
-      if (v.paymentMethodId) remember(v.paymentMethodId);
+      await update.mutateAsync({ body, preview });
+      toastSuccess("Saved changes");
+      if (v.paymentMethodId) rememberMethod(v.paymentMethodId);
       onDone();
     } catch (e) {
       const problems = problemFieldErrors(e, fieldForLoc);
@@ -213,7 +134,6 @@ export function TransactionForm({
   });
 
   const onDelete = async () => {
-    if (!edit) return;
     if (!navigator.onLine) {
       setConfirming(false);
       setFormError(OFFLINE_MESSAGE);
@@ -298,13 +218,7 @@ export function TransactionForm({
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                const total = parseTakaInput(values.amount) ?? values.amount;
-                setValue("lines", [
-                  { categoryId: values.categoryId, amount: poishaOf(values.amount) ? total : "" },
-                  { categoryId: "", amount: "" },
-                ]);
-              }}
+              onClick={() => setValue("lines", initialSplitLines(values))}
             >
               Split
             </Button>
@@ -361,7 +275,7 @@ export function TransactionForm({
           {message("note")}
         </div>
 
-        {edit?.recurring_rule_id && (
+        {edit.recurring_rule_id && (
           <p className="text-sm text-muted-foreground">
             Added automatically. Changes here apply to this occurrence only.{" "}
             <Link
@@ -383,7 +297,7 @@ export function TransactionForm({
 
       <div data-testid="form-footer" className="space-y-3 border-t bg-background pt-3">
         <div className="flex items-center gap-2">
-          {edit && !confirming && (
+          {!confirming && (
             <Button
               ref={deleteRef}
               type="button"

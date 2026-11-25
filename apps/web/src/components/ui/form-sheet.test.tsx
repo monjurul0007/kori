@@ -68,6 +68,14 @@ describe("FormSheet", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("returns focus to the field that had it when you choose Keep editing", async () => {
+    renderSheet({ dirty: true });
+    await userEvent.click(screen.getByRole("textbox", { name: "Merchant" }));
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+    expect(screen.getByRole("textbox", { name: "Merchant" })).toHaveFocus();
+  });
+
   it("backs out of the discard prompt with Esc instead of closing", async () => {
     const onOpenChange = renderSheet({ dirty: true });
     await userEvent.keyboard("{Escape}");

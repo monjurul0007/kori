@@ -82,3 +82,12 @@ export function fieldForLoc(loc: unknown[]): Path<FormValues> | undefined {
   }
   return typeof leaf === "string" ? names[leaf] : undefined;
 }
+
+/** The two starting lines when a single-category entry becomes a split. */
+export function initialSplitLines(values: Pick<FormValues, "amount" | "categoryId">) {
+  const total = parseTakaInput(values.amount) ?? values.amount;
+  return [
+    { categoryId: values.categoryId, amount: poishaOf(values.amount) ? total : "" },
+    { categoryId: "", amount: "" },
+  ];
+}
