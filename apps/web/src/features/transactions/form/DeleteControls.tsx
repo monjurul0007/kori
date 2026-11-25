@@ -42,17 +42,7 @@ export function DeleteConfirm({ flow }: { flow: DeleteFlow }) {
       className="space-y-2 rounded-md border border-over p-3"
     >
       <p className="text-sm">Delete this transaction? This can&apos;t be undone.</p>
-      {/* Confirm comes first in the DOM so Shift+Tab from the focused Cancel reaches it;
-          row-reverse still shows Cancel on the left. */}
-      <div className="flex flex-row-reverse justify-end gap-2">
-        <Button
-          type="button"
-          className="bg-over text-primary-foreground hover:bg-over/90"
-          disabled={flow.isPending}
-          onClick={() => void flow.confirm()}
-        >
-          {flow.isPending ? "Deleting…" : "Confirm delete"}
-        </Button>
+      <div className="flex gap-2">
         <Button
           ref={cancelRef}
           type="button"
@@ -61,6 +51,14 @@ export function DeleteConfirm({ flow }: { flow: DeleteFlow }) {
           onClick={flow.cancel}
         >
           Cancel
+        </Button>
+        <Button
+          type="button"
+          className="bg-over text-primary-foreground hover:bg-over/90"
+          disabled={flow.isPending}
+          onClick={() => void flow.confirm()}
+        >
+          {flow.isPending ? "Deleting…" : "Confirm delete"}
         </Button>
       </div>
     </div>

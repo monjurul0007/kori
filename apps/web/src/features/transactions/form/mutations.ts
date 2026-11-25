@@ -17,10 +17,10 @@ interface Vars {
   preview: Transaction;
 }
 
-function useOptimistic(change: (items: Transaction[], vars: Vars) => Transaction[]) {
+function useOptimistic<V>(change: (items: Transaction[], vars: V) => Transaction[]) {
   const client = useQueryClient();
   return {
-    async onMutate(vars: Vars) {
+    async onMutate(vars: V) {
       await client.cancelQueries({ queryKey: ["transactions"] });
       const snapshot = client.getQueriesData<Cache>({ queryKey: ["transactions"] });
       client.setQueriesData<Cache>(
@@ -33,7 +33,7 @@ function useOptimistic(change: (items: Transaction[], vars: Vars) => Transaction
       );
       return { snapshot };
     },
-    onError(_e: unknown, _v: Vars, ctx?: { snapshot: [readonly unknown[], Cache | undefined][] }) {
+    onError(_e: unknown, _v: V, ctx?: { snapshot: [readonly unknown[], Cache | undefined][] }) {
       ctx?.snapshot.forEach(([key, data]) => client.setQueryData(key, data));
     },
     onSettled: () =>
@@ -45,7 +45,7 @@ function useOptimistic(change: (items: Transaction[], vars: Vars) => Transaction
 }
 
 export function useCreateTransaction() {
-  const optimistic = useOptimistic((items, { preview }) =>
+  const optimistic = useOptimistic<Vars>((items, { preview }) =>
     // Only the unfiltered current month can show the new row without a refetch.
     items.length && items[0]?.occurred_on.slice(0, 7) === preview.occurred_on.slice(0, 7)
       ? [preview, ...items].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on))
@@ -58,7 +58,7 @@ export function useCreateTransaction() {
 }
 
 export function useUpdateTransaction(id: string) {
-  const optimistic = useOptimistic((items, { preview }) =>
+  const optimistic = useOptimistic<Vars>((items, { preview }) =>
     items.map((t) => (t.id === id ? preview : t)),
   );
   return useMutation({
@@ -74,7 +74,7 @@ export function useUpdateTransaction(id: string) {
 }
 
 export function useDeleteTransaction(id: string) {
-  const optimistic = useOptimistic((items) => items.filter((t) => t.id !== id));
+  const optimistic = useOptimistic<void>((items) => items.filter((t) => t.id !== id));
   return useMutation({
     mutationFn: async () =>
       unwrapEmpty(

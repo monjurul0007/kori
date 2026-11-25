@@ -168,10 +168,10 @@ function QuickEntry({ open, onOpenChange, defaultDate, transaction, onSave, dele
       }}
       footer={
         <>
-          {deletion && isDesktop && !isConfirmingDelete && (
+          {deletion && isDesktop && (
             <DeleteButton
               buttonRef={deletion.deleteButtonRef}
-              isPending={isDeleting}
+              isPending={isDeleting || isSubmitting}
               onClick={deletion.askToConfirm}
               className="mr-auto"
             />
@@ -333,10 +333,10 @@ function QuickEntry({ open, onOpenChange, defaultDate, transaction, onSave, dele
           </p>
         )}
       </form>
-      {deletion && !isDesktop && !isConfirmingDelete && (
+      {deletion && !isDesktop && (
         <DeleteButton
           buttonRef={deletion.deleteButtonRef}
-          isPending={isDeleting}
+          isPending={isDeleting || isSubmitting}
           onClick={deletion.askToConfirm}
           className="mt-5 w-full"
         />

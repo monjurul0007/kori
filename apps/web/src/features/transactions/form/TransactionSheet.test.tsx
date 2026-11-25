@@ -1,6 +1,6 @@
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 
 import { todayInDhaka } from "@/lib/dates";
 import { renderApp } from "@/test/renderApp";
@@ -61,6 +61,11 @@ function mockApi(items: Transaction[] = []) {
   );
   return state;
 }
+
+afterEach(() => {
+  // Saving remembers the payment method, which must not pre-pick one in the next test.
+  localStorage.clear();
+});
 
 async function openAdd() {
   renderApp(`/transactions?month=${month}`);
@@ -166,7 +171,7 @@ describe("editing in the quick-entry sheet", () => {
     expect(footer).not.toContainElement(within(dialog).getByRole("button", { name: "Delete" }));
   });
 
-  it("lets a keyboard user delete: Delete, then Shift+Tab from Cancel to Confirm, Enter", async () => {
+  it("lets a keyboard user delete: Delete, Cancel has focus, Shift+Tab back to Delete, Tab to Confirm", async () => {
     const state = mockApi([makeTx("a", { occurred_on: today })]);
     renderApp(`/transactions?month=${month}`);
     await userEvent.click(await screen.findByText("Shop a"));
@@ -176,9 +181,30 @@ describe("editing in the quick-entry sheet", () => {
     const confirm = within(dialog).getByRole("alertdialog", { name: "Confirm delete" });
     expect(within(confirm).getByRole("button", { name: "Cancel" })).toHaveFocus();
     await userEvent.tab({ shift: true });
-    expect(within(dialog).getByRole("button", { name: "Confirm delete" })).toHaveFocus();
+    expect(within(dialog).getByRole("button", { name: "Delete" })).toHaveFocus();
+    await userEvent.tab();
+    await userEvent.tab();
+    expect(within(confirm).getByRole("button", { name: "Confirm delete" })).toHaveFocus();
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(state.deleted).toEqual(["a"]));
+  });
+
+  it("disables Delete while a save is in flight", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    server.use(
+      http.put("*/api/v1/transactions/:id", async () => {
+        await delay(300);
+        return HttpResponse.json(makeTx("a", { occurred_on: today }));
+      }),
+    );
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "1");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+    expect(await within(dialog).findByRole("button", { name: "Saving…" })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: "Delete" })).toBeDisabled();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 });
 

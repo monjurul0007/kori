@@ -5,7 +5,7 @@ import { toastError, toastSuccess } from "@/lib/toast";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 
 import type { Transaction } from "../TransactionRow";
-import { useDeleteTransaction, type TransactionBody } from "./mutations";
+import { useDeleteTransaction } from "./mutations";
 
 export interface DeleteFlow {
   isConfirming: boolean;
@@ -40,7 +40,7 @@ export function useDeleteFlow(transaction: Transaction, onDeleted: () => void): 
     }
     setError(undefined);
     try {
-      await remove.mutateAsync({ body: {} as TransactionBody, preview: transaction });
+      await remove.mutateAsync();
       const what = transaction.merchant || transaction.note;
       toastSuccess(`Deleted ${formatTaka(transaction.amount)}${what ? ` · ${what}` : ""}`);
       onDeleted();

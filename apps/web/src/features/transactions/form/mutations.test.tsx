@@ -102,7 +102,7 @@ describe("transaction mutations", () => {
     const { wrapper, ids } = setup();
     const { result } = renderHook(() => useDeleteTransaction("a"), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ body, preview: makeTx("a") }).catch(() => {});
+      await result.current.mutateAsync().catch(() => {});
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(ids()).toEqual(["a", "b"]);
@@ -122,7 +122,7 @@ describe("transaction mutations", () => {
     const { wrapper, ids } = setup();
     const { result } = renderHook(() => useDeleteTransaction("a"), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ body, preview: makeTx("a") });
+      await result.current.mutateAsync();
     });
     await waitFor(() => expect(ids()).toEqual(["b"]));
   });
