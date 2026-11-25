@@ -237,6 +237,14 @@ describe("categories settings", () => {
     expect(await screen.findByRole("button", { name: "Edit Food" })).toBeInTheDocument();
   });
 
+  it("makes the whole Show archived row at least 44px tall with a 20px checkbox", async () => {
+    mockApi([cat("c1", "Food", { archived_at: "2026-09-01T00:00:00Z" })]);
+    renderApp("/settings/categories");
+    const checkbox = await screen.findByRole("checkbox", { name: /Show archived/ });
+    expect(checkbox).toHaveClass("h-5", "w-5");
+    expect(checkbox.closest("label")).toHaveClass("min-h-11");
+  });
+
   it("moves a category up and down, and the order persists", async () => {
     const api = mockApi([cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })]);
     renderApp("/settings/categories");

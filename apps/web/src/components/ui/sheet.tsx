@@ -34,7 +34,7 @@ export function SheetContent({ side, className, children, ...props }: SheetConte
       <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
       <SheetPrimitive.Content className={cn(sheetVariants({ side }), className)} {...props}>
         {children}
-        <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <SheetPrimitive.Close className="absolute right-0.5 top-0.5 inline-flex h-11 w-11 items-center justify-center rounded-md opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <X className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>

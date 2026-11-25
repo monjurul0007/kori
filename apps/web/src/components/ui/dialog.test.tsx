@@ -43,6 +43,12 @@ describe("Dialog", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("gives the close button a 44px hit area", async () => {
+    render(<Example />);
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
+    expect(await screen.findByRole("button", { name: "Close" })).toHaveClass("h-11", "w-11");
+  });
+
   it("closes on Escape", async () => {
     render(<Example />);
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
