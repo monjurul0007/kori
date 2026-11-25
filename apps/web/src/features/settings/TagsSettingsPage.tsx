@@ -44,7 +44,7 @@ export function TagsSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Tags" parent={SETTINGS_PARENT} />
+      <PageHeader title="Tags" backTo={SETTINGS_PARENT} />
       {tags.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : tags.isError ? (
