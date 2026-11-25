@@ -1,10 +1,10 @@
 import { useSearchParams } from "react-router-dom";
 
 import { PageHeader } from "@/components/layout/PageHeader";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { InstallCard } from "@/pwa/InstallCard";
 import { monthOf, todayInDhaka } from "@/lib/dates";
 
-import { MonthSwitcher } from "../transactions/MonthSwitcher";
 import { BudgetSummaryCard } from "./BudgetSummaryCard";
 import { BudgetWarnings } from "./BudgetWarnings";
 import { CategoryBreakdown } from "./CategoryBreakdown";
@@ -20,10 +20,12 @@ export function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" />
+      <PageHeader
+        title="Dashboard"
+        actions={<MonthPicker month={month} onChange={(m) => setParams({ month: m })} />}
+      />
       <div className="space-y-3">
         <InstallCard />
-        <MonthSwitcher month={month} onChange={(m) => setParams({ month: m })} />
         <div className="grid gap-3 md:grid-cols-2">
           <BudgetSummaryCard month={month} />
           <BudgetWarnings month={month} />

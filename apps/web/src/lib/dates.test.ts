@@ -5,7 +5,9 @@ import {
   endOfMonth,
   formatDisplayDate,
   formatMonth,
+  formatMonthShort,
   monthOf,
+  shortMonthName,
   startOfMonth,
   todayInDhaka,
 } from "./dates";
@@ -62,5 +64,15 @@ describe("defaultDateForMonth", () => {
   });
   it("is today for the current month", () => {
     expect(defaultDateForMonth("2026-11", "2026-11-24")).toBe("2026-11-24");
+  });
+});
+
+describe("short month names", () => {
+  it("formats a month with a three-letter name and the year", () => {
+    expect(formatMonthShort("2026-11")).toBe("Nov 2026");
+  });
+
+  it("names a month without the year", () => {
+    expect(shortMonthName("2026-01")).toBe("Jan");
   });
 });
