@@ -1,5 +1,4 @@
 import { PageHeader } from "@/components/layout/PageHeader";
-import { SETTINGS_PARENT } from "./parent";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -10,6 +9,7 @@ import {
   useSavePaymentMethod,
   type PaymentMethod,
 } from "./hooks";
+import { SETTINGS_PARENT } from "./parent";
 import { nextSortOrder } from "./reorder";
 import { PAYMENT_METHOD_NAME_MAX } from "./nameLimits";
 import { ReferenceListEditor } from "./ReferenceListEditor";

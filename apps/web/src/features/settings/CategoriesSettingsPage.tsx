@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
-import { SETTINGS_PARENT } from "./parent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +12,7 @@ import {
   useSaveCategory,
   type Category,
 } from "./hooks";
+import { SETTINGS_PARENT } from "./parent";
 import { nextSortOrder } from "./reorder";
 import { CATEGORY_NAME_MAX } from "./nameLimits";
 import { ReferenceListEditor } from "./ReferenceListEditor";

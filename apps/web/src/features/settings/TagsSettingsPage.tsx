@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { SETTINGS_PARENT } from "./parent";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +25,7 @@ import {
 import { toastError } from "@/lib/toast";
 
 import { normalizeTagName, useDeleteTag, useRenameTag, type Tag } from "./hooks";
+import { SETTINGS_PARENT } from "./parent";
 import { useTags } from "@/features/transactions/hooks";
 
 const count = (n: number) => `${n} transaction${n === 1 ? "" : "s"}`;

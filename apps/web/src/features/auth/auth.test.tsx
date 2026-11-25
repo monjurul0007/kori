@@ -32,6 +32,89 @@ async function fillAndSubmit() {
   await u.click(screen.getByRole("button", { name: "Log in" }));
 }
 
+describe("login form accessibility", () => {
+  it("links each field error to its input and focuses the first invalid field", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    await userEvent.click(await screen.findByRole("button", { name: "Log in" }));
+    const email = screen.getByLabelText("Email");
+    const emailError = await screen.findByText("Enter your email");
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(email).toHaveAttribute("aria-describedby", emailError.id);
+    expect(emailError.id).not.toBe("");
+    const password = screen.getByLabelText("Password");
+    expect(password).toHaveAttribute(
+      "aria-describedby",
+      screen.getByText("Enter your password").id,
+    );
+    expect(email).toHaveFocus();
+  });
+
+  it("does not mark untouched fields as invalid", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    expect(await screen.findByLabelText("Email")).toHaveAttribute("aria-invalid", "false");
+    expect(screen.getByLabelText("Email")).not.toHaveAttribute("aria-describedby");
+  });
+
+  it("asks for a real email address", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    const u = userEvent.setup();
+    await u.type(await screen.findByLabelText("Email"), "not-an-email");
+    await u.click(screen.getByRole("button", { name: "Log in" }));
+    expect(await screen.findByText("That doesn't look like an email address")).toBeInTheDocument();
+  });
+
+  it("shows friendly copy for over-long values", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    const u = userEvent.setup();
+    await u.click(await screen.findByLabelText("Email"));
+    await u.paste(`${"a".repeat(310)}@example.com`);
+    await u.click(screen.getByLabelText("Password"));
+    await u.paste("p".repeat(1025));
+    await u.click(screen.getByRole("button", { name: "Log in" }));
+    expect(await screen.findByText("Email is too long")).toBeInTheDocument();
+    expect(screen.getByText("Password is too long")).toBeInTheDocument();
+  });
+
+  it("toggles password visibility without submitting", async () => {
+    let posted = false;
+    server.use(
+      loggedOut(),
+      http.post("*/api/v1/auth/login", () => {
+        posted = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderApp("/login");
+    const u = userEvent.setup();
+    const password = await screen.findByLabelText("Password");
+    const toggle = screen.getByRole("button", { name: "Show password" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(password).toHaveAttribute("type", "password");
+    await u.click(toggle);
+    expect(password).toHaveAttribute("type", "text");
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await u.click(toggle);
+    expect(password).toHaveAttribute("type", "password");
+    expect(posted).toBe(false);
+  });
+
+  it("explains how to recover a forgotten password", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    const u = userEvent.setup();
+    await u.click(await screen.findByText("Forgot password?"));
+    expect(
+      screen.getByText(
+        "Kori doesn't send reset emails. Ask whoever runs your Kori server to reset your password.",
+      ),
+    ).toBeVisible();
+  });
+});
+
 describe("login", () => {
   it("logs in and redirects to next", async () => {
     let signedIn = false;

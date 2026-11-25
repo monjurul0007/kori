@@ -10,7 +10,7 @@ test("log in, add an expense and see it on the dashboard", async ({ page }) => {
 
   await page.goto("/login");
   await page.getByLabel("Email").fill(EMAIL);
-  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
