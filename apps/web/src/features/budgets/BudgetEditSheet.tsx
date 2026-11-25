@@ -136,11 +136,7 @@ export function BudgetEditSheet({ month, target, onClose }: Props) {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="button"
-                  disabled={save.isPending}
-                  onClick={() => void submit(null)}
-                >
+                <Button type="button" disabled={save.isPending} onClick={() => void submit(null)}>
                   Remove
                 </Button>
               </div>
