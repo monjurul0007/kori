@@ -234,7 +234,7 @@ describe("route guard and logout", () => {
     await screen.findByRole("heading", { name: "Transactions" });
     const add = screen.getAllByRole("button", { name: "Add transaction" })[0]!;
     await userEvent.click(add);
-    expect(await screen.findByRole("dialog")).toHaveTextContent("Add transaction");
+    expect(await screen.findByRole("dialog")).toHaveTextContent("New expense");
   });
 });
 

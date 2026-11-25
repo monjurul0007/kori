@@ -127,7 +127,7 @@ describe("transactions list", () => {
     renderApp("/transactions?month=2026-09");
     expect(await screen.findByText(/No transactions in September/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Add one" }));
-    expect(await screen.findByRole("dialog")).toHaveTextContent("Add transaction");
+    expect(await screen.findByRole("dialog")).toHaveTextContent("New expense");
   });
 
   describe("Add one from the viewed month", () => {
@@ -141,6 +141,7 @@ describe("transactions list", () => {
       mockApi(() => page([]));
       renderApp("/transactions?month=2026-10");
       await userEvent.click(await screen.findByRole("button", { name: "Add one" }));
+      await userEvent.click(await screen.findByRole("button", { name: "Sat, 31 Oct" }));
       expect(await screen.findByLabelText("Date")).toHaveValue("2026-10-31");
     });
 
@@ -148,6 +149,7 @@ describe("transactions list", () => {
       mockApi(() => page([]));
       renderApp("/transactions?month=2026-11");
       await userEvent.click(await screen.findByRole("button", { name: "Add one" }));
+      await userEvent.click(await screen.findByRole("button", { name: "Today" }));
       expect(await screen.findByLabelText("Date")).toHaveValue("2026-11-24");
     });
 
@@ -156,6 +158,7 @@ describe("transactions list", () => {
       renderApp("/transactions?month=2026-10");
       await screen.findByRole("button", { name: "Add one" });
       await userEvent.click(screen.getAllByRole("button", { name: /^Add/ }).at(-1)!);
+      await userEvent.click(await screen.findByRole("button", { name: "Sat, 31 Oct" }));
       expect(await screen.findByLabelText("Date")).toHaveValue("2026-10-31");
     });
 

@@ -72,13 +72,13 @@ describe("transaction form", () => {
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "300");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
     const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("You're offline.");
     expect(state.posted).toHaveLength(0);
     expect(within(dialog).getByLabelText("Amount (৳)")).toHaveValue("300");
     // Back online, the same form saves without retyping.
     online.mockReturnValue(true);
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     online.mockRestore();
   });
@@ -90,7 +90,7 @@ describe("transaction form", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "1,250.5");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({
       type: "expense",
@@ -110,7 +110,7 @@ describe("transaction form", () => {
     expect(amount).toHaveValue("250");
     await userEvent.clear(amount);
     await userEvent.type(amount, "300");
-    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await userEvent.click(screen.getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.put).toHaveLength(1));
     expect(state.put[0]).toMatchObject({ amount: "300", category_id: "c-food" });
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
@@ -156,7 +156,8 @@ describe("transaction form", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "10");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Today" }));
     const error = await within(dialog).findByText("Date must be in the past");
     expect(within(dialog).getByLabelText("Date")).toHaveAccessibleDescription(
       "Date must be in the past",
@@ -192,7 +193,8 @@ describe("transaction form", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "10");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Today" }));
     const error = await within(dialog).findByText("Date must be in the past");
     expect(within(dialog).getByLabelText("Date")).toHaveAccessibleDescription(
       "Date must be in the past",
@@ -220,6 +222,7 @@ describe("transaction form", () => {
     const dialog = await openNew();
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), total);
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Tags, note or split" }));
     await userEvent.click(within(dialog).getByRole("button", { name: "Split" }));
     return dialog;
   }
@@ -235,7 +238,7 @@ describe("transaction form", () => {
     await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
     await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "200");
     expect(within(dialog).getByText("Remaining ৳0")).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({
       amount: "500",
@@ -256,11 +259,11 @@ describe("transaction form", () => {
     await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
     await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "250");
     expect(within(dialog).getByText("Over by ৳50")).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Save" })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: /^Save/ })).toBeDisabled();
     await userEvent.clear(within(dialog).getByLabelText("Line 2 amount"));
     await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "100");
     expect(within(dialog).getByText("Remaining ৳100")).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Save" })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: /^Save/ })).toBeDisabled();
   });
 
   it("fills the remaining amount into the last line", async () => {
@@ -281,7 +284,7 @@ describe("transaction form", () => {
     await userEvent.click(within(dialog).getByRole("button", { name: "Remove line 2" }));
     expect(within(dialog).queryByLabelText("Line 1 amount")).not.toBeInTheDocument();
     expect(within(dialog).getByRole("radio", { name: "Food & Dining" })).toBeChecked();
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({ amount: "500", category_id: "c-food" });
     expect(state.posted[0]).not.toHaveProperty("lines");
@@ -311,7 +314,7 @@ describe("transaction form", () => {
     expect(within(dialog).getByText("Remaining ৳30")).toBeInTheDocument();
     await userEvent.clear(within(dialog).getByLabelText("Line 2 amount"));
     await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "80");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.put).toHaveLength(1));
     expect(state.put[0]).toMatchObject({
       amount: "180",
@@ -339,6 +342,7 @@ describe("transaction form", () => {
     await userEvent.click(within(dialog).getByRole("button", { name: "Income" }));
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "100");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Salary" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Tags, note or split" }));
     await userEvent.click(within(dialog).getByRole("button", { name: "Split" }));
     const options = within(within(dialog).getByLabelText("Line 2 category"))
       .getAllByRole("option")
@@ -375,7 +379,7 @@ describe("transaction form", () => {
     await userEvent.type(within(dialog).getByLabelText("Line 1 amount"), "300");
     await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
     await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "200");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     expect(await within(dialog).findByText("Too many decimals")).toBeInTheDocument();
     const line2 = within(dialog).getByLabelText("Line 2 amount");
     expect(line2).toHaveAttribute("aria-invalid", "true");
@@ -394,7 +398,7 @@ describe("transaction form", () => {
     await userEvent.selectOptions(within(dialog).getByLabelText("Line 2 category"), "Bills");
     await userEvent.type(within(dialog).getByLabelText("Line 2 amount"), "0.20");
     expect(within(dialog).getByText("Remaining ৳0")).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({
       amount: "0.30",
@@ -412,12 +416,13 @@ describe("transaction form", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "5");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Tags, note or split" }));
     const tags = within(dialog).getByLabelText("Tags");
     await userEvent.type(tags, "ei");
     await userEvent.click(await within(dialog).findByRole("option", { name: "eid" }));
     await userEvent.type(tags, "newtag{Enter}");
     expect(within(dialog).getByText("#newtag")).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({ tags: ["eid", "newtag"] });
   });
@@ -429,8 +434,9 @@ describe("transaction form", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "5");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Tags, note or split" }));
     await userEvent.type(within(dialog).getByLabelText("Tags"), "#lunch");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({ tags: ["lunch"] });
   });
@@ -442,9 +448,10 @@ describe("transaction form", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "5");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Tags, note or split" }));
     const tags = within(dialog).getByLabelText("Tags");
     await userEvent.type(tags, "Lunch{Enter}lunch");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
     expect(state.posted[0]).toMatchObject({ tags: ["lunch"] });
   });
@@ -454,15 +461,14 @@ describe("transaction form", () => {
     renderApp(`/transactions?month=${month}`);
     await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
     const dialog = await screen.findByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     expect(await within(dialog).findByText("Enter an amount")).toBeInTheDocument();
     expect(within(dialog).getByText("Pick a category")).toBeInTheDocument();
     expect(state.posted).toHaveLength(0);
   });
 
-  it("still saves, and warns, when localStorage is blocked", async () => {
+  it("still saves when localStorage is blocked", async () => {
     const state = mockApi();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("blocked");
     });
@@ -477,11 +483,11 @@ describe("transaction form", () => {
       const dialog = await screen.findByRole("dialog");
       await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "20");
       await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
-      await userEvent.selectOptions(within(dialog).getByLabelText("Payment method"), "bKash");
-      await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+      await userEvent.click(within(dialog).getByRole("button", { name: "Paid with" }));
+      await userEvent.selectOptions(within(dialog).getByLabelText("Paid with"), "bKash");
+      await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
       await waitFor(() => expect(state.posted).toHaveLength(1));
-      expect(warn).toHaveBeenCalledWith("Couldn't remember the payment method", expect.any(Error));
-      expect(warn).toHaveBeenCalledWith("Couldn't read the last payment method", expect.any(Error));
+      expect(state.posted[0]).toMatchObject({ payment_method_id: "pm1" });
     } finally {
       vi.restoreAllMocks();
     }
@@ -524,7 +530,7 @@ describe("transaction feedback", () => {
     const dialog = await screen.findByRole("dialog");
     await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "1250.5");
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Food & Dining" }));
-    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
     expect(await screen.findByText("Saved ৳1,250.50 to Food & Dining")).toBeInTheDocument();
     // fireEvent: sonner's swipe handling needs setPointerCapture, which jsdom lacks.
     fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
@@ -539,7 +545,7 @@ describe("transaction feedback", () => {
     const amount = await screen.findByLabelText("Amount (৳)");
     await userEvent.clear(amount);
     await userEvent.type(amount, "300");
-    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await userEvent.click(screen.getByRole("button", { name: /^Save/ }));
     expect(await screen.findByText("Saved changes")).toBeInTheDocument();
   });
 

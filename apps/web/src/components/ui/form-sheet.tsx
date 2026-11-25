@@ -38,6 +38,7 @@ export function FormSheet({
   className,
 }: Props) {
   const [isConfirmingDiscard, setIsConfirmingDiscard] = React.useState(false);
+  const focusBeforePromptRef = React.useRef<HTMLElement | null>(null);
 
   // A parent can close the sheet (a finished save); the next open must not show a stale prompt.
   // Adjusting state while rendering is React's way to reset state when a prop changes.
@@ -54,8 +55,17 @@ export function FormSheet({
 
   const handleOpenChange = (next: boolean) => {
     if (next) return onOpenChange(true);
-    if (dirty) return setIsConfirmingDiscard(true);
+    if (dirty) {
+      focusBeforePromptRef.current = document.activeElement as HTMLElement | null;
+      return setIsConfirmingDiscard(true);
+    }
     close();
+  };
+
+  const keepEditing = () => {
+    setIsConfirmingDiscard(false);
+    // The prompt took focus; hand it back to where the person was typing.
+    focusBeforePromptRef.current?.focus();
   };
 
   return (
@@ -90,11 +100,7 @@ export function FormSheet({
           <div className="flex-1 overflow-y-auto px-5 pb-4">{children}</div>
           <footer className="flex gap-2.5 border-t border-border px-5 pb-4 pt-3">{footer}</footer>
           {isConfirmingDiscard && (
-            <DiscardPrompt
-              title={DISCARD_TITLE}
-              onKeepEditing={() => setIsConfirmingDiscard(false)}
-              onDiscard={close}
-            />
+            <DiscardPrompt title={DISCARD_TITLE} onKeepEditing={keepEditing} onDiscard={close} />
           )}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

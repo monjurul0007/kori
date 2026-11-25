@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 
 import type { Transaction } from "../TransactionRow";
+import { NewTransactionSheet } from "./NewTransactionSheet";
 import { TransactionForm } from "./TransactionForm";
 
 interface Props {
@@ -23,6 +24,18 @@ interface Props {
 
 /** Full-screen under `md`, a centred dialog above. Asks before discarding typed input. */
 export function TransactionSheet({ open, onOpenChange, transaction, defaultDate }: Props) {
+  if (!transaction) {
+    return (
+      <NewTransactionSheet open={open} onOpenChange={onOpenChange} defaultDate={defaultDate} />
+    );
+  }
+  return <EditTransactionSheet open={open} onOpenChange={onOpenChange} transaction={transaction} />;
+}
+
+type EditProps = Omit<Props, "defaultDate"> & { transaction: Transaction };
+
+/** Edit and delete keep the dialog until DR-08 moves them into the new sheet. */
+function EditTransactionSheet({ open, onOpenChange, transaction }: EditProps) {
   const [dirty, setDirty] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -72,15 +85,14 @@ export function TransactionSheet({ open, onOpenChange, transaction, defaultDate 
         className="flex h-dvh max-w-none flex-col overflow-hidden rounded-none md:h-auto md:max-h-[90dvh] md:max-w-lg md:rounded-lg"
       >
         <DialogHeader>
-          <DialogTitle>{transaction ? "Edit transaction" : "Add transaction"}</DialogTitle>
+          <DialogTitle>Edit transaction</DialogTitle>
           <DialogDescription className="sr-only">
-            {transaction ? "Change or delete this transaction." : "Log a new transaction."}
+            Change or delete this transaction.
           </DialogDescription>
         </DialogHeader>
         <TransactionForm
-          key={transaction?.id ?? "new"}
+          key={transaction.id}
           transaction={transaction}
-          defaultDate={defaultDate}
           onDone={close}
           onDirtyChange={setDirty}
           confirmingDelete={confirmingDelete}
