@@ -19,6 +19,14 @@ describe("TrendChart", () => {
     expect(rows[6]).toHaveTextContent("September 2026৳6,000৳5,000");
   });
 
+  it("hides the data table in an sr-only wrapper so it cannot widen the page", async () => {
+    mockGet("/api/v1/reports/trend", trend(["1", "2", "3", "4", "5", "6"]));
+    renderCard(<TrendChart month="2026-09" />);
+    const table = await screen.findByRole("table", { name: "Expense and income by month" });
+    expect(table).not.toHaveClass("sr-only");
+    expect(table.parentElement).toHaveClass("sr-only");
+  });
+
   it("highlights only the selected month", async () => {
     mockGet("/api/v1/reports/trend", trend(["1", "2", "3", "4", "5", "6"]));
     renderCard(<TrendChart month="2026-09" />);

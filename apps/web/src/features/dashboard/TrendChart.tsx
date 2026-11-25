@@ -75,25 +75,28 @@ export function TrendChart({ month }: { month: string }) {
                 <span className="h-2 w-2 rounded-sm bg-accent" /> Income
               </span>
             </p>
-            <table className="sr-only">
-              <caption>Expense and income by month</caption>
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Expense</th>
-                  <th>Income</th>
-                </tr>
-              </thead>
-              <tbody>
-                {months.map((m) => (
-                  <tr key={m.month}>
-                    <th>{formatMonth(m.month)}</th>
-                    <td>{formatTaka(m.expense)}</td>
-                    <td>{formatTaka(m.income)}</td>
+            {/* sr-only goes on a wrapper: overflow clipping does not apply to <table>, so the table itself would still widen the page. */}
+            <div className="sr-only">
+              <table>
+                <caption>Expense and income by month</caption>
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Expense</th>
+                    <th>Income</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {months.map((m) => (
+                    <tr key={m.month}>
+                      <th>{formatMonth(m.month)}</th>
+                      <td>{formatTaka(m.expense)}</td>
+                      <td>{formatTaka(m.income)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         );
       }}
