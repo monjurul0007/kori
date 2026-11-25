@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
@@ -146,7 +146,7 @@ describe("BudgetsPage", () => {
     const puts = mockApi({ overall: { limit: "8000.00", source: "sum_of_categories" } });
     renderApp("/budgets");
     expect(await screen.findByText("Not set · sum of categories ৳8,000")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Edit Overall budget" }));
+    await userEvent.click(screen.getByRole("button", { name: "Edit All spending budget" }));
     await userEvent.type(screen.getByLabelText(/Monthly limit/), "9000");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
@@ -154,17 +154,89 @@ describe("BudgetsPage", () => {
     );
   });
 
-  it("removes a budget by sending a null amount", async () => {
-    const puts = mockApi({
-      budgeted: [{ cat: food, limit: "5000.00", spent: "0.00", percent: "0.0", level: "ok" }],
-    });
-    renderApp("/budgets");
+  async function openRemoveConfirm() {
     await userEvent.click(await screen.findByRole("button", { name: "Edit Food budget" }));
-    expect(screen.getByLabelText(/Monthly limit/)).toHaveValue("5000.00");
     await userEvent.click(screen.getByRole("button", { name: "Remove budget" }));
+  }
+
+  const budgetedFood = {
+    budgeted: [{ cat: food, limit: "5000.00", spent: "0.00", percent: "0.0", level: "ok" }],
+  };
+
+  it("asks before removing a budget and sends nothing until confirmed", async () => {
+    const puts = mockApi(budgetedFood);
+    renderApp("/budgets");
+    await openRemoveConfirm();
+
+    expect(screen.getByText(/Remove the Food budget from .* onward\?/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    expect(puts).toEqual([]);
+  });
+
+  it("keeps the budget when the removal is cancelled", async () => {
+    const puts = mockApi(budgetedFood);
+    renderApp("/budgets");
+    await openRemoveConfirm();
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.getByRole("button", { name: "Remove budget" })).toBeInTheDocument();
+    expect(puts).toEqual([]);
+  });
+
+  it("removes a confirmed budget with a null amount and offers Undo", async () => {
+    const puts = mockApi(budgetedFood);
+    renderApp("/budgets");
+    await openRemoveConfirm();
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+
     await waitFor(() =>
       expect(puts).toEqual([{ month: THIS_MONTH, category_id: "c1", amount: null }]),
     );
+    expect(await screen.findByText("Removed the Food budget")).toBeInTheDocument();
+  });
+
+  it("restores the previous amount for the same month when Undo is pressed", async () => {
+    const puts = mockApi(budgetedFood);
+    renderApp("/budgets");
+    await openRemoveConfirm();
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+    // fireEvent: sonner's swipe handling needs setPointerCapture, which jsdom lacks.
+    fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+
+    await waitFor(() =>
+      expect(puts).toEqual([
+        { month: THIS_MONTH, category_id: "c1", amount: null },
+        { month: THIS_MONTH, category_id: "c1", amount: "5000.00" },
+      ]),
+    );
+  });
+
+  it("confirms a saved category budget with a toast", async () => {
+    mockApi({ spending: [] });
+    renderApp("/budgets");
+    await userEvent.click(await screen.findByRole("button", { name: "Set Food budget" }));
+    await userEvent.type(screen.getByLabelText(/Monthly limit/), "2500");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Budget for Food set to ৳2,500")).toBeInTheDocument();
+  });
+
+  it("confirms a saved overall limit with a toast", async () => {
+    mockApi();
+    renderApp("/budgets");
+    await userEvent.click(await screen.findByRole("button", { name: "Set overall limit" }));
+    await userEvent.type(screen.getByLabelText(/Monthly limit/), "40000");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Overall budget set to ৳40,000")).toBeInTheDocument();
+  });
+
+  it("shows the word Overall once on the overall card", async () => {
+    mockApi({ overall: { limit: "8000.00", source: "set" } });
+    renderApp("/budgets");
+    await screen.findByText("৳8,000");
+
+    expect(screen.getAllByText("Overall")).toHaveLength(1);
   });
 
   it("hides the edit controls for a past month", async () => {

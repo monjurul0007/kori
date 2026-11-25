@@ -17,6 +17,9 @@ import { useBudgets, useExpenseCategories } from "./hooks";
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
+/** The card title already says "Overall", so its single row has a different label. */
+const OVERALL_ROW_LABEL = "All spending";
+
 const levelText = { ok: "On track", warning: "Nearly there", over: "Over budget" } as const;
 
 /** "2026-11-01" -> "Since Nov 2026" */
@@ -132,7 +135,7 @@ export function BudgetsPage() {
             return (
               <ul>
                 <BudgetRow
-                  name="Overall"
+                  name={OVERALL_ROW_LABEL}
                   {...overall}
                   note={
                     sum
