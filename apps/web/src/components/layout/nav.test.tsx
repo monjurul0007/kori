@@ -6,6 +6,15 @@ import { server } from "@/test/setup";
 
 import { navItems } from "./nav";
 
+function signedInShell() {
+  server.use(
+    http.get("*/api/v1/auth/me", () =>
+      HttpResponse.json({ id: "u1", display_name: "Demo", currency: "BDT" }),
+    ),
+    http.get("*/api/v1/*", () => HttpResponse.json({}, { status: 500 })),
+  );
+}
+
 describe("navItems", () => {
   it("lists Dashboard, Transactions, Budgets and Settings in order", () => {
     expect(navItems.map((i) => [i.label, i.to])).toEqual([
@@ -30,20 +39,19 @@ describe("navItems", () => {
     expect(screen.getAllByRole("link", { name: "Dashboard" })).toHaveLength(2);
   });
 
-  it("labels the desktop primary action Add expense and keeps the tab bar button at least 44px", async () => {
-    server.use(
-      http.get("*/api/v1/auth/me", () =>
-        HttpResponse.json({ id: "u1", display_name: "Demo", currency: "BDT" }),
-      ),
-      http.get("*/api/v1/*", () => HttpResponse.json({}, { status: 500 })),
-    );
+  it("labels the desktop primary action Add expense", async () => {
+    signedInShell();
     renderApp("/dashboard");
     expect(await screen.findByRole("button", { name: "Add expense" })).toBeInTheDocument();
-    const tabBarAdd = screen.getByRole("button", { name: "Add transaction" });
-    expect(tabBarAdd).toHaveClass("h-14", "w-14");
+  });
+
+  it("puts the tab bar Add button in the middle slot", async () => {
+    signedInShell();
+    renderApp("/dashboard");
+    const tabBarAdd = await screen.findByRole("button", { name: "Add transaction" });
     const tabBar = tabBarAdd.closest("nav");
-    const centreChild = tabBar?.children[2];
-    expect(centreChild).toBe(tabBarAdd);
+    expect(tabBar?.children).toHaveLength(navItems.length + 1);
+    expect(tabBar?.children[Math.floor(navItems.length / 2)]).toBe(tabBarAdd);
   });
 
   it("shows the offline footer in the side nav", async () => {

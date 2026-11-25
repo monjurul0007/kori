@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
@@ -38,6 +38,18 @@ describe("unknown URLs", () => {
     const { router } = renderApp("/budget");
     await userEvent.click(await screen.findByRole("button", { name: "Go back" }));
     await waitFor(() => expect(router.state.location.pathname).toBe("/dashboard"));
+  });
+
+  it("returns to the previous page from Go back after an in-app navigation", async () => {
+    server.use(
+      http.get("*/api/v1/auth/me", () => HttpResponse.json(user)),
+      http.get("*/api/v1/*", () => HttpResponse.json({}, { status: 500 })),
+    );
+    const { router } = renderApp("/budgets");
+    await screen.findByRole("heading", { level: 1, name: "Budgets" });
+    await act(() => router.navigate("/nowhere"));
+    await userEvent.click(await screen.findByRole("button", { name: "Go back" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/budgets"));
   });
 
   it("covers nested unknown paths too", async () => {
