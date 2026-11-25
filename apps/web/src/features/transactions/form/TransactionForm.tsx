@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { todayInDhaka } from "@/lib/dates";
-import { formatTaka, parseTakaInput } from "@/lib/money";
+import { formatTaka, parseTakaInput, stripValueErrorPrefix } from "@/lib/money";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -209,7 +209,9 @@ export function TransactionForm({
       for (const item of errors as { loc?: unknown[]; msg?: string }[]) {
         const field = fieldForLoc(item.loc ?? []);
         if (field) {
-          setError(field, { message: item.msg ?? "Invalid value" });
+          setError(field, {
+            message: item.msg ? stripValueErrorPrefix(item.msg) : "Invalid value",
+          });
           mapped = true;
         }
       }

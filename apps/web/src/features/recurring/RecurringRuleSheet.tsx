@@ -14,7 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatDisplayDate, todayInDhaka } from "@/lib/dates";
-import { parseTakaInput } from "@/lib/money";
+import { parseTakaInput, stripValueErrorPrefix } from "@/lib/money";
 import { toastError } from "@/lib/toast";
 import { CategoryChips } from "@/features/transactions/form/CategoryChips";
 import { PaymentMethodSelect } from "@/features/transactions/form/PaymentMethodSelect";
@@ -98,7 +98,9 @@ export function RecurringRuleSheet({ rule, onClose }: Props) {
       for (const item of items) {
         const field = fieldForLoc(item.loc ?? []);
         if (field) {
-          setError(field, { message: item.msg ?? "Invalid value" });
+          setError(field, {
+            message: item.msg ? stripValueErrorPrefix(item.msg) : "Invalid value",
+          });
           mapped = true;
         }
       }

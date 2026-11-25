@@ -12,7 +12,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatMonth } from "@/lib/dates";
-import { formatTaka, parseTakaInput } from "@/lib/money";
+import {
+  AMOUNT_ERRORS,
+  formatTaka,
+  parseTakaInput,
+  stripValueErrorPrefix,
+  validateAmount,
+} from "@/lib/money";
 import { toastError, toastSuccess } from "@/lib/toast";
 
 import { useSetBudget } from "./hooks";
@@ -30,7 +36,8 @@ function fieldMessage(error: unknown): string | null {
   if (!(error instanceof ApiError) || error.response.status !== 422) return null;
   const errors = Array.isArray(error.problem.errors) ? error.problem.errors : [];
   const first = (errors as { msg?: string }[])[0];
-  return first?.msg ?? error.problem.detail;
+  const message = first?.msg ?? error.problem.detail;
+  return message ? stripValueErrorPrefix(message) : null;
 }
 
 interface Props {
@@ -86,9 +93,10 @@ export function BudgetEditSheet({ month, target, onClose }: Props) {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const message = validateAmount(text);
     const amount = parseTakaInput(text);
-    if (amount === null || Number(amount) <= 0) {
-      setError("Enter an amount in taka, like 5000 or 5000.50");
+    if (message || amount === null) {
+      setError(message ?? AMOUNT_ERRORS.missing);
       return;
     }
     void submit(amount);
