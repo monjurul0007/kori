@@ -12,6 +12,7 @@ import {
   useSaveCategory,
   type Category,
 } from "./hooks";
+import { SETTINGS_PARENT } from "./parent";
 import { nextSortOrder } from "./reorder";
 import { CATEGORY_NAME_MAX } from "./nameLimits";
 import { ReferenceListEditor } from "./ReferenceListEditor";
@@ -34,7 +35,7 @@ export function CategoriesSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Categories" />
+      <PageHeader title="Categories" parent={SETTINGS_PARENT} />
       <div role="tablist" aria-label="Category type" className="mb-4 flex gap-2">
         {KINDS.map((k) => (
           <button

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { usePageTitle } from "@/lib/usePageTitle";
 
 import { useLogin } from "./hooks";
 import { useSession } from "./session";
@@ -40,6 +41,7 @@ export function LoginPage() {
   const next = safeNext(params.get("next"));
   const session = useSession();
   const login = useLogin();
+  usePageTitle("Log in");
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const {
     register,

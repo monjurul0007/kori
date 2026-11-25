@@ -25,6 +25,7 @@ import {
 import { toastError } from "@/lib/toast";
 
 import { normalizeTagName, useDeleteTag, useRenameTag, type Tag } from "./hooks";
+import { SETTINGS_PARENT } from "./parent";
 import { useTags } from "@/features/transactions/hooks";
 
 const count = (n: number) => `${n} transaction${n === 1 ? "" : "s"}`;
@@ -42,7 +43,7 @@ export function TagsSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Tags" />
+      <PageHeader title="Tags" parent={SETTINGS_PARENT} />
       {tags.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : tags.isError ? (

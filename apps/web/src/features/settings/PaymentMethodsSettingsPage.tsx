@@ -9,6 +9,7 @@ import {
   useSavePaymentMethod,
   type PaymentMethod,
 } from "./hooks";
+import { SETTINGS_PARENT } from "./parent";
 import { nextSortOrder } from "./reorder";
 import { PAYMENT_METHOD_NAME_MAX } from "./nameLimits";
 import { ReferenceListEditor } from "./ReferenceListEditor";
@@ -32,7 +33,7 @@ export function PaymentMethodsSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Payment methods" />
+      <PageHeader title="Payment methods" parent={SETTINGS_PARENT} />
       {methods.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : methods.isError ? (
