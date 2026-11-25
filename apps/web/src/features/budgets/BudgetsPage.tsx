@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { formatMonth, monthOf, todayInDhaka } from "@/lib/dates";
 import { formatTaka } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { QueryCard } from "../dashboard/QueryCard";
 import { levelBar, shortPercent } from "../dashboard/BudgetSummaryCard";
 import { useBudgetStatus, useSpending } from "../dashboard/hooks";
-import { MonthSwitcher } from "../transactions/MonthSwitcher";
 import { BudgetEditSheet, type BudgetTarget } from "./BudgetEditSheet";
 import { useBudgets, useExpenseCategories } from "./hooks";
 
@@ -101,9 +101,12 @@ export function BudgetsPage() {
 
   return (
     <>
-      <PageHeader title="Budgets" month={month} />
+      <PageHeader
+        title="Budgets"
+        month={month}
+        actions={<MonthPicker month={month} onChange={(m) => setParams({ month: m })} />}
+      />
       <div className="space-y-3">
-        <MonthSwitcher month={month} onChange={(m) => setParams({ month: m })} />
         {readOnly && (
           <p className="rounded-md bg-muted p-3 text-sm">
             Past months are read-only. Budgets can only change from this month onward.

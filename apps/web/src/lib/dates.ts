@@ -63,6 +63,17 @@ export function formatMonth(month: string): string {
   return `${name} ${date.getUTCFullYear()}`;
 }
 
+/** "2026-09" -> "Sep 2026" */
+export function formatMonthShort(month: string): string {
+  return `${shortMonthName(month)} ${month.slice(0, 4)}`;
+}
+
+/** "2026-09" -> "Sep" */
+export function shortMonthName(month: string): string {
+  const date = toDate(startOfMonth(month));
+  return new Intl.DateTimeFormat("en-GB", { month: "short", timeZone: "UTC" }).format(date);
+}
+
 export function addDays(iso: string, delta: number): string {
   const date = toDate(iso);
   date.setUTCDate(date.getUTCDate() + delta);

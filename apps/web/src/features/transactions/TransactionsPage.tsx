@@ -6,13 +6,13 @@ import { ApiError } from "@/api/client";
 import type { ShellContext } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMonth, monthOf, todayInDhaka } from "@/lib/dates";
 
 import { DayGroup } from "./DayGroup";
 import { TransactionSheet } from "./form/TransactionSheet";
 import { FilterSheet } from "./FilterSheet";
-import { MonthSwitcher } from "./MonthSwitcher";
 import { SearchInput } from "./SearchInput";
 import { TotalsBar } from "./TotalsBar";
 import type { Transaction } from "./TransactionRow";
@@ -102,16 +102,18 @@ export function TransactionsPage() {
         title="Transactions"
         month={filters.month}
         actions={
-          <Button asChild variant="outline" size="sm">
-            <a href={exportHref(filters)} download>
-              <Download className="h-4 w-4" aria-hidden="true" />
-              Export CSV
-            </a>
-          </Button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <MonthPicker month={filters.month} onChange={(month) => update({ month })} />
+            <Button asChild variant="outline" size="sm">
+              <a href={exportHref(filters)} download>
+                <Download className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only">Export CSV</span>
+              </a>
+            </Button>
+          </div>
         }
       />
       <div className="space-y-3">
-        <MonthSwitcher month={filters.month} onChange={(month) => update({ month })} />
         <div className="flex items-center gap-2">
           <SearchInput value={filters.q} onChange={(q) => update({ q })} />
           <FilterSheet filters={filters} onChange={update} />
