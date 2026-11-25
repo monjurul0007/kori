@@ -6,6 +6,7 @@ import {
   formatDisplayDate,
   formatMonth,
   formatMonthShort,
+  monthName,
   monthOf,
   shortMonthName,
   startOfMonth,
@@ -45,6 +46,12 @@ describe("display formats", () => {
 
   it("formats a month like 'September 2026'", () => {
     expect(formatMonth("2026-09")).toBe("September 2026");
+  });
+});
+
+describe("monthName", () => {
+  it("returns just the month's name", () => {
+    expect(monthName("2026-11")).toBe("November");
   });
 });
 

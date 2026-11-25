@@ -5,10 +5,11 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import { InstallCard } from "@/pwa/InstallCard";
 import { monthOf, todayInDhaka } from "@/lib/dates";
 
-import { BudgetSummaryCard } from "./BudgetSummaryCard";
-import { BudgetWarnings } from "./BudgetWarnings";
 import { CategoryBreakdown } from "./CategoryBreakdown";
+import { HeroCard } from "./HeroCard";
+import { NeedsAttention } from "./NeedsAttention";
 import { RecentTransactions } from "./RecentTransactions";
+import { TotalsCard } from "./TotalsCard";
 import { TrendChart } from "./TrendChart";
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -26,9 +27,10 @@ export function DashboardPage() {
       />
       <div className="space-y-3">
         <InstallCard />
-        <div className="grid gap-3 md:grid-cols-2">
-          <BudgetSummaryCard month={month} />
-          <BudgetWarnings month={month} />
+        <div className="grid gap-3 md:grid-cols-[1.55fr_1fr]">
+          <HeroCard month={month} />
+          <TotalsCard month={month} />
+          <NeedsAttention month={month} className="md:order-last" />
           <CategoryBreakdown month={month} />
           <TrendChart month={month} />
           <RecentTransactions month={month} />

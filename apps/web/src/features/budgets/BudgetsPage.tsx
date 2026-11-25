@@ -10,7 +10,7 @@ import { formatTaka } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 import { QueryCard } from "../dashboard/QueryCard";
-import { levelBar, shortPercent } from "../dashboard/BudgetSummaryCard";
+import { levelBar, shortPercent } from "@/lib/budgetLevel";
 import { useBudgetStatus, useSpending } from "../dashboard/hooks";
 import { BudgetEditSheet, type BudgetTarget } from "./BudgetEditSheet";
 import { useBudgets, useExpenseCategories } from "./hooks";
