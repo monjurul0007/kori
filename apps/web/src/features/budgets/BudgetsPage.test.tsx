@@ -184,7 +184,21 @@ describe("BudgetsPage", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Set Food budget" }));
     await userEvent.type(screen.getByLabelText(/Monthly limit/), "12.345");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(/Enter an amount/);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Use up to 2 decimal places");
+    expect(puts).toEqual([]);
+  });
+
+  it.each([
+    ["0", "Must be above zero"],
+    ["-100", "Must be above zero"],
+    ["99999999999999", "That's more than ৳1,00,00,00,00,000"],
+  ])("explains why the limit %s can't be saved", async (typed, message) => {
+    const puts = mockApi();
+    renderApp("/budgets");
+    await userEvent.click(await screen.findByRole("button", { name: "Set Food budget" }));
+    await userEvent.type(screen.getByLabelText(/Monthly limit/), typed);
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
     expect(puts).toEqual([]);
   });
 

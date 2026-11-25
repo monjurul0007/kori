@@ -1,7 +1,7 @@
 import type { Path } from "react-hook-form";
 import { z } from "zod";
 
-import { parseTakaInput, toPoisha } from "@/lib/money";
+import { parseTakaInput, toPoisha, validateAmount } from "@/lib/money";
 
 export const MAX_LINES = 20;
 
@@ -9,10 +9,10 @@ const lineSchema = z.object({ categoryId: z.string(), amount: z.string() });
 
 const baseSchema = z.object({
   type: z.enum(["expense", "income"]),
-  amount: z
-    .string()
-    .refine((v) => parseTakaInput(v) !== null, "Enter an amount like 1,250.50")
-    .refine((v) => parseTakaInput(v) !== "0" && parseTakaInput(v) !== "0.00", "Must be above zero"),
+  amount: z.string().superRefine((v, ctx) => {
+    const message = validateAmount(v);
+    if (message) ctx.addIssue({ code: "custom", message });
+  }),
   categoryId: z.string(),
   lines: z.array(lineSchema).max(MAX_LINES),
   occurredOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a date"),
@@ -46,18 +46,12 @@ export const formSchema = baseSchema.superRefine((v, ctx) => {
         message: "Pick a category",
       });
     }
-    const poisha = poishaOf(line.amount);
-    if (poisha === null) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["lines", i, "amount"],
-        message: "Enter an amount like 1,250.50",
-      });
-    } else if (poisha <= 0n) {
-      ctx.addIssue({ code: "custom", path: ["lines", i, "amount"], message: "Must be above zero" });
-    } else {
-      sum += poisha;
+    const message = validateAmount(line.amount);
+    if (message) {
+      ctx.addIssue({ code: "custom", path: ["lines", i, "amount"], message });
+      return;
     }
+    sum += poishaOf(line.amount) ?? 0n;
   });
   const total = poishaOf(v.amount);
   if (total !== null && sum !== total) {

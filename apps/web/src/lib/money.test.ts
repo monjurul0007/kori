@@ -1,4 +1,11 @@
-import { formatTaka, fromPoisha, parseTakaInput, toPoisha } from "./money";
+import {
+  formatTaka,
+  fromPoisha,
+  parseTakaInput,
+  stripValueErrorPrefix,
+  toPoisha,
+  validateAmount,
+} from "./money";
 
 describe("formatTaka", () => {
   it.each([
@@ -52,5 +59,34 @@ describe("poisha helpers", () => {
   it("round-trips exactly", () => {
     expect(fromPoisha(toPoisha("1250.5") + toPoisha("0.10"))).toBe("1250.60");
     expect(fromPoisha(toPoisha("10") - toPoisha("12.50"))).toBe("-2.50");
+  });
+});
+
+describe("validateAmount", () => {
+  it.each([
+    ["", "Enter an amount"],
+    ["abc", "Enter an amount"],
+    ["1.234", "Use up to 2 decimal places"],
+    ["0", "Must be above zero"],
+    ["0.00", "Must be above zero"],
+    ["-1", "Must be above zero"],
+    ["100000000000.01", "That's more than ৳1,00,00,00,00,000"],
+    ["99999999999999", "That's more than ৳1,00,00,00,00,000"],
+  ])("explains %j", (input, message) => {
+    expect(validateAmount(input)).toBe(message);
+  });
+
+  it.each(["1.5", "1250", "৳ 1,250.50", "১২৫০", "100000000000", "0.01"])("accepts %j", (input) => {
+    expect(validateAmount(input)).toBeNull();
+  });
+});
+
+describe("stripValueErrorPrefix", () => {
+  it("removes the pydantic prefix", () => {
+    expect(stripValueErrorPrefix("Value error, Amount is too large")).toBe("Amount is too large");
+  });
+
+  it("leaves other messages alone", () => {
+    expect(stripValueErrorPrefix("Pick a category")).toBe("Pick a category");
   });
 });

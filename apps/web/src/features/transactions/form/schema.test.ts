@@ -26,12 +26,20 @@ describe("formSchema", () => {
     expect(messages({ amount })).toEqual([]);
   });
 
-  it.each(["", "abc", "1.234", "-5"])("rejects the amount %j", (amount) => {
-    expect(messages({ amount })).toContain("Enter an amount like 1,250.50");
+  it.each(["", "abc"])("asks for an amount when given %j", (amount) => {
+    expect(messages({ amount })).toContain("Enter an amount");
   });
 
-  it.each(["0", "0.00"])("rejects zero (%s)", (amount) => {
+  it("limits the decimals", () => {
+    expect(messages({ amount: "1.234" })).toContain("Use up to 2 decimal places");
+  });
+
+  it.each(["0", "0.00", "-5"])("rejects a non-positive amount (%s)", (amount) => {
     expect(messages({ amount })).toContain("Must be above zero");
+  });
+
+  it("rejects an amount above the API limit with friendly copy", () => {
+    expect(messages({ amount: "99999999999999" })).toContain("That's more than ৳1,00,00,00,00,000");
   });
 
   it("requires a category and a date", () => {

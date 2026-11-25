@@ -164,6 +164,42 @@ describe("transaction form", () => {
     expect(error).toBeInTheDocument();
   });
 
+  it("strips the Value error prefix from a server 422", async () => {
+    mockApi();
+    server.use(
+      http.post("*/api/v1/transactions", () =>
+        HttpResponse.json(
+          {
+            type: "about:blank",
+            title: "Unprocessable Content",
+            status: 422,
+            detail: "Request validation failed",
+            request_id: "r1",
+            errors: [
+              {
+                loc: ["body", "occurred_on"],
+                msg: "Value error, Date must be in the past",
+                type: "value_error",
+              },
+            ],
+          },
+          { status: 422, headers: { "content-type": "application/problem+json" } },
+        ),
+      ),
+    );
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "10");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    const error = await within(dialog).findByText("Date must be in the past");
+    expect(within(dialog).getByLabelText("Date")).toHaveAccessibleDescription(
+      "Date must be in the past",
+    );
+    expect(error).toBeInTheDocument();
+  });
+
   const splitTx = () =>
     makeTx("s", {
       occurred_on: today,
@@ -419,7 +455,7 @@ describe("transaction form", () => {
     await userEvent.click((await screen.findAllByRole("button", { name: "Add transaction" }))[0]!);
     const dialog = await screen.findByRole("dialog");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
-    expect(await within(dialog).findByText("Enter an amount like 1,250.50")).toBeInTheDocument();
+    expect(await within(dialog).findByText("Enter an amount")).toBeInTheDocument();
     expect(within(dialog).getByText("Pick a category")).toBeInTheDocument();
     expect(state.posted).toHaveLength(0);
   });
