@@ -13,6 +13,7 @@ import typer
 from sqlalchemy.orm import Session
 
 from kori.config import Env, get_settings
+from kori.db import models as _models  # noqa: F401
 from kori.db.session import make_engine, make_sessionmaker
 from kori.seed.run import seed
 from kori.users.service import create_user, get_user_by_email
