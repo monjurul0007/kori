@@ -90,6 +90,24 @@ describe("TagInput", () => {
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
   });
 
+  it("keeps Escape from reaching the surrounding sheet while the list is open", async () => {
+    const onParentKeyDown = vi.fn();
+    render(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <Harness />
+      </div>,
+    );
+    await userEvent.type(combobox(), "ei");
+    onParentKeyDown.mockClear();
+    await userEvent.keyboard("{Escape}");
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
+
+  it("gives the remove button a 32px hit area", () => {
+    render(<Harness initial={["trip"]} />);
+    expect(screen.getByRole("button", { name: "Remove tag trip" })).toHaveClass("h-8", "w-8");
+  });
+
   it("adds a suggestion on click and removes a tag", async () => {
     render(<Harness />);
     await userEvent.type(combobox(), "lu");

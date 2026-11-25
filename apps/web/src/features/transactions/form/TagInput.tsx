@@ -125,14 +125,14 @@ export function TagInput({ id, value, onChange, known, onPendingChange }: Props)
           {value.map((t) => (
             <li
               key={t}
-              className="inline-flex items-center gap-1 rounded-full bg-muted py-1 pl-3 pr-1 text-sm"
+              className="inline-flex items-center gap-1 rounded-full bg-muted pl-3 text-sm"
             >
               #{t}
               <button
                 type="button"
                 aria-label={`Remove tag ${t}`}
                 onClick={() => onChange(value.filter((x) => x !== t))}
-                className="rounded-full p-1 hover:bg-background"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background"
               >
                 <X className="h-3 w-3" aria-hidden="true" />
               </button>
