@@ -3,12 +3,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Link } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { todayInDhaka } from "@/lib/dates";
-import { formatTaka, parseTakaInput, stripValueErrorPrefix } from "@/lib/money";
+import { formatTaka, parseTakaInput } from "@/lib/money";
+import { problemFieldErrors } from "@/lib/problem";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -203,18 +203,9 @@ export function TransactionForm({
       if (v.paymentMethodId) remember(v.paymentMethodId);
       onDone();
     } catch (e) {
-      const errors =
-        e instanceof ApiError && Array.isArray(e.problem.errors) ? e.problem.errors : [];
-      let mapped = false;
-      for (const item of errors as { loc?: unknown[]; msg?: string }[]) {
-        const field = fieldForLoc(item.loc ?? []);
-        if (field) {
-          setError(field, {
-            message: item.msg ? stripValueErrorPrefix(item.msg) : "Invalid value",
-          });
-          mapped = true;
-        }
-      }
+      const problems = problemFieldErrors(e, fieldForLoc);
+      for (const { field, message } of problems) setError(field, { message });
+      const mapped = problems.length > 0;
       if (!mapped) toastError(e);
       else setFormError("Please fix the highlighted fields.");
     }
