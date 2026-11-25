@@ -129,21 +129,56 @@ describe("discard guard", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
+});
 
-  it("keeps the actions in a footer outside the scrolling body", async () => {
+describe("editing in the quick-entry sheet", () => {
+  it("edits in the same sheet, titled Edit expense, prefilled, with Save changes", async () => {
+    mockApi([
+      makeTx("a", { occurred_on: today, merchant: "Rickshaw", tags: ["office"], note: "Late" }),
+    ]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Rickshaw"));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByRole("heading", { name: "Edit expense" })).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Amount (৳)")).toHaveValue("250");
+    expect(within(dialog).getByRole("radio", { name: "Food & Dining" })).toBeChecked();
+    expect(within(dialog).getByText("#office")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Note")).toHaveValue("Late");
+    expect(within(dialog).getByRole("button", { name: "Save changes" })).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("Tags are saved in lowercase; spaces become hyphens."),
+    ).toBeInTheDocument();
+  });
+
+  it("titles an income Edit income", async () => {
+    mockApi([makeTx("a", { occurred_on: today, type: "income" })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    expect(await screen.findByRole("heading", { name: "Edit income" })).toBeInTheDocument();
+  });
+
+  it("puts Delete under the form on a phone, not in the footer", async () => {
     mockApi([makeTx("a", { occurred_on: today })]);
     renderApp(`/transactions?month=${month}`);
     await userEvent.click(await screen.findByText("Shop a"));
     const dialog = await screen.findByRole("dialog");
-    const body = within(dialog).getByTestId("form-body");
-    const footer = within(dialog).getByTestId("form-footer");
-    expect(body).toHaveClass("overflow-y-auto");
-    expect(body).not.toContainElement(footer);
-    for (const name of ["Save", "Delete"]) {
-      const button = within(dialog).getByRole("button", { name });
-      expect(footer).toContainElement(button);
-      expect(body).not.toContainElement(button);
-    }
+    const footer = within(dialog).getByRole("button", { name: "Save changes" }).closest("footer");
+    expect(footer).not.toContainElement(within(dialog).getByRole("button", { name: "Delete" }));
+  });
+
+  it("lets a keyboard user delete: Delete, then Shift+Tab from Cancel to Confirm, Enter", async () => {
+    const state = mockApi([makeTx("a", { occurred_on: today })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    const dialog = await screen.findByRole("dialog");
+    within(dialog).getByRole("button", { name: "Delete" }).focus();
+    await userEvent.keyboard("{Enter}");
+    const confirm = within(dialog).getByRole("alertdialog", { name: "Confirm delete" });
+    expect(within(confirm).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await userEvent.tab({ shift: true });
+    expect(within(dialog).getByRole("button", { name: "Confirm delete" })).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(state.deleted).toEqual(["a"]));
   });
 });
 
@@ -241,6 +276,16 @@ describe("quick entry on a wide screen", () => {
     expect(within(dialog).getByLabelText("Merchant")).toBeInTheDocument();
     expect(within(dialog).getByLabelText("Paid with")).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeVisible();
+  });
+
+  it("puts Delete on the left of the footer when editing", async () => {
+    mockApi([makeTx("a", { occurred_on: today })]);
+    renderApp(`/transactions?month=${month}`);
+    await userEvent.click(await screen.findByText("Shop a"));
+    const dialog = await screen.findByRole("dialog");
+    const footer = within(dialog).getByRole("button", { name: "Save changes" }).closest("footer");
+    const buttons = within(footer as HTMLElement).getAllByRole("button");
+    expect(buttons[0]).toHaveAccessibleName("Delete");
   });
 
   it("saves the directly entered fields", async () => {

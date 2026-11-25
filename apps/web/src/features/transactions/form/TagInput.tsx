@@ -120,19 +120,22 @@ export function TagInput({ id, value, onChange, known, onPendingChange }: Props)
           ))}
         </ul>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Tags are saved in lowercase; spaces become hyphens.
+      </p>
       {value.length > 0 && (
         <ul aria-label="Selected tags" className="flex flex-wrap gap-2">
           {value.map((t) => (
             <li
               key={t}
-              className="inline-flex items-center gap-1 rounded-full bg-muted pl-3 text-sm"
+              className="inline-flex items-center gap-1 rounded-full bg-brand-soft pl-3 text-xs text-brand-text"
             >
               #{t}
               <button
                 type="button"
                 aria-label={`Remove tag ${t}`}
                 onClick={() => onChange(value.filter((x) => x !== t))}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background/60 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25"
               >
                 <X className="h-3 w-3" aria-hidden="true" />
               </button>
