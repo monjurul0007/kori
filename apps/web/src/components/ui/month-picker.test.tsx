@@ -152,4 +152,13 @@ describe("MonthPicker", () => {
     await user.click(inDialog().getByRole("button", { name: "March 2025" }));
     expect(onChange).toHaveBeenCalledExactlyOnceWith("2025-03");
   });
+
+  it("opens on the current month, with an enabled focused button, when the month is in the future", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<Harness initial="2027-01" />);
+    await user.click(screen.getByRole("button", { name: "January 2027" }));
+    const focusedButton = inDialog().getByRole("button", { name: "September 2026" });
+    expect(focusedButton).toBeEnabled();
+    expect(focusedButton).toHaveFocus();
+  });
 });

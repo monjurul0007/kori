@@ -26,7 +26,7 @@ export function PageHeader(props: PageHeaderProps) {
   const { title, actions, backTo } = props;
   usePageTitle(tabTitle(props));
   return (
-    <header className="mb-4 flex min-h-11 items-center justify-between gap-2">
+    <header className="mb-4 flex min-h-11 flex-wrap items-center justify-between gap-2">
       <div className="flex min-w-0 items-center gap-1">
         {backTo && (
           <Link

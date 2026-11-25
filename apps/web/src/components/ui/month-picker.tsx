@@ -52,7 +52,8 @@ export function MonthPicker({ month, onChange }: MonthPickerProps) {
   useEffect(() => {
     if (!isOpen) return;
     const closeOnOutsidePress = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
+      const { target } = event;
+      if (target instanceof Node && !containerRef.current?.contains(target)) setIsOpen(false);
     };
     const closeOnEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -125,8 +126,10 @@ interface MonthGridDialogProps {
 }
 
 function MonthGridDialog({ id, month, currentMonth, onPick }: MonthGridDialogProps) {
-  const [viewYear, setViewYear] = useState(yearOf(month));
-  const [focused, setFocused] = useState(month);
+  // A future ?month= can still arrive by URL; start on the latest month that can be picked.
+  const startMonth = month > currentMonth ? currentMonth : month;
+  const [viewYear, setViewYear] = useState(yearOf(startMonth));
+  const [focused, setFocused] = useState(startMonth);
   const gridRef = useRef<HTMLDivElement>(null);
   const months = monthsOfYear(viewYear);
   const isInGrid = months.includes(focused);

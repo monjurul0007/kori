@@ -102,12 +102,12 @@ export function TransactionsPage() {
         title="Transactions"
         month={filters.month}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <MonthPicker month={filters.month} onChange={(month) => update({ month })} />
             <Button asChild variant="outline" size="sm">
               <a href={exportHref(filters)} download>
                 <Download className="h-4 w-4" aria-hidden="true" />
-                Export CSV
+                <span className="sr-only sm:not-sr-only">Export CSV</span>
               </a>
             </Button>
           </div>
