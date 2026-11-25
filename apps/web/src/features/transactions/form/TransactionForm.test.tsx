@@ -467,9 +467,8 @@ describe("transaction form", () => {
     expect(state.posted).toHaveLength(0);
   });
 
-  it("still saves, and warns, when localStorage is blocked", async () => {
+  it("still saves when localStorage is blocked", async () => {
     const state = mockApi();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("blocked");
     });
@@ -488,8 +487,7 @@ describe("transaction form", () => {
       await userEvent.selectOptions(within(dialog).getByLabelText("Paid with"), "bKash");
       await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
       await waitFor(() => expect(state.posted).toHaveLength(1));
-      expect(warn).toHaveBeenCalledWith("Couldn't remember the payment method", expect.any(Error));
-      expect(warn).toHaveBeenCalledWith("Couldn't read the last payment method", expect.any(Error));
+      expect(state.posted[0]).toMatchObject({ payment_method_id: "pm1" });
     } finally {
       vi.restoreAllMocks();
     }

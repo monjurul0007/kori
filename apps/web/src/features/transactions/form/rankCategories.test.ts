@@ -27,4 +27,20 @@ describe("rankCategories", () => {
     expect(rankCategories(tied, []).map((c) => c.id)).toEqual(["a", "b"]);
     expect(tied.map((c) => c.id)).toEqual(["b", "a"]);
   });
+
+  it("counts a transaction once even when several cached queries hold it", () => {
+    const seenTwice = makeTx("a"); // food
+    const bills1 = makeTx("b", {
+      lines: [{ category: bills, amount: "1", category_source: "user" }],
+    });
+    const bills2 = makeTx("c", {
+      lines: [{ category: bills, amount: "1", category_source: "user" }],
+    });
+    // food appears 3 times across queries but is one row; bills is two different rows.
+    const transactions = [seenTwice, seenTwice, seenTwice, bills1, bills2];
+    expect(rankCategories(categories, transactions).map((c) => c.id)).toEqual([
+      "c-bills",
+      "c-food",
+    ]);
+  });
 });

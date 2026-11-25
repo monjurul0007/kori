@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
@@ -204,5 +204,71 @@ describe("quick entry", () => {
       payment_method_id: "pm1",
       merchant: "Rickshaw",
     });
+  });
+});
+
+describe("quick entry on a wide screen", () => {
+  const original = window.matchMedia;
+  let listeners: ((event: { matches: boolean }) => void)[] = [];
+  let isWide = true;
+
+  beforeEach(() => {
+    listeners = [];
+    isWide = true;
+    window.matchMedia = ((query: string) => ({
+      get matches() {
+        return query === "(min-width: 768px)" && isWide;
+      },
+      media: query,
+      addEventListener: (_: string, listener: (event: { matches: boolean }) => void) =>
+        listeners.push(listener),
+      removeEventListener: (_: string, listener: (event: { matches: boolean }) => void) => {
+        listeners = listeners.filter((l) => l !== listener);
+      },
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+  });
+  afterEach(() => {
+    window.matchMedia = original;
+  });
+
+  it("shows date, merchant and paid-with directly, with a Cancel button", async () => {
+    mockApi();
+    const dialog = await openAdd();
+    expect(within(dialog).getByLabelText("Date")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Merchant")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Paid with")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeVisible();
+  });
+
+  it("saves the directly entered fields", async () => {
+    const state = mockApi();
+    const dialog = await openAdd();
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "75");
+    await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
+    await userEvent.type(within(dialog).getByLabelText("Merchant"), "Office lunch");
+    await userEvent.selectOptions(within(dialog).getByLabelText("Paid with"), "bKash");
+    await userEvent.click(within(dialog).getByRole("button", { name: /^Save/ }));
+    await waitFor(() => expect(state.posted).toHaveLength(1));
+    expect(state.posted[0]).toMatchObject({
+      amount: "75",
+      category_id: "c-bills",
+      merchant: "Office lunch",
+      payment_method_id: "pm1",
+    });
+  });
+
+  it("keeps what was typed when the screen is resized to a phone mid-entry", async () => {
+    mockApi();
+    const dialog = await openAdd();
+    await userEvent.type(within(dialog).getByLabelText("Amount (৳)"), "75");
+    await userEvent.type(within(dialog).getByLabelText("Merchant"), "Office lunch");
+    isWide = false;
+    act(() => listeners.forEach((listener) => listener({ matches: false })));
+    expect(within(dialog).queryByLabelText("Merchant")).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Office lunch" })).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Amount (৳)")).toHaveValue("75");
   });
 });

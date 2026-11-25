@@ -1,17 +1,24 @@
-import type { Transaction } from "../TransactionRow";
+interface RankableTransaction {
+  id: string;
+  lines: { category: { id: string } }[];
+}
 
 interface Rankable {
   id: string;
   sort_order: number;
 }
 
-/** Most-used first, by how often each category appears in the given rows; ties by sort_order. */
+/**
+ * Most-used first, by how often each category appears in the given rows; ties by sort_order.
+ * A row cached under several queries (other months or filters) is counted once.
+ */
 export function rankCategories<C extends Rankable>(
   categories: C[],
-  transactions: Transaction[],
+  transactions: RankableTransaction[],
 ): C[] {
   const uses = new Map<string, number>();
-  for (const transaction of transactions) {
+  const uniqueTransactions = new Map(transactions.map((t) => [t.id, t]));
+  for (const transaction of uniqueTransactions.values()) {
     for (const line of transaction.lines) {
       uses.set(line.category.id, (uses.get(line.category.id) ?? 0) + 1);
     }

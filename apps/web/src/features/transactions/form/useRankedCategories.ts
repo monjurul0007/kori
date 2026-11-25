@@ -2,7 +2,6 @@ import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 
 import type { components } from "@/api/schema";
 
-import type { Transaction } from "../TransactionRow";
 import { rankCategories } from "./rankCategories";
 
 type Page = components["schemas"]["TransactionPage"];
@@ -15,5 +14,5 @@ export function useRankedCategories<C extends { id: string; sort_order: number }
   const cached = client
     .getQueriesData<InfiniteData<Page>>({ queryKey: ["transactions"] })
     .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
-  return rankCategories(categories, cached as Transaction[]);
+  return rankCategories(categories, cached);
 }
