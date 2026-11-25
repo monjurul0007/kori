@@ -26,7 +26,7 @@ describe("formSchema", () => {
     expect(messages({ amount })).toEqual([]);
   });
 
-  it.each(["", "abc"])("asks for an amount when given %j", (amount) => {
+  it.each(["", "abc", "1."])("asks for an amount when given %j", (amount) => {
     expect(messages({ amount })).toContain("Enter an amount");
   });
 

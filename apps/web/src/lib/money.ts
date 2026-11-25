@@ -2,7 +2,8 @@
 
 const AMOUNT = /^(-?)(\d+)(?:\.(\d{1,2}))?$/;
 const BANGLA_DIGITS = "০১২৩৪৫৬৭৮৯";
-const TYPED_AMOUNT = /^(-?)(\d+)(?:\.(\d*))?$/;
+// A dot needs digits after it, like the API and parseTakaInput: "1." is not an amount.
+const TYPED_AMOUNT = /^(-?)(\d+)(?:\.(\d+))?$/;
 
 /** Mirrors the API's MAX_POISHA (apps/api/src/kori/common/money.py); the limit is inclusive. */
 export const MAX_AMOUNT_POISHA = 10n ** 13n;

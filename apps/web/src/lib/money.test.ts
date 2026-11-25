@@ -66,6 +66,7 @@ describe("validateAmount", () => {
   it.each([
     ["", "Enter an amount"],
     ["abc", "Enter an amount"],
+    ["1.", "Enter an amount"],
     ["1.234", "Use up to 2 decimal places"],
     ["0", "Must be above zero"],
     ["0.00", "Must be above zero"],
@@ -78,6 +79,24 @@ describe("validateAmount", () => {
 
   it.each(["1.5", "1250", "৳ 1,250.50", "১২৫০", "100000000000", "0.01"])("accepts %j", (input) => {
     expect(validateAmount(input)).toBeNull();
+  });
+});
+
+describe("validateAmount and parseTakaInput agree", () => {
+  it.each([
+    "",
+    "abc",
+    "1.",
+    "1.234",
+    "0",
+    "-1",
+    "1.5",
+    "1250",
+    "৳ 1,250.50",
+    "১২৫০",
+    "100000000000",
+  ])("when %j is accepted it can be parsed", (input) => {
+    if (validateAmount(input) === null) expect(parseTakaInput(input)).not.toBeNull();
   });
 });
 
