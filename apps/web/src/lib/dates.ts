@@ -63,6 +63,11 @@ export function formatMonth(month: string): string {
   return `${name} ${date.getUTCFullYear()}`;
 }
 
+/** "2026-09" -> "September" */
+export function monthName(month: string): string {
+  return formatMonth(month).split(" ")[0] ?? month;
+}
+
 /** "2026-09" -> "Sep 2026" */
 export function formatMonthShort(month: string): string {
   return `${shortMonthName(month)} ${month.slice(0, 4)}`;

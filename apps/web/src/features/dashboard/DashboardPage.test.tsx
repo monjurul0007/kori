@@ -46,15 +46,15 @@ describe("DashboardPage", () => {
     mockAll();
     renderApp("/dashboard?month=2026-03");
     expect(await screen.findAllByRole("alert")).not.toHaveLength(0);
-    expect(screen.getByRole("heading", { name: "Recent transactions" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Recent" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Where the money went" })).toBeInTheDocument();
   });
 
   it("goes from the page h1 to h2 card titles without skipping a level", async () => {
     mockAll();
     renderApp("/dashboard?month=2026-03");
-    await screen.findByRole("heading", { name: "Recent transactions" });
+    await screen.findByRole("heading", { name: "Recent" });
     expect(screen.queryAllByRole("heading", { level: 3 })).toHaveLength(0);
-    expect(screen.getByRole("heading", { level: 2, name: "Recent transactions" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "Recent" })).toBeVisible();
   });
 });

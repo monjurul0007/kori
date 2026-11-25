@@ -114,14 +114,15 @@ describe("dashboard", () => {
     expect(within(nav).getAllByRole("link")[0]).toHaveAccessibleName("Dashboard");
   });
 
-  it("shows spent, limit, remaining and days left", async () => {
+  it("shows what is left to spend, the budget used and days left", async () => {
     mockApi();
     renderApp("/dashboard?month=2026-09");
-    expect(await screen.findByText("৳8,000")).toBeInTheDocument();
-    expect(screen.getByText("of ৳20,000")).toBeInTheDocument();
-    expect(screen.getByText("৳12,000 left")).toBeInTheDocument();
-    expect(screen.getByText("9 days left")).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Budget used" })).toHaveAttribute(
+    const hero = await screen.findByRole("region", { name: "Left to spend" });
+    expect(await within(hero).findByText("Left to spend in September")).toBeInTheDocument();
+    expect(within(hero).getByText("৳12,000")).toBeInTheDocument();
+    expect(within(hero).getByText("৳8,000 of ৳20,000 spent")).toBeInTheDocument();
+    expect(within(hero).getByText("9 days left")).toBeInTheDocument();
+    expect(within(hero).getByRole("progressbar", { name: "Budget used" })).toHaveAttribute(
       "aria-valuetext",
       "40% used",
     );
@@ -134,44 +135,74 @@ describe("dashboard", () => {
     expect(await screen.findByText("Sum of category budgets")).toBeInTheDocument();
   });
 
-  it("shows an over-budget summary with the amount over", async () => {
+  it("shows the amount over when the budget is exceeded", async () => {
     mockApi({
       status: status({
         overall: overall({ spent: "22000", remaining: "-2000", percent: "110.0", level: "over" }),
       }),
     });
     renderApp("/dashboard?month=2026-09");
-    expect(await screen.findByText("৳2,000 over budget")).toBeInTheDocument();
+    const hero = await screen.findByRole("region", { name: "Left to spend" });
+    expect(await within(hero).findByText("Over budget in September")).toBeInTheDocument();
+    expect(within(hero).getByText("৳2,000")).toBeInTheDocument();
+    expect(within(hero).getByText("over")).toBeInTheDocument();
+    expect(within(hero).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
   });
 
-  it("warns amber at 85% and red at 100%, with text and an icon", async () => {
+  it("shows what was spent, and a link to set a budget, when there is no budget", async () => {
+    mockApi({ status: status({ overall: null }) });
+    renderApp("/dashboard?month=2026-09");
+    const hero = await screen.findByRole("region", { name: "Spent in September" });
+    expect(await within(hero).findByText("৳8,000")).toBeInTheDocument();
+    expect(within(hero).getByRole("link", { name: "Set a monthly budget" })).toHaveAttribute(
+      "href",
+      "/budgets",
+    );
+  });
+
+  it("always shows spent, income and net, with last month's spending", async () => {
+    mockApi({ status: status({ overall: null }) });
+    renderApp("/dashboard?month=2026-09");
+    expect(await screen.findByText("August total: ৳5,000")).toBeInTheDocument();
+    const totals = screen.getByText("Net").closest("dl")!;
+    expect(within(totals).getByText("৳6,000")).toBeInTheDocument();
+    expect(within(totals).getByText("+৳5,000")).toBeInTheDocument();
+    expect(within(totals).getByText("-৳1,000")).toBeInTheDocument();
+    expect(within(totals).getByText("Spent more than earned")).toBeInTheDocument();
+  });
+
+  it("lists over, near-limit and fully used budgets, each linking to its transactions", async () => {
     mockApi({
       status: status({
         categories: [
           catStatus("Food & Dining", "85.0", "warning"),
-          catStatus("Rent", "120.0", "over"),
+          {
+            ...catStatus("Rent", "120.0", "over"),
+            spent: "14400",
+            limit: "12000",
+            remaining: "-2400",
+          },
+          { ...catStatus("Bills", "100.0", "over"), spent: "12000", remaining: "0" },
           catStatus("Fun", "20.0", "ok"),
         ],
       }),
     });
     renderApp("/dashboard?month=2026-09");
-    const list = await screen.findByRole("list", { name: "Budget warnings" });
-    const [amber, red] = within(list).getAllByRole("listitem");
-    expect(amber).toHaveTextContent("Food & Dining is at 85% of ৳12,000 with 9 days left");
-    expect(amber).toHaveClass("bg-warn/10");
-    expect(amber!.querySelector("svg")).not.toBeNull();
-    expect(red).toHaveTextContent("Over budget: Rent is at 120% of ৳12,000");
-    expect(red).toHaveClass("bg-over/10");
-    expect(within(list).getAllByRole("listitem")).toHaveLength(2);
+    const section = await screen.findByRole("region", { name: "Needs attention" });
+    const links = within(section).getAllByRole("link");
+    expect(links.map((l) => l.textContent)).toEqual([
+      "Rent is ৳2,400 over its ৳12,000 budget.",
+      "Food & Dining has ৳1,800 left for the last 9 days.",
+      "Bills is fully used. Its ৳12,000 budget is spent.",
+    ]);
+    expect(links[0]).toHaveAttribute("href", "/transactions?month=2026-09&category_id=Rent");
   });
 
-  it("links to /budgets when there are no budgets", async () => {
-    mockApi({ status: status({ overall: null }) });
+  it("hides Needs attention when every budget is fine", async () => {
+    mockApi({ status: status({ categories: [catStatus("Fun", "20.0", "ok")] }) });
     renderApp("/dashboard?month=2026-09");
-    expect(await screen.findByRole("link", { name: "Set budgets" })).toHaveAttribute(
-      "href",
-      "/budgets",
-    );
+    await screen.findByText("Left to spend in September");
+    expect(screen.queryByRole("region", { name: "Needs attention" })).not.toBeInTheDocument();
   });
 
   it("shows a donut and a list with each category's amount and percent", async () => {
@@ -194,12 +225,12 @@ describe("dashboard", () => {
     expect(within(table).getByText("৳6,000")).toBeInTheDocument();
   });
 
-  it("shows 5 recent transactions and a See all link for the month", async () => {
+  it("shows the recent transactions and a link to the month's list", async () => {
     mockApi();
     renderApp("/dashboard?month=2026-09");
     expect(await screen.findByText("Shop a")).toBeInTheDocument();
-    expect(screen.queryByText("Shop f")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "See all" })).toHaveAttribute(
+    expect(screen.getByText("Shop f")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "See all transactions" })).toHaveAttribute(
       "href",
       "/transactions?month=2026-09",
     );
@@ -208,7 +239,7 @@ describe("dashboard", () => {
   it("switching months updates the URL and refetches all three reports", async () => {
     const urls = mockApi();
     const { router } = renderApp("/dashboard?month=2026-09");
-    await screen.findByText("৳8,000");
+    await screen.findByText("Left to spend in September");
     await userEvent.click(screen.getByRole("button", { name: "Previous month" }));
     await waitFor(() => expect(router.state.location.search).toBe("?month=2026-08"));
     await waitFor(() => {
@@ -221,16 +252,19 @@ describe("dashboard", () => {
   it("keeps working when one card fails, and retries that card", async () => {
     mockApi({ trendFail: true });
     renderApp("/dashboard?month=2026-09");
-    const alert = await screen.findByRole("alert");
+    // Totals and the trend chart both read the trend report, so both show the failure.
+    const alerts = await screen.findAllByRole("alert");
+    expect(alerts).toHaveLength(2);
+    const alert = alerts[0]!;
     expect(alert).toHaveTextContent(/Internal Server Error|Couldn't load/);
-    expect(await screen.findByText("৳12,000 left")).toBeInTheDocument();
+    expect(await screen.findByText("Left to spend in September")).toBeInTheDocument();
     expect(within(alert).getByRole("button", { name: "Try again" })).toBeInTheDocument();
   });
 
   it("invalidates the reports when a transaction is saved", async () => {
     mockApi();
     const { client } = renderApp("/dashboard?month=2026-09");
-    await screen.findByText("৳8,000");
+    await screen.findByText("Left to spend in September");
     expect(client.getQueryState(["reports", "spending", "2026-09"])?.isInvalidated).toBe(false);
     const { REPORTS_KEY } = await import("./hooks");
     await client.invalidateQueries({ queryKey: REPORTS_KEY });
