@@ -11,6 +11,7 @@ import { formatTaka, parseTakaInput } from "@/lib/money";
 import { problemFieldErrors } from "@/lib/problem";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 import { toastError, toastSuccess } from "@/lib/toast";
+import { withTag } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 
 import { useCategories, usePaymentMethods, useTags } from "../hooks";
@@ -27,7 +28,7 @@ import type { TransactionBody } from "./mutations";
 import { PaymentMethodSelect } from "./PaymentMethodSelect";
 import { fieldForLoc, formSchema, poishaOf, type FormValues } from "./schema";
 import { remainingPoisha, SplitEditor } from "./SplitEditor";
-import { TagInput, withTag } from "./TagInput";
+import { TagInput } from "./TagInput";
 
 const LAST_METHOD_KEY = "kori.lastPaymentMethod";
 

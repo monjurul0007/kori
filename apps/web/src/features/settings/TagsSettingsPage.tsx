@@ -22,9 +22,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { normalizeTagName } from "@/lib/tags";
 import { toastError } from "@/lib/toast";
 
-import { normalizeTagName, useDeleteTag, useRenameTag, type Tag } from "./hooks";
+import { useDeleteTag, useRenameTag, type Tag } from "./hooks";
 import { SETTINGS_PARENT } from "./parent";
 import { useTags } from "@/features/transactions/hooks";
 

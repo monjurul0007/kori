@@ -414,7 +414,7 @@ describe("transaction form", () => {
     await userEvent.click(await within(dialog).findByRole("radio", { name: "Bills" }));
     const tags = within(dialog).getByLabelText("Tags");
     await userEvent.type(tags, "ei");
-    await userEvent.click(await within(dialog).findByRole("button", { name: "#eid" }));
+    await userEvent.click(await within(dialog).findByRole("option", { name: "eid" }));
     await userEvent.type(tags, "newtag{Enter}");
     expect(within(dialog).getByText("#newtag")).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
@@ -446,7 +446,7 @@ describe("transaction form", () => {
     await userEvent.type(tags, "Lunch{Enter}lunch");
     await userEvent.click(within(dialog).getByRole("button", { name: "Save" }));
     await waitFor(() => expect(state.posted).toHaveLength(1));
-    expect(state.posted[0]).toMatchObject({ tags: ["Lunch"] });
+    expect(state.posted[0]).toMatchObject({ tags: ["lunch"] });
   });
 
   it("rejects an empty form without calling the API", async () => {
