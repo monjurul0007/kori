@@ -14,17 +14,20 @@ interface Props<T> {
   className?: string;
   /** Keep the heading for screen readers only, when the card's content says it all. */
   hideTitle?: boolean;
+  /** A small control or link on the right of the heading, such as "All categories". */
+  action?: ReactNode;
 }
 
 /** A dashboard card with its own skeleton and retry, so one failing report doesn't blank the page. */
-export function QueryCard<T>({ title, query, children, className, hideTitle }: Props<T>) {
+export function QueryCard<T>({ title, query, children, className, hideTitle, action }: Props<T>) {
   return (
     <Card className={className}>
       {hideTitle ? (
         <CardTitle className="sr-only">{title}</CardTitle>
       ) : (
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between gap-2">
           <CardTitle className="text-base">{title}</CardTitle>
+          {action}
         </CardHeader>
       )}
       <CardContent className={cn(hideTitle && "pt-5 md:pt-6")}>

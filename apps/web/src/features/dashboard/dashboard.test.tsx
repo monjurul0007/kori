@@ -230,14 +230,17 @@ describe("dashboard", () => {
     expect(screen.queryByRole("region", { name: "Needs attention" })).not.toBeInTheDocument();
   });
 
-  it("shows a donut and a list with each category's amount and percent", async () => {
+  it("shows a stacked bar and a list with each category's amount and percent", async () => {
     mockApi();
     renderApp("/dashboard?month=2026-09");
     expect(
       await screen.findByRole("img", { name: "Spending by category, total ৳8,000" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("৳6,000 · 75.0%")).toBeInTheDocument();
-    expect(screen.getByText("৳2,000 · 25.0%")).toBeInTheDocument();
+    const rows = within(
+      screen.getByRole("heading", { name: "Where it went" }).closest("div")!.parentElement!,
+    ).getAllByRole("listitem");
+    expect(rows[0]).toHaveTextContent("৳6,00075.0%");
+    expect(rows[1]).toHaveTextContent("৳2,00025.0%");
   });
 
   it("renders 6 trend bars and an accessible table", async () => {
@@ -278,9 +281,8 @@ describe("dashboard", () => {
     mockApi({ trendFail: true });
     renderApp("/dashboard?month=2026-09");
     // Totals and the trend chart both read the trend report, so both show the failure.
-    const alerts = await screen.findAllByRole("alert");
-    expect(alerts).toHaveLength(2);
-    const alert = alerts[0]!;
+    await waitFor(() => expect(screen.getAllByRole("alert")).toHaveLength(2));
+    const alert = screen.getAllByRole("alert")[0]!;
     expect(alert).toHaveTextContent(/Internal Server Error|Couldn't load/);
     expect(await screen.findByText("Left to spend in September")).toBeInTheDocument();
     expect(within(alert).getByRole("button", { name: "Try again" })).toBeInTheDocument();
