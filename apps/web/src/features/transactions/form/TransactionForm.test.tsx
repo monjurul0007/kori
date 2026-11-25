@@ -513,7 +513,7 @@ describe("TransactionForm on a recurring transaction", () => {
     mockApi([makeTx("b", { merchant: "Manual shop" })]);
     renderApp(`/transactions?month=${month}`);
     await userEvent.click(await screen.findByText("Manual shop"));
-    await screen.findByRole("heading", { name: "Edit transaction" });
+    await screen.findByRole("heading", { name: "Edit expense" });
     expect(screen.queryByRole("link", { name: "Edit rule" })).not.toBeInTheDocument();
   });
 });
@@ -565,7 +565,8 @@ describe("transaction feedback", () => {
     await userEvent.click(await screen.findByText("Shop a"));
     const del = await screen.findByRole("button", { name: "Delete" });
     await userEvent.click(del);
-    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    const confirm = screen.getByRole("alertdialog", { name: "Confirm delete" });
+    expect(within(confirm).getByRole("button", { name: "Cancel" })).toHaveFocus();
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("alertdialog", { name: "Confirm delete" })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -586,11 +587,9 @@ describe("transaction feedback", () => {
     await userEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
     const busy = await screen.findByRole("button", { name: "Deleting…" });
     expect(busy).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    expect(screen.getByRole("alertdialog", { name: "Confirm delete" })).toHaveAttribute(
-      "aria-busy",
-      "true",
-    );
+    const confirm = screen.getByRole("alertdialog", { name: "Confirm delete" });
+    expect(within(confirm).getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(confirm).toHaveAttribute("aria-busy", "true");
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 

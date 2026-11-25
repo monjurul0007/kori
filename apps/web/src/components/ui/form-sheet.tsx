@@ -15,6 +15,8 @@ interface Props {
   description: string;
   /** Unsaved input: closing then asks "Discard changes?" first. */
   dirty?: boolean;
+  /** Runs before the sheet's own Esc handling; call `preventDefault` to claim the key. */
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
   /** The sticky actions row, always visible, e.g. a Save button. */
   footer: React.ReactNode;
   children: React.ReactNode;
@@ -33,6 +35,7 @@ export function FormSheet({
   title,
   description,
   dirty = false,
+  onEscapeKeyDown,
   footer,
   children,
   className,
@@ -74,6 +77,8 @@ export function FormSheet({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           onEscapeKeyDown={(event) => {
+            onEscapeKeyDown?.(event);
+            if (event.defaultPrevented) return;
             // Esc backs out of the discard prompt instead of closing the sheet.
             if (!isConfirmingDiscard) return;
             event.preventDefault();

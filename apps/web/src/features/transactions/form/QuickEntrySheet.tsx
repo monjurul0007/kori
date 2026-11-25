@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Plus } from "lucide-react";
 import { useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { FormSheet } from "@/components/ui/form-sheet";
@@ -17,14 +18,16 @@ import { cn } from "@/lib/utils";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 
 import { useCategories, usePaymentMethods, useTags } from "../hooks";
+import type { Transaction } from "../TransactionRow";
 import { CategoryGrid } from "./CategoryGrid";
+import { DeleteButton, DeleteConfirm } from "./DeleteControls";
 import { rememberedMethod, rememberMethod } from "./lastPaymentMethod";
 import { OptionalFields } from "./OptionalFields";
 import { fieldForLoc, formSchema, initialSplitLines, type FormValues } from "./schema";
 import { remainingPoisha, SplitEditor } from "./SplitEditor";
-import { buildSubmission } from "./submission";
+import { buildSubmission, type Submission } from "./submission";
 import { TagInput } from "./TagInput";
-import { useCreateWithUndo } from "./useCreateWithUndo";
+import type { DeleteFlow } from "./useDeleteFlow";
 import { useRankedCategories } from "./useRankedCategories";
 
 const DESKTOP_QUERY = "(min-width: 768px)";
@@ -34,31 +37,19 @@ const TRANSACTION_TYPES = ["expense", "income"] as const;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Starting date; defaults to today (Dhaka). */
+  /** Starting date for a new entry; defaults to today (Dhaka). */
   defaultDate?: string;
+  /** The row being edited. Absent for a new entry. */
+  transaction?: Transaction;
+  /** Creates or updates; throws when the request fails so the sheet can show why. */
+  onSave: (submission: Submission) => Promise<void>;
+  /** Present when the row can be deleted, i.e. in edit mode. */
+  deletion?: DeleteFlow;
 }
 
-/** The quick-entry sheet: amount first, then a category tile, then Save. */
-export function NewTransactionSheet({ open, ...rest }: Props) {
-  // Mounting only while open gives every entry a fresh form and a fresh discard guard.
-  return open ? <QuickEntry open {...rest} /> : null;
-}
-
-function QuickEntry({ open, onOpenChange, defaultDate }: Props) {
-  const uid = useId();
-  const formId = `${uid}-form`;
-  const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  const categories = useCategories().data ?? [];
-  const methods = usePaymentMethods().data ?? [];
-  const knownTags = (useTags().data ?? []).map((t) => t.name);
-  const createWithUndo = useCreateWithUndo();
-  const [formError, setFormError] = useState<string>();
-  const [pendingTag, setPendingTag] = useState("");
-  const [isShowingExtras, setIsShowingExtras] = useState(false);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+function initialValues(transaction: Transaction | undefined, defaultDate: string | undefined) {
+  if (!transaction) {
+    return {
       type: "expense",
       amount: "",
       categoryId: "",
@@ -68,7 +59,46 @@ function QuickEntry({ open, onOpenChange, defaultDate }: Props) {
       paymentMethodId: rememberedMethod(),
       tags: [],
       note: "",
-    },
+    } satisfies FormValues;
+  }
+  return {
+    type: transaction.type,
+    amount: transaction.amount,
+    categoryId: transaction.lines[0]?.category.id ?? "",
+    lines: transaction.is_split
+      ? transaction.lines.map((l) => ({ categoryId: l.category.id, amount: l.amount }))
+      : [],
+    occurredOn: transaction.occurred_on,
+    merchant: transaction.merchant ?? "",
+    paymentMethodId: transaction.payment_method?.id ?? "",
+    tags: transaction.tags,
+    note: transaction.note ?? "",
+  } satisfies FormValues;
+}
+
+/** The quick-entry sheet, for adding a transaction and for editing one: amount, category, Save. */
+export function QuickEntrySheet({ open, ...rest }: Props) {
+  // Mounting only while open gives every entry a fresh form and a fresh discard guard.
+  return open ? <QuickEntry open {...rest} /> : null;
+}
+
+function QuickEntry({ open, onOpenChange, defaultDate, transaction, onSave, deletion }: Props) {
+  const uid = useId();
+  const formId = `${uid}-form`;
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const categories = useCategories().data ?? [];
+  const methods = usePaymentMethods().data ?? [];
+  const knownTags = (useTags().data ?? []).map((t) => t.name);
+  const [formError, setFormError] = useState<string>();
+  const [pendingTag, setPendingTag] = useState("");
+  const isEditing = transaction !== undefined;
+  const [isShowingExtras, setIsShowingExtras] = useState(
+    isEditing && (transaction.tags.length > 0 || !!transaction.note),
+  );
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: initialValues(transaction, defaultDate),
   });
   const { register, handleSubmit, control, setValue, setError, formState } = form;
   const values = useWatch({ control }) as FormValues;
@@ -95,9 +125,14 @@ function QuickEntry({ open, onOpenChange, defaultDate }: Props) {
       return;
     }
     setFormError(undefined);
-    const submission = buildSubmission(v, { categories, methods, pendingTag });
+    const submission = buildSubmission(v, {
+      categories,
+      methods,
+      pendingTag,
+      existing: transaction,
+    });
     try {
-      await createWithUndo(submission, submission.preview.lines[0]?.category.name);
+      await onSave(submission);
       if (v.paymentMethodId) rememberMethod(v.paymentMethodId);
       onOpenChange(false);
     } catch (e) {
@@ -109,18 +144,38 @@ function QuickEntry({ open, onOpenChange, defaultDate }: Props) {
   });
 
   const amount = parseTakaInput(values.amount);
-  const saveLabel = `Save ${amount ? `${formatTaka(amount)} ` : ""}${type}`;
-  const title = type === "income" ? "New income" : "New expense";
+  const saveLabel = isEditing
+    ? "Save changes"
+    : `Save ${amount ? `${formatTaka(amount)} ` : ""}${type}`;
+  const title = `${isEditing ? "Edit" : "New"} ${type}`;
+  const isDeleting = deletion?.isPending ?? false;
+  const isConfirmingDelete = deletion?.isConfirming ?? false;
+  const shownError = formError ?? deletion?.error;
 
   return (
     <FormSheet
       open={open}
       onOpenChange={onOpenChange}
       title={title}
-      description="Log a new transaction."
+      description={isEditing ? "Change or delete this transaction." : "Log a new transaction."}
       dirty={isDirty || pendingTag.trim() !== ""}
+      onEscapeKeyDown={(event) => {
+        // Esc backs out of "Delete this transaction?" without closing the sheet, and does
+        // nothing while the request is in flight, like the disabled buttons.
+        if (!deletion?.isConfirming) return;
+        event.preventDefault();
+        if (!deletion.isPending) deletion.cancel();
+      }}
       footer={
         <>
+          {deletion && isDesktop && (
+            <DeleteButton
+              buttonRef={deletion.deleteButtonRef}
+              isPending={isDeleting || isSubmitting}
+              onClick={deletion.askToConfirm}
+              className="mr-auto"
+            />
+          )}
           <DialogPrimitive.Close asChild>
             <Button type="button" variant="outline" className="hidden md:inline-flex">
               Cancel
@@ -130,7 +185,7 @@ function QuickEntry({ open, onOpenChange, defaultDate }: Props) {
             type="submit"
             form={formId}
             className="h-12 flex-1"
-            disabled={isSubmitting || isUnbalanced}
+            disabled={isSubmitting || isDeleting || isUnbalanced}
           >
             {isSubmitting ? "Saving…" : saveLabel}
           </Button>
@@ -259,12 +314,38 @@ function QuickEntry({ open, onOpenChange, defaultDate }: Props) {
           </div>
         )}
 
-        {formError && (
+        {transaction?.recurring_rule_id && (
+          <p className="text-sm text-muted-foreground">
+            Added automatically. Changes here apply to this occurrence only.{" "}
+            <Link
+              to={`/settings/recurring?rule=${transaction.recurring_rule_id}`}
+              onClick={() => onOpenChange(false)}
+              className="font-medium text-foreground underline"
+            >
+              Edit rule
+            </Link>
+          </p>
+        )}
+
+        {shownError && (
           <p role="alert" className="text-sm text-over">
-            {formError}
+            {shownError}
           </p>
         )}
       </form>
+      {deletion && !isDesktop && (
+        <DeleteButton
+          buttonRef={deletion.deleteButtonRef}
+          isPending={isDeleting || isSubmitting}
+          onClick={deletion.askToConfirm}
+          className="mt-5 w-full"
+        />
+      )}
+      {deletion && isConfirmingDelete && (
+        <div className="mt-5">
+          <DeleteConfirm flow={deletion} />
+        </div>
+      )}
     </FormSheet>
   );
 }
