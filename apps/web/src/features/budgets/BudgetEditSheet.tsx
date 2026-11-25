@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatMonth } from "@/lib/dates";
-import { AMOUNT_ERRORS, parseTakaInput, stripValueErrorPrefix, validateAmount } from "@/lib/money";
-import { toastError } from "@/lib/toast";
+import {
+  AMOUNT_ERRORS,
+  formatTaka,
+  parseTakaInput,
+  stripValueErrorPrefix,
+  validateAmount,
+} from "@/lib/money";
+import { toastError, toastSuccess } from "@/lib/toast";
 
 import { useSetBudget } from "./hooks";
 
@@ -40,16 +46,45 @@ interface Props {
   onClose: () => void;
 }
 
+function savedMessage(target: BudgetTarget, amount: string) {
+  const limit = formatTaka(amount);
+  return target.categoryId === null
+    ? `Overall budget set to ${limit}`
+    : `Budget for ${target.name} set to ${limit}`;
+}
+
 export function BudgetEditSheet({ month, target, onClose }: Props) {
   const [text, setText] = useState(target.amount ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmingRemove, setIsConfirmingRemove] = useState(false);
   const save = useSetBudget();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isConfirmingRemove) cancelRef.current?.focus();
+  }, [isConfirmingRemove]);
+
+  async function restore(previousAmount: string) {
+    try {
+      await save.mutateAsync({ month, categoryId: target.categoryId, amount: previousAmount });
+      toastSuccess(`Restored the ${target.name} budget`);
+    } catch (e) {
+      toastError(e);
+    }
+  }
 
   async function submit(amount: string | null) {
     try {
       await save.mutateAsync({ month, categoryId: target.categoryId, amount });
+      const previousAmount = target.amount;
+      if (amount !== null) toastSuccess(savedMessage(target, amount));
+      else if (previousAmount)
+        toastSuccess(`Removed the ${target.name} budget`, {
+          undo: () => restore(previousAmount),
+        });
       onClose();
     } catch (e) {
+      setIsConfirmingRemove(false);
       const message = fieldMessage(e);
       if (message) setError(message);
       else toastError(e);
@@ -94,23 +129,45 @@ export function BudgetEditSheet({ month, target, onClose }: Props) {
               </p>
             )}
           </div>
-          <div className="flex justify-between gap-2">
-            {target.amount ? (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={save.isPending}
-                onClick={() => void submit(null)}
-              >
-                Remove budget
+          {isConfirmingRemove ? (
+            <div role="group" aria-label="Confirm removal" className="space-y-2">
+              <p className="text-sm">
+                Remove the {target.name} budget from {formatMonth(month)} onward?
+              </p>
+              <div className="flex justify-end gap-2">
+                {/* Cancel takes focus so Enter never removes by accident. */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  ref={cancelRef}
+                  onClick={() => setIsConfirmingRemove(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="button" disabled={save.isPending} onClick={() => void submit(null)}>
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-between gap-2">
+              {target.amount ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={save.isPending}
+                  onClick={() => setIsConfirmingRemove(true)}
+                >
+                  Remove budget
+                </Button>
+              ) : (
+                <span />
+              )}
+              <Button type="submit" className="h-11" disabled={save.isPending}>
+                Save
               </Button>
-            ) : (
-              <span />
-            )}
-            <Button type="submit" className="h-11" disabled={save.isPending}>
-              Save
-            </Button>
-          </div>
+            </div>
+          )}
         </form>
       </SheetContent>
     </Sheet>
