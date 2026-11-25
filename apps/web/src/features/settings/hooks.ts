@@ -183,10 +183,6 @@ export function useReorderPaymentMethods() {
 
 export type Tag = components["schemas"]["TagOut"];
 
-/** Same rules as the API: lowercase, trimmed, inner whitespace becomes `-`. */
-export const normalizeTagName = (raw: string) =>
-  raw.trim().replace(/^#/, "").toLowerCase().replace(/\s+/g, "-");
-
 // Renaming, merging or deleting a tag changes what the form suggests and what transactions show.
 function useRefreshTags() {
   const client = useQueryClient();

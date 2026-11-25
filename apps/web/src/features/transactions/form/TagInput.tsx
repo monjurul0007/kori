@@ -1,7 +1,9 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Input } from "@/components/ui/input";
+import { normalizeTagName, suggestTags, withTag } from "@/lib/tags";
+import { cn } from "@/lib/utils";
 
 interface Props {
   id: string;
@@ -12,61 +14,112 @@ interface Props {
   onPendingChange?: (text: string) => void;
 }
 
-/** Add `raw` to `tags`: trims, strips a leading #, ignores blanks and case-insensitive duplicates. */
-export function withTag(tags: string[], raw: string): string[] {
-  const tag = raw.trim().replace(/^#/, "");
-  if (!tag || tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return tags;
-  return [...tags, tag];
+const NO_ACTIVE_OPTION = -1;
+
+interface TagOption {
+  tag: string;
+  isNew: boolean;
+}
+
+/** Existing matches first, then a "Create" option when the text isn't already a known tag. */
+function buildOptions(known: string[], chosen: string[], text: string): TagOption[] {
+  const matches = suggestTags(known, chosen, text).map((tag) => ({ tag, isNew: false }));
+  const typed = normalizeTagName(text);
+  const isTypedTagTaken = !typed || known.includes(typed) || chosen.includes(typed);
+  return isTypedTagTaken ? matches : [...matches, { tag: typed, isNew: true }];
 }
 
 export function TagInput({ id, value, onChange, known, onPendingChange }: Props) {
+  const listboxId = useId();
   const [text, setTextState] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(NO_ACTIVE_OPTION);
+  const options = buildOptions(known, value, text);
+  const isListboxVisible = isOpen && options.length > 0;
+  const optionId = (index: number) => `${listboxId}-option-${index}`;
+
   const setText = (next: string) => {
     setTextState(next);
+    setActiveIndex(NO_ACTIVE_OPTION);
     onPendingChange?.(next);
   };
-  const query = text.trim().replace(/^#/, "").toLowerCase();
-  const suggestions = query
-    ? known.filter((t) => t.toLowerCase().startsWith(query) && !value.includes(t)).slice(0, 5)
-    : [];
 
   const add = (raw: string) => {
     const next = withTag(value, raw);
     if (next !== value) onChange(next);
     setText("");
+    setIsOpen(false);
+  };
+
+  const moveActive = (step: 1 | -1) => {
+    setIsOpen(true);
+    if (options.length === 0) return;
+    setActiveIndex((current) => (current + step + options.length) % options.length);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      moveActive(e.key === "ArrowDown" ? 1 : -1);
+    } else if (e.key === "Enter") {
+      e.preventDefault(); // Enter picks a tag; it must not submit the form.
+      const active = isListboxVisible ? options[activeIndex] : undefined;
+      add(active ? active.tag : text);
+    } else if (e.key === "Escape" && isListboxVisible) {
+      e.stopPropagation(); // close the list, not the sheet around it
+      setIsOpen(false);
+    }
   };
 
   return (
     <div className="space-y-2">
-      <Input
-        id={id}
-        value={text}
-        placeholder="Type a tag, press Enter"
-        onChange={(e) => setText(e.target.value)}
-        onBlur={() => add(text)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault(); // Enter adds a tag; it must not submit the form.
-            add(text);
+      <div className="relative">
+        <Input
+          id={id}
+          role="combobox"
+          aria-expanded={isListboxVisible}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          aria-activedescendant={
+            isListboxVisible && activeIndex !== NO_ACTIVE_OPTION ? optionId(activeIndex) : undefined
           }
-        }}
-      />
-      {suggestions.length > 0 && (
-        <ul aria-label="Tag suggestions" className="flex flex-wrap gap-2">
-          {suggestions.map((t) => (
-            <li key={t}>
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()} // keep focus, so blur doesn't add the half-typed text
-                onClick={() => add(t)}
-                className="rounded-full border px-3 py-1 text-sm hover:bg-muted"
-              >
-                #{t}
-              </button>
+          value={text}
+          placeholder="Type a tag, press Enter"
+          onChange={(e) => {
+            setText(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => add(text)}
+          onKeyDown={handleKeyDown}
+        />
+        <ul
+          id={listboxId}
+          role="listbox"
+          aria-label="Tag suggestions"
+          hidden={!isListboxVisible}
+          className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border bg-popover shadow-md"
+        >
+          {options.map((option, index) => (
+            <li
+              key={option.tag}
+              id={optionId(index)}
+              role="option"
+              aria-selected={index === activeIndex}
+              onMouseDown={(e) => {
+                e.preventDefault(); // keep focus, so blur doesn't add the half-typed text
+                add(option.tag);
+              }}
+              className={cn(
+                "cursor-pointer px-3 py-2 text-sm hover:bg-muted",
+                index === activeIndex && "bg-muted",
+              )}
+            >
+              {option.isNew ? `Create "${option.tag}"` : option.tag}
             </li>
           ))}
         </ul>
-      )}
+      </div>
       {value.length > 0 && (
         <ul aria-label="Selected tags" className="flex flex-wrap gap-2">
           {value.map((t) => (
