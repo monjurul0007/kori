@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
+import { formatMonth, monthOf, todayInDhaka } from "@/lib/dates";
 import { renderApp } from "@/test/renderApp";
 import { server } from "@/test/setup";
 
@@ -20,10 +21,12 @@ function signedIn() {
   );
 }
 
+const THIS_MONTH = formatMonth(monthOf(todayInDhaka()));
+
 const TITLES: [string, string][] = [
   ["/dashboard", "Dashboard · Kori"],
-  ["/transactions", "Transactions · Kori"],
-  ["/budgets", "Budgets · Kori"],
+  ["/transactions", `Transactions · ${THIS_MONTH} · Kori`],
+  ["/budgets", `Budgets · ${THIS_MONTH} · Kori`],
   ["/settings", "Settings · Kori"],
   ["/settings/categories", "Categories · Settings · Kori"],
   ["/settings/payment-methods", "Payment methods · Settings · Kori"],
@@ -96,7 +99,7 @@ describe("settings back link", () => {
       signedIn();
       renderApp(path);
       await screen.findByRole("heading", { level: 1 });
-      const back = within(screen.getByRole("main")).getByRole("link", { name: "Settings" });
+      const back = within(screen.getByRole("main")).getByRole("link", { name: "Back to Settings" });
       expect(back).toHaveAttribute("href", "/settings");
     },
   );

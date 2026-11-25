@@ -101,7 +101,7 @@ export function BudgetsPage() {
 
   return (
     <>
-      <PageHeader title="Budgets" />
+      <PageHeader title="Budgets" month={month} />
       <div className="space-y-3">
         <MonthSwitcher month={month} onChange={(m) => setParams({ month: m })} />
         {readOnly && (

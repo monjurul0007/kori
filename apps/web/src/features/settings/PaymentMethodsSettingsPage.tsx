@@ -33,7 +33,7 @@ export function PaymentMethodsSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Payment methods" parent={SETTINGS_PARENT} />
+      <PageHeader title="Payment methods" backTo={SETTINGS_PARENT} />
       {methods.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : methods.isError ? (

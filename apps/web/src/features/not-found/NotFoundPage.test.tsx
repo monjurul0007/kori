@@ -1,4 +1,5 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
 import { server } from "@/test/setup";
@@ -16,8 +17,13 @@ describe("unknown URLs", () => {
   it("shows Page not found inside the app shell, with a way back", async () => {
     server.use(http.get("*/api/v1/auth/me", () => HttpResponse.json(user)));
     renderApp("/budget");
-    expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
-    expect(screen.getByText("That address doesn't match a page in Kori.")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "This page doesn't exist" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("404")).toBeInTheDocument();
+    expect(
+      screen.getByText("The link may be old or mistyped. Your data is safe."),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Go to dashboard" })).toHaveAttribute(
       "href",
       "/dashboard",
@@ -27,10 +33,19 @@ describe("unknown URLs", () => {
     expect(screen.getAllByRole("link", { name: /transactions/i }).length).toBeGreaterThan(0);
   });
 
+  it("goes to the dashboard from Go back when there is no history to return to", async () => {
+    server.use(http.get("*/api/v1/auth/me", () => HttpResponse.json(user)));
+    const { router } = renderApp("/budget");
+    await userEvent.click(await screen.findByRole("button", { name: "Go back" }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/dashboard"));
+  });
+
   it("covers nested unknown paths too", async () => {
     server.use(http.get("*/api/v1/auth/me", () => HttpResponse.json(user)));
     renderApp("/settings/foo");
-    expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "This page doesn't exist" }),
+    ).toBeInTheDocument();
   });
 
   it("sends a signed-out visitor to /login", async () => {

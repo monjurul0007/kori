@@ -100,6 +100,7 @@ export function TransactionsPage() {
     <>
       <PageHeader
         title="Transactions"
+        month={filters.month}
         actions={
           <Button asChild variant="outline" size="sm">
             <a href={exportHref(filters)} download>

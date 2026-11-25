@@ -54,7 +54,7 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <OfflineBanner />
         <header className="flex items-center px-4 pt-3 md:hidden">
-          <Wordmark markSize={26} className="text-[17px]" />
+          <Wordmark markSize={26} showBangla={false} className="text-[17px]" />
         </header>
         <main
           id="main"

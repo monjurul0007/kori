@@ -35,7 +35,7 @@ export function CategoriesSettingsPage() {
 
   return (
     <>
-      <PageHeader title="Categories" parent={SETTINGS_PARENT} />
+      <PageHeader title="Categories" backTo={SETTINGS_PARENT} />
       <div role="tablist" aria-label="Category type" className="mb-4 flex gap-2">
         {KINDS.map((k) => (
           <button
