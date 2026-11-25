@@ -33,3 +33,19 @@ test("log in, add an expense and see it on the dashboard", async ({ page }) => {
   const whole = /total ৳([\d,]+)/.exec(label)?.[1] ?? "";
   expect(BigInt(whole.replaceAll(",", "") || "0")).toBeGreaterThanOrEqual(250n);
 });
+
+test("the sheet close button is a 44px touch target at 375px", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(EMAIL);
+  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Add transaction" }).click();
+  const sheet = page.getByRole("dialog", { name: "Add transaction" });
+  const closeBox = await sheet.getByRole("button", { name: "Close" }).boundingBox();
+
+  expect(closeBox?.width).toBeGreaterThanOrEqual(44);
+  expect(closeBox?.height).toBeGreaterThanOrEqual(44);
+});
