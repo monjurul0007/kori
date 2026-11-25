@@ -76,3 +76,34 @@ describe("FormSheet", () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 });
+
+describe("FormSheet reopened after a parent-driven close", () => {
+  it("does not show the discard prompt again", async () => {
+    const props = {
+      onOpenChange: vi.fn(),
+      title: "Add expense",
+      description: "Log a new expense.",
+      dirty: true,
+      footer: <button type="button">Save</button>,
+    };
+    const { rerender } = render(
+      <FormSheet {...props} open>
+        {null}
+      </FormSheet>,
+    );
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("alertdialog")).toBeVisible();
+
+    rerender(
+      <FormSheet {...props} open={false}>
+        {null}
+      </FormSheet>,
+    );
+    rerender(
+      <FormSheet {...props} open>
+        {null}
+      </FormSheet>,
+    );
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+});

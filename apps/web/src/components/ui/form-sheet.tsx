@@ -39,6 +39,14 @@ export function FormSheet({
 }: Props) {
   const [isConfirmingDiscard, setIsConfirmingDiscard] = React.useState(false);
 
+  // A parent can close the sheet (a finished save); the next open must not show a stale prompt.
+  // Adjusting state while rendering is React's way to reset state when a prop changes.
+  const [wasOpen, setWasOpen] = React.useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (!open) setIsConfirmingDiscard(false);
+  }
+
   const close = () => {
     setIsConfirmingDiscard(false);
     onOpenChange(false);

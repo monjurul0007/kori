@@ -29,14 +29,14 @@ interface ProblemItem {
 const UNKNOWN_PROBLEM_MESSAGE = "Invalid value";
 
 /**
- * The 422 `errors[]` of an RFC 9457 problem as form-field messages. `fieldFor` maps an `errors[].loc`
+ * The `errors[]` of an RFC 9457 problem (the API sends it on 422) as form-field messages. `fieldFor` maps an `errors[].loc`
  * to a form field; items it can't place are left out, so an empty result means "show a toast".
  */
 export function problemFieldErrors<Field extends string>(
   error: unknown,
   fieldFor: (loc: unknown[]) => Field | undefined,
 ): FieldProblem<Field>[] {
-  if (!(error instanceof ApiError) || error.response.status !== 422) return [];
+  if (!(error instanceof ApiError)) return [];
   if (!Array.isArray(error.problem.errors)) return [];
   const problems: FieldProblem<Field>[] = [];
   for (const item of error.problem.errors as ProblemItem[]) {

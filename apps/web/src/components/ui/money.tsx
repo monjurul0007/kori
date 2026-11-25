@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-import { formatTaka } from "@/lib/money";
+import { formatTaka, toPoisha } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const moneyVariants = cva("font-display tabular-nums", {
@@ -21,7 +21,7 @@ interface Props
 
 export function Money({ amount, sign = false, variant, className, ...props }: Props) {
   const text = formatTaka(amount);
-  const isPositive = !text.startsWith("-") && text !== "৳0";
+  const isPositive = toPoisha(amount) > 0n;
   return (
     <span className={cn(moneyVariants({ variant }), className)} {...props}>
       {sign && isPositive ? "+" : ""}

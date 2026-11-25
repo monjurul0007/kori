@@ -47,9 +47,15 @@ describe("problemFieldErrors", () => {
     expect(problemFieldErrors(error, fieldFor)[0]?.message).toBe("Invalid value");
   });
 
-  it("returns nothing for other statuses and other errors", () => {
-    const server = apiError(500, [{ loc: ["body", "amount"], msg: "Boom" }]);
-    expect(problemFieldErrors(server, fieldFor)).toEqual([]);
+  it("maps errors[] whatever the status, as TransactionForm did before", () => {
+    const error = apiError(400, [{ loc: ["body", "amount"], msg: "Bad amount" }]);
+    expect(problemFieldErrors(error, fieldFor)).toEqual([
+      { field: "amount", message: "Bad amount" },
+    ]);
+  });
+
+  it("returns nothing for a problem without errors[] and for other errors", () => {
+    expect(problemFieldErrors(apiError(500), fieldFor)).toEqual([]);
     expect(problemFieldErrors(new Error("offline"), fieldFor)).toEqual([]);
   });
 });
