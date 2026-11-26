@@ -19,7 +19,7 @@ export interface Hero {
 const POISHA_PER_TAKA = 100n;
 
 /** Whole taka you can spend each remaining day, rounded down; null when there is no sensible figure. */
-function dailyAllowanceTaka(leftPoisha: bigint, daysLeft: number): bigint | null {
+export function dailyAllowanceTaka(leftPoisha: bigint, daysLeft: number): bigint | null {
   if (leftPoisha <= 0n || daysLeft < 1) return null;
   return leftPoisha / POISHA_PER_TAKA / BigInt(daysLeft);
 }
