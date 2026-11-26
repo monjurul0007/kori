@@ -16,3 +16,10 @@ describe("RemovableChip", () => {
     expect(screen.getByRole("button", { name: "Remove tag office" })).toHaveClass("h-8", "w-8");
   });
 });
+
+describe("RemovableChip remove label", () => {
+  it("starts the button's name with the given removeLabel", () => {
+    render(<RemovableChip label="Bills" removeLabel="Remove filter" onRemove={() => {}} />);
+    expect(screen.getByRole("button", { name: "Remove filter Bills" })).toBeInTheDocument();
+  });
+});

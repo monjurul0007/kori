@@ -29,7 +29,7 @@ export function TypeChips({ filters, onChange }: Props) {
           aria-pressed={filters.type === type}
           onClick={() => onChange({ type })}
           className={cn(
-            "h-9 rounded-full border px-4 text-sm font-medium",
+            "min-h-11 rounded-full border px-4 text-sm font-medium",
             filters.type === type
               ? "border-transparent bg-brand-soft text-brand-text"
               : "bg-card text-foreground",

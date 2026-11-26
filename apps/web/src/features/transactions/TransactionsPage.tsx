@@ -1,4 +1,4 @@
-import { Download, Plus, X } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MonthPicker } from "@/components/ui/month-picker";
+import { RemovableChip } from "@/components/ui/removable-chip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMonth, monthOf, todayInDhaka } from "@/lib/dates";
 import { DESKTOP_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
@@ -21,22 +22,6 @@ import { TotalsBar } from "./TotalsBar";
 import type { Transaction } from "./TransactionRow";
 import { exportHref, NO_FILTERS, useFilters } from "./filters";
 import { MIN_SEARCH_LENGTH, useCategories, usePaymentMethods, useTransactions } from "./hooks";
-
-function RemovableChip({ label, onRemove }: { label: string; onRemove: () => void }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-brand-soft py-0.5 pl-3 pr-0.5 text-sm text-brand-text">
-      {label}
-      <button
-        type="button"
-        aria-label={`Remove filter ${label}`}
-        onClick={onRemove}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background/60"
-      >
-        <X className="h-3.5 w-3.5" aria-hidden="true" />
-      </button>
-    </span>
-  );
-}
 
 interface EmptyListProps {
   month: string;
@@ -175,6 +160,7 @@ export function TransactionsPage() {
               <RemovableChip
                 key={chip.label}
                 label={chip.label}
+                removeLabel="Remove filter"
                 onRemove={() => update(chip.clear)}
               />
             ))}
