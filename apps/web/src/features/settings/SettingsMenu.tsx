@@ -21,15 +21,23 @@ function RowIcon({ icon: Icon }: { icon: LucideIcon }) {
   );
 }
 
+/** Item counts by section path; a count is undefined until its list has loaded. */
+function useSectionCounts(): Record<string, number | undefined> {
+  const categories = useCategories();
+  const paymentMethods = usePaymentMethods();
+  const tags = useTags();
+  return {
+    "/settings/categories": categories.data?.length,
+    "/settings/payment-methods": paymentMethods.data?.length,
+    "/settings/tags": tags.data?.length,
+  };
+}
+
 /** The phone Settings page: a profile row, the theme switch and a grouped list of sections. */
 export function SettingsMenu() {
   const { user } = useSession();
   const install = useInstallPrompt();
-  const counts: Record<string, number | undefined> = {
-    "/settings/categories": useCategories().data?.length,
-    "/settings/payment-methods": usePaymentMethods().data?.length,
-    "/settings/tags": useTags().data?.length,
-  };
+  const counts = useSectionCounts();
 
   return (
     <>

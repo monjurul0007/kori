@@ -42,6 +42,10 @@ function runThemeScript() {
 const themeColor = () =>
   document.querySelector('meta[name="theme-color"]')?.getAttribute("content");
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.classList.remove("dark");
@@ -106,7 +110,6 @@ describe("useTheme", () => {
     });
     const { result } = renderHook(() => useTheme());
     act(() => result.current.setPreference("dark"));
-    vi.restoreAllMocks();
     expect(result.current.preference).toBe("system");
   });
 });
@@ -131,7 +134,6 @@ describe("pre-paint script in index.html", () => {
       throw new DOMException("blocked", "SecurityError");
     });
     runThemeScript();
-    vi.restoreAllMocks();
     expect(document.documentElement).not.toHaveClass("dark");
   });
 });

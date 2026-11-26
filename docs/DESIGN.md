@@ -13,25 +13,25 @@ Mockup amounts, merchants and dates are **example data**, never fixtures.
 
 No green anywhere. Marigold (`--accent`) is never used as text.
 
-| Token | Light | Dark | Use |
-|---|---|---|---|
-| `--paper` | `#F5F6FA` | `#0E1022` | Page ground |
-| `--surface` | `#FFFFFF` | `#161936` | Cards, sheets, inputs |
-| `--ink` | `#161A33` | `#E8E9F5` | Text |
-| `--muted` | `#5A5F78` | `#A3A7C2` | Secondary text |
-| `--line` | `#DFE1EC` | `#2A2E52` | Borders, dividers |
-| `--track` | `#E9EBF3` | `#23274A` | Progress-bar track |
-| `--brand` | `#2F3A99` | `#8F9BFF` | Primary actions, active nav, links |
-| `--brand-strong` | `#232C7A` | `#6F7CF0` | Hover, pressed |
-| `--brand-soft` | `#E8EAF8` | `#23285A` | Selected chips, active nav background |
-| `--on-brand` | `#FFFFFF` | `#0E1022` | Text on `--brand` |
-| `--brand-text` | `#2F3A99` | `#B3BBFF` | Brand-coloured text |
-| `--hero`, `--hero-fg`, `--hero-muted` | `#2F3A99`, `#FFFFFF`, `#C9CEF5` | `#1C2152`, `#E8E9F5`, `#A9B0E8` | "Left to spend" panel, login panel |
-| `--accent` | `#F2A93B` | `#F5B04C` | Logo coin, hero progress, near-limit bars |
-| `--income` | `#2F3A99` | `#B3BBFF` | Income figures, always with "+" |
-| `--over` | `#B3261E` | `#F28B82` | Over budget, errors, destructive |
-| `--warn` | `#8A5A00` | `#F2B84B` | Near-limit text |
-| `--scrim` | `rgba(22,26,51,.45)` | `rgba(0,0,0,.6)` | Behind sheets |
+| Token                                 | Light                           | Dark                            | Use                                       |
+| ------------------------------------- | ------------------------------- | ------------------------------- | ----------------------------------------- |
+| `--paper`                             | `#F5F6FA`                       | `#0E1022`                       | Page ground                               |
+| `--surface`                           | `#FFFFFF`                       | `#161936`                       | Cards, sheets, inputs                     |
+| `--ink`                               | `#161A33`                       | `#E8E9F5`                       | Text                                      |
+| `--muted`                             | `#5A5F78`                       | `#A3A7C2`                       | Secondary text                            |
+| `--line`                              | `#DFE1EC`                       | `#2A2E52`                       | Borders, dividers                         |
+| `--track`                             | `#E9EBF3`                       | `#23274A`                       | Progress-bar track                        |
+| `--brand`                             | `#2F3A99`                       | `#8F9BFF`                       | Primary actions, active nav, links        |
+| `--brand-strong`                      | `#232C7A`                       | `#6F7CF0`                       | Hover, pressed                            |
+| `--brand-soft`                        | `#E8EAF8`                       | `#23285A`                       | Selected chips, active nav background     |
+| `--on-brand`                          | `#FFFFFF`                       | `#0E1022`                       | Text on `--brand`                         |
+| `--brand-text`                        | `#2F3A99`                       | `#B3BBFF`                       | Brand-coloured text                       |
+| `--hero`, `--hero-fg`, `--hero-muted` | `#2F3A99`, `#FFFFFF`, `#C9CEF5` | `#1C2152`, `#E8E9F5`, `#A9B0E8` | "Left to spend" panel, login panel        |
+| `--accent`                            | `#F2A93B`                       | `#F5B04C`                       | Logo coin, hero progress, near-limit bars |
+| `--income`                            | `#2F3A99`                       | `#B3BBFF`                       | Income figures, always with "+"           |
+| `--over`                              | `#B3261E`                       | `#F28B82`                       | Over budget, errors, destructive          |
+| `--warn`                              | `#8A5A00`                       | `#F2B84B`                       | Near-limit text                           |
+| `--scrim`                             | `rgba(22,26,51,.45)`            | `rgba(0,0,0,.6)`                | Behind sheets                             |
 
 Category colours (charts and tiles) are in `tokens.css` (`--cat-*`). Status is always shown in
 words as well as colour: "৳150 over", "৳800 left", "Fully used".
@@ -57,6 +57,13 @@ words as well as colour: "৳150 over", "৳800 left", "Fully used".
 - 150 ms for feedback (hover, press, colour changes). 220 ms for sheets and toasts.
 - Respect `prefers-reduced-motion`: drop movement and keep opacity changes.
 
+## Theming
+
+- Dark tokens apply under the `.dark` class on `<html>` (Tailwind `darkMode: "class"`); there is no `prefers-color-scheme` CSS.
+- The choice (`system`, `light` or `dark`) is in `localStorage` under `kori.theme`; `useTheme` in `src/lib/theme.ts` reads it, follows the OS live for `system`, and updates `<meta name="theme-color">`.
+- A small inline script in `apps/web/index.html` sets the class before first paint, so there is no flash. It repeats the key and colours from `theme.ts`; `theme.test.tsx` runs it to keep them in step.
+- No CSP exists yet. When one is added, the inline script needs a hash or nonce.
+
 ## Touch targets
 
 At least 44×44px on phones, including close buttons, tag remove and links in lists.
@@ -69,17 +76,17 @@ At least 44×44px on phones, including close buttons, tag remove and links in li
 
 ## Components
 
-| Component | Status | Notes |
-|---|---|---|
-| Buttons, inputs, chips, status labels | partly built (DR-02); restyle in each page card | See `foundations-light.png`, `components-dark.png` |
-| FormSheet | built (DR-04) | `components/ui/form-sheet.tsx`. Right panel at ≥768px, full-height sheet on phones, Save in a fixed footer, "Discard changes?" guard when `dirty` |
-| Field | built (DR-04) | `components/ui/field.tsx`. Render prop hands `id`, `aria-invalid` and `aria-describedby` to the control |
-| IconButton, RemovableChip | built (DR-04) | `icon-button.tsx` (44px on touch, `aria-label` required), `removable-chip.tsx` (32px remove button) |
-| Money | built (DR-04) | `money.tsx`. Decimal-string in, tabular figures, "+" for income, never floats |
-| EmptyState | built (DR-04) | `empty-state.tsx`. Variants empty, no-results, error |
-| MonthPicker | planned in DR-06 | Accessible month control in the page header |
-| Toasts | built (DR-04) | `toastSuccess(message, { undo })` in `lib/toast.ts` |
-| Form errors | built (DR-04) | `problemFieldErrors` (`lib/problem.ts`) maps 422s to fields; `moneyAmount` (`lib/moneySchema.ts`) validates amounts |
+| Component                             | Status                                          | Notes                                                                                                                                             |
+| ------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Buttons, inputs, chips, status labels | partly built (DR-02); restyle in each page card | See `foundations-light.png`, `components-dark.png`                                                                                                |
+| FormSheet                             | built (DR-04)                                   | `components/ui/form-sheet.tsx`. Right panel at ≥768px, full-height sheet on phones, Save in a fixed footer, "Discard changes?" guard when `dirty` |
+| Field                                 | built (DR-04)                                   | `components/ui/field.tsx`. Render prop hands `id`, `aria-invalid` and `aria-describedby` to the control                                           |
+| IconButton, RemovableChip             | built (DR-04)                                   | `icon-button.tsx` (44px on touch, `aria-label` required), `removable-chip.tsx` (32px remove button)                                               |
+| Money                                 | built (DR-04)                                   | `money.tsx`. Decimal-string in, tabular figures, "+" for income, never floats                                                                     |
+| EmptyState                            | built (DR-04)                                   | `empty-state.tsx`. Variants empty, no-results, error                                                                                              |
+| MonthPicker                           | planned in DR-06                                | Accessible month control in the page header                                                                                                       |
+| Toasts                                | built (DR-04)                                   | `toastSuccess(message, { undo })` in `lib/toast.ts`                                                                                               |
+| Form errors                           | built (DR-04)                                   | `problemFieldErrors` (`lib/problem.ts`) maps 422s to fields; `moneyAmount` (`lib/moneySchema.ts`) validates amounts                               |
 
 ## Patterns
 
