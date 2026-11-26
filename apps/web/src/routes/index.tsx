@@ -11,6 +11,7 @@ import { RecurringRulesPage } from "@/features/recurring/RecurringRulesPage";
 import { CategoriesSettingsPage } from "@/features/settings/CategoriesSettingsPage";
 import { PaymentMethodsSettingsPage } from "@/features/settings/PaymentMethodsSettingsPage";
 import { TagsSettingsPage } from "@/features/settings/TagsSettingsPage";
+import { SettingsLayout } from "@/features/settings/SettingsLayout";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { TransactionsPage } from "@/features/transactions/TransactionsPage";
 
@@ -30,11 +31,17 @@ export const routes: RouteObject[] = [
               { path: "/dashboard", element: <DashboardPage /> },
               { path: "/transactions", element: <TransactionsPage /> },
               { path: "/budgets", element: <BudgetsPage /> },
-              { path: "/settings", element: <SettingsPage /> },
-              { path: "/settings/categories", element: <CategoriesSettingsPage /> },
-              { path: "/settings/payment-methods", element: <PaymentMethodsSettingsPage /> },
-              { path: "/settings/tags", element: <TagsSettingsPage /> },
-              { path: "/settings/recurring", element: <RecurringRulesPage /> },
+              {
+                path: "/settings",
+                element: <SettingsLayout />,
+                children: [
+                  { index: true, element: <SettingsPage /> },
+                  { path: "categories", element: <CategoriesSettingsPage /> },
+                  { path: "payment-methods", element: <PaymentMethodsSettingsPage /> },
+                  { path: "tags", element: <TagsSettingsPage /> },
+                  { path: "recurring", element: <RecurringRulesPage /> },
+                ],
+              },
               { path: "*", element: <NotFoundPage /> },
             ],
           },

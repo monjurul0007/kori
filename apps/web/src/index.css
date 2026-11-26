@@ -14,7 +14,8 @@
 
 /*
  * Neel and Gada colour tokens, as HSL triplets (see docs/DESIGN.md and docs/design/tokens.css).
- * Dark tokens apply with the system setting now and under a `.dark` class later (DR-13).
+ * Dark tokens apply under the `.dark` class, which the theme script in index.html and `useTheme` set
+ * from the saved choice or the system setting.
  */
 @layer base {
   :root {
@@ -53,45 +54,8 @@
     --cat-salary: 234 53% 39%;
     --scrim: 232 40% 14% / 0.45;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: 234 42% 9%;
-      --foreground: 235 39% 94%;
-      --card: 234 42% 15%;
-      --card-foreground: 235 39% 94%;
-      --primary: 234 100% 78%;
-      --primary-foreground: 234 42% 9%;
-      --muted: 234 36% 21%;
-      --muted-foreground: 232 20% 70%;
-      --border: 234 32% 24%;
-      --input: 234 32% 24%;
-      --ring: 234 100% 78%;
-      --surface: 234 42% 15%;
-      --track: 234 36% 21%;
-      --brand-strong: 234 81% 69%;
-      --brand-soft: 235 44% 25%;
-      --brand-text: 234 100% 85%;
-      --hero: 234 49% 22%;
-      --hero-foreground: 235 39% 94%;
-      --hero-muted: 233 58% 79%;
-      --accent: 36 89% 63%;
-      --income: 234 100% 85%;
-      --over: 5 81% 73%;
-      --warn: 39 87% 62%;
-      --cat-food: 21 100% 65%;
-      --cat-groc: 190 66% 58%;
-      --cat-trans: 41 70% 59%;
-      --cat-rent: 259 69% 73%;
-      --cat-util: 222 100% 74%;
-      --cat-mob: 329 86% 70%;
-      --cat-health: 23 68% 63%;
-      --cat-shop: 261 100% 82%;
-      --cat-other: 220 11% 67%;
-      --cat-salary: 234 100% 85%;
-      --scrim: 0 0% 0% / 0.6;
-    }
-  }
   .dark {
+    color-scheme: dark;
     --background: 234 42% 9%;
     --foreground: 235 39% 94%;
     --card: 234 42% 15%;
@@ -126,6 +90,10 @@
     --cat-other: 220 11% 67%;
     --cat-salary: 234 100% 85%;
     --scrim: 0 0% 0% / 0.6;
+  }
+  /* Tailwind's default border colour is a light grey, which glares in dark mode. */
+  * {
+    @apply border-border;
   }
   body {
     @apply bg-background font-sans text-foreground antialiased;

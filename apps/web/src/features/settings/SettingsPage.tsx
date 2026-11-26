@@ -1,84 +1,9 @@
-import { ChevronRight, Loader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { DESKTOP_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 
-import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
-import { useLogout } from "@/features/auth/hooks";
-import { useSession } from "@/features/auth/session";
-import { useInstallPrompt } from "@/pwa/useInstallPrompt";
-import { toastError } from "@/lib/toast";
+import { GeneralSettings } from "./GeneralSettings";
+import { SettingsMenu } from "./SettingsMenu";
 
+/** `/settings`: General on desktop (the sub-menu is beside it), the grouped list on phones. */
 export function SettingsPage() {
-  const { user } = useSession();
-  const navigate = useNavigate();
-  const logout = useLogout();
-  const install = useInstallPrompt();
-
-  return (
-    <>
-      <PageHeader title="Settings" />
-      <section aria-labelledby="profile-heading" className="mb-6">
-        <h2 id="profile-heading" className="mb-2 font-medium">
-          Profile
-        </h2>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">Name</dt>
-          <dd>{user?.display_name}</dd>
-          <dt className="text-muted-foreground">Email</dt>
-          <dd>{user?.email}</dd>
-          <dt className="text-muted-foreground">Time zone</dt>
-          <dd>{user?.timezone}</dd>
-          <dt className="text-muted-foreground">Currency</dt>
-          <dd>{user?.currency}</dd>
-        </dl>
-      </section>
-      <section aria-labelledby="manage-heading" className="mb-6">
-        <h2 id="manage-heading" className="mb-2 font-medium">
-          Manage
-        </h2>
-        <ul className="divide-y rounded-md border">
-          {[
-            { to: "/settings/categories", label: "Categories" },
-            { to: "/settings/payment-methods", label: "Payment methods" },
-            { to: "/settings/tags", label: "Tags" },
-            { to: "/settings/recurring", label: "Recurring" },
-          ].map((l) => (
-            <li key={l.to}>
-              <Link
-                to={l.to}
-                className="flex min-h-11 items-center justify-between px-3 hover:bg-muted"
-              >
-                {l.label}
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-      {install.canPrompt && (
-        <section aria-labelledby="install-heading" className="mb-6">
-          <h2 id="install-heading" className="mb-2 font-medium">
-            App
-          </h2>
-          <Button variant="outline" className="h-11" onClick={() => void install.prompt()}>
-            Install Kori
-          </Button>
-        </section>
-      )}
-      <Button
-        variant="outline"
-        className="h-11"
-        disabled={logout.isPending}
-        onClick={() =>
-          logout.mutate(undefined, {
-            onSuccess: () => navigate("/login", { replace: true }),
-            onError: toastError,
-          })
-        }
-      >
-        {logout.isPending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-        Log out
-      </Button>
-    </>
-  );
+  return useMediaQuery(DESKTOP_QUERY) ? <GeneralSettings /> : <SettingsMenu />;
 }

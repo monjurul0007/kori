@@ -130,7 +130,7 @@ describe("login", () => {
     const { router } = renderApp("/login?next=%2Fsettings");
     await fillAndSubmit();
     await waitFor(() => expect(router.state.location.pathname).toBe("/settings"));
-    expect(await screen.findByText("Demo User")).toBeInTheDocument();
+    expect(await screen.findByText("me@example.com")).toBeInTheDocument();
   });
 
   it("lands on the dashboard when there is no next", async () => {
