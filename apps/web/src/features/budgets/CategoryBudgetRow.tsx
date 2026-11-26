@@ -3,6 +3,7 @@ import { Pencil } from "lucide-react";
 import type { components } from "@/api/schema";
 import { CategoryTile } from "@/components/ui/category-tile";
 import { IconButton } from "@/components/ui/icon-button";
+import { shortPercent } from "@/lib/budgetLevel";
 import { formatTaka } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +56,7 @@ export function CategoryBudgetRow({ budget, icon, color, onEdit }: Props) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(width)}
-        aria-valuetext={`${budget.percent.replace(/\.0$/, "")}% used`}
+        aria-valuetext={`${shortPercent(budget.percent)}% used`}
         className="col-span-3 h-2.5 overflow-hidden rounded-full bg-muted md:col-span-1 md:col-start-3 md:row-start-1"
       >
         <div className={cn("h-full rounded-full", BAR[state])} style={{ width: `${width}%` }} />

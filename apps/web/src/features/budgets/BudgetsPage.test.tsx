@@ -470,3 +470,70 @@ describe("BudgetsPage redesign", () => {
     expect(puts).toEqual([]);
   });
 });
+
+describe("BudgetsPage hero states", () => {
+  it("shows an overspent overall as the amount over, with no daily allowance", async () => {
+    mockApi({ overall: { limit: "1000.00", source: "set", spent: "1200.00" } });
+    server.use(
+      http.get("*/api/v1/reports/budget-status", () =>
+        HttpResponse.json({
+          month: THIS_MONTH,
+          days_elapsed: 10,
+          days_in_month: 30,
+          days_left: 20,
+          unbudgeted: { spent: "0.00" },
+          overall: {
+            limit: "1000.00",
+            limit_source: "set",
+            spent: "1200.00",
+            remaining: "-200.00",
+            percent: "120.0",
+            level: "over",
+          },
+          categories: [],
+        }),
+      ),
+    );
+    renderApp("/budgets");
+    const hero = await screen.findByRole("region", { name: "Monthly budget" });
+    expect(hero).toHaveTextContent("৳200over ৳1,000");
+    expect(hero).not.toHaveTextContent(/Spend up to/);
+    expect(within(hero).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
+  });
+
+  it("shows the days left and a daily allowance for the current month", async () => {
+    mockApi({ overall: { limit: "40000.00", source: "set", spent: "0.00" } });
+    renderApp("/budgets");
+    const hero = await screen.findByRole("region", { name: "Monthly budget" });
+    expect(hero).toHaveTextContent("20 days left");
+    expect(hero).toHaveTextContent("Spend up to ৳2,000 a day to stay on budget.");
+  });
+
+  it("hides the days left and the daily allowance for another month", async () => {
+    mockApi({ overall: { limit: "40000.00", source: "set", spent: "0.00" } });
+    renderApp(`/budgets?month=${addMonths(THIS_MONTH, 1)}`);
+    const hero = await screen.findByRole("region", { name: "Monthly budget" });
+    expect(hero).toHaveTextContent("৳40,000");
+    expect(hero).not.toHaveTextContent(/days? left/);
+    expect(hero).not.toHaveTextContent(/Spend up to/);
+  });
+});
+
+describe("BudgetsPage remove confirm", () => {
+  it("backs out of the remove confirm on Escape without closing the sheet", async () => {
+    const puts = mockApi({
+      budgeted: [{ cat: food, limit: "5000.00", spent: "0.00", percent: "0.0", level: "ok" }],
+    });
+    renderApp("/budgets");
+    await userEvent.click(await screen.findByRole("button", { name: "Edit Food budget" }));
+    await userEvent.click(screen.getByRole("button", { name: "Remove budget" }));
+    expect(screen.getByRole("group", { name: "Confirm removal" })).toBeVisible();
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.getByRole("dialog")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Remove budget" })).toBeVisible();
+    expect(screen.queryByRole("group", { name: "Confirm removal" })).not.toBeInTheDocument();
+    expect(puts).toEqual([]);
+  });
+});
