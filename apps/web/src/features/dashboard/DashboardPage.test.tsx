@@ -47,7 +47,7 @@ describe("DashboardPage", () => {
     renderApp("/dashboard?month=2026-03");
     expect(await screen.findAllByRole("alert")).not.toHaveLength(0);
     expect(screen.getByRole("heading", { name: "Recent" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Where the money went" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Where it went" })).toBeInTheDocument();
   });
 
   it("goes from the page h1 to h2 card titles without skipping a level", async () => {
