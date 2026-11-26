@@ -52,7 +52,7 @@ export function PaymentMethodsSettingsPage() {
                 id="pm-kind"
                 value={value.kind}
                 onChange={(e) => set({ kind: e.target.value as Kind })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
+                className="flex h-11 w-full rounded-md border border-input bg-background px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
               >
                 {Object.entries(KIND_LABELS).map(([k, label]) => (
                   <option key={k} value={k}>
