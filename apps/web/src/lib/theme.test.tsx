@@ -33,10 +33,7 @@ function mockMedia(initial: { dark: boolean; wide?: boolean }) {
 }
 
 function runThemeScript() {
-  const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
-  const script = /<script>([\s\S]*?)<\/script>/.exec(html)?.[1];
-  if (!script) throw new Error("index.html has no inline theme script");
-  new Function(script)();
+  new Function(readFileSync(resolve(__dirname, "../../public/theme-init.js"), "utf8"))();
 }
 
 const themeColor = () =>
@@ -114,7 +111,14 @@ describe("useTheme", () => {
   });
 });
 
-describe("pre-paint script in index.html", () => {
+describe("pre-paint script", () => {
+  it("is loaded from index.html before the app script", () => {
+    const html = readFileSync(resolve(__dirname, "../../index.html"), "utf8");
+    const themeScript = html.indexOf('<script src="/theme-init.js"></script>');
+    expect(themeScript).toBeGreaterThan(-1);
+    expect(themeScript).toBeLessThan(html.indexOf("/src/main.tsx"));
+  });
+
   it.each([
     ["dark", false, true],
     ["light", true, false],

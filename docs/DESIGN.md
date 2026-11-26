@@ -61,8 +61,8 @@ words as well as colour: "৳150 over", "৳800 left", "Fully used".
 
 - Dark tokens apply under the `.dark` class on `<html>` (Tailwind `darkMode: "class"`); there is no `prefers-color-scheme` CSS.
 - The choice (`system`, `light` or `dark`) is in `localStorage` under `kori.theme`; `useTheme` in `src/lib/theme.ts` reads it, follows the OS live for `system`, and updates `<meta name="theme-color">`.
-- A small inline script in `apps/web/index.html` sets the class before first paint, so there is no flash. It repeats the key and colours from `theme.ts`; `theme.test.tsx` runs it to keep them in step.
-- No CSP exists yet. When one is added, the inline script needs a hash or nonce.
+- A small blocking script, `apps/web/public/theme-init.js` (loaded from `index.html`, precached by the service worker), sets the class before first paint, so there is no flash. It repeats the key and colours from `theme.ts`; `theme.test.tsx` runs it to keep them in step.
+- It is an external file on purpose, so a future CSP needs no hash for it.
 
 ## Touch targets
 
