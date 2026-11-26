@@ -11,24 +11,25 @@ import { bills, food } from "./fixtures";
 
 const base: Filters = { month: "2026-09", categoryIds: [], q: "" };
 
-async function open(filters: Filters = base) {
+async function open(filters: Filters = base, categories: unknown[] = [food, bills]) {
   server.use(
-    http.get("*/api/v1/categories", () => HttpResponse.json([food, bills])),
+    http.get("*/api/v1/categories", () => HttpResponse.json(categories)),
     http.get("*/api/v1/payment-methods", () => HttpResponse.json([{ id: "pm1", name: "bKash" }])),
     http.get("*/api/v1/tags", () => HttpResponse.json([{ id: "t1", name: "eid", usage_count: 2 }])),
   );
   const onChange = vi.fn();
+  const onClearAll = vi.fn();
   render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <FilterSheet filters={filters} onChange={onChange} />
+      <FilterSheet filters={filters} onChange={onChange} onClearAll={onClearAll} />
     </QueryClientProvider>,
   );
   await userEvent.click(screen.getByRole("button", { name: "Filters" }));
   const dialog = await screen.findByRole("dialog");
-  await within(dialog).findByRole("button", { name: "Bills" }); // reference data loaded
-  return { dialog, onChange };
+  await within(dialog).findByRole("button", { name: (categories[0] as typeof food).name }); // reference data loaded
+  return { dialog, onChange, onClearAll };
 }
 
 describe("FilterSheet", () => {
@@ -64,5 +65,20 @@ describe("FilterSheet", () => {
     expect(onChange).toHaveBeenLastCalledWith({ paymentMethodId: "pm1" });
     await userEvent.selectOptions(within(dialog).getByLabelText("Tag"), "eid");
     expect(onChange).toHaveBeenLastCalledWith({ tag: "eid" });
+  });
+
+  it("clears every filter from the footer", async () => {
+    const { dialog, onClearAll } = await open({ ...base, type: "income" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Clear all" }));
+    expect(onClearAll).toHaveBeenCalledOnce();
+  });
+
+  it("groups categories under Expense and Income", async () => {
+    const salary = { id: "c-salary", name: "Salary", kind: "income" as const };
+    const { dialog } = await open(base, [food, salary]);
+    const expense = within(dialog).getByRole("group", { name: "Expense categories" });
+    const income = within(dialog).getByRole("group", { name: "Income categories" });
+    expect(within(expense).getByRole("button", { name: food.name })).toBeInTheDocument();
+    expect(within(income).getByRole("button", { name: "Salary" })).toBeInTheDocument();
   });
 });

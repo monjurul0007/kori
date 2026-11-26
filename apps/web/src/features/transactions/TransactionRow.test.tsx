@@ -114,3 +114,33 @@ describe("TransactionRow recurring marker", () => {
     expect(screen.queryByRole("img", { name: "Recurring" })).not.toBeInTheDocument();
   });
 });
+
+describe("TransactionRow category tile", () => {
+  const categories = [{ id: food.id, icon: "utensils", color: "#ea580c" }];
+
+  it("tints the tile with the category's colour", () => {
+    const { container } = render(
+      <ul>
+        <TransactionRow transaction={makeTx("a")} onSelect={() => {}} categories={categories} />
+      </ul>,
+    );
+    expect(container.querySelector('[style*="234, 88, 12"]')).not.toBeNull();
+  });
+
+  it("shows a split glyph instead of a category tile for a split", () => {
+    const split = makeTx("s", {
+      is_split: true,
+      lines: [
+        { category: food, amount: "100", category_source: "user" },
+        { category: bills, amount: "150", category_source: "user" },
+      ],
+    });
+    const { container } = render(
+      <ul>
+        <TransactionRow transaction={split} onSelect={() => {}} categories={categories} />
+      </ul>,
+    );
+    expect(container.querySelector('[style*="234, 88, 12"]')).toBeNull();
+    expect(container.querySelector(".lucide-split")).not.toBeNull();
+  });
+});

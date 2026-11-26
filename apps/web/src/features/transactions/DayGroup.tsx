@@ -1,4 +1,6 @@
-import { formatDisplayDate } from "@/lib/dates";
+import type { ComponentProps } from "react";
+
+import { formatDayHeading, todayInDhaka } from "@/lib/dates";
 import { formatTaka, fromPoisha, toPoisha } from "@/lib/money";
 
 import { TransactionRow, type Transaction } from "./TransactionRow";
@@ -7,9 +9,19 @@ interface Props {
   date: string;
   transactions: Transaction[];
   onSelect: (transaction: Transaction) => void;
+  categories?: ComponentProps<typeof TransactionRow>["categories"];
+  /** The current date in Dhaka; only tests pass this. */
+  today?: string;
 }
 
-export function DayGroup({ date, transactions, onSelect }: Props) {
+export function DayGroup({
+  date,
+  transactions,
+  onSelect,
+  categories,
+  today = todayInDhaka(),
+}: Props) {
+  const heading = formatDayHeading(date, today);
   const total = (type: Transaction["type"]) =>
     transactions.filter((t) => t.type === type).reduce((sum, t) => sum + toPoisha(t.amount), 0n);
   const spentPoisha = total("expense");
@@ -23,10 +35,10 @@ export function DayGroup({ date, transactions, onSelect }: Props) {
     .filter(Boolean)
     .join(", ");
   return (
-    <section aria-label={formatDisplayDate(date)} className="rounded-lg border bg-background">
-      <header className="flex items-center justify-between border-b px-3 py-2 text-xs font-medium text-muted-foreground">
-        <h2>{formatDisplayDate(date)}</h2>
-        <span className="sr-only">{`${formatDisplayDate(date)}: ${summary}`}</span>
+    <section aria-label={heading} className="overflow-hidden rounded-2xl border bg-card">
+      <header className="flex items-center justify-between border-b px-4 py-2.5 text-xs text-muted-foreground">
+        <h2 className="font-display text-sm font-bold text-foreground">{heading}</h2>
+        <span className="sr-only">{`${heading}: ${summary}`}</span>
         <span aria-hidden="true" className="flex gap-3 tabular-nums">
           {showSpent && <span>{`Spent ${spent}`}</span>}
           {showIncome && <span className="text-income">{`+${income} in`}</span>}
@@ -34,7 +46,7 @@ export function DayGroup({ date, transactions, onSelect }: Props) {
       </header>
       <ul className="divide-y">
         {transactions.map((t) => (
-          <TransactionRow key={t.id} transaction={t} onSelect={onSelect} />
+          <TransactionRow key={t.id} transaction={t} onSelect={onSelect} categories={categories} />
         ))}
       </ul>
     </section>

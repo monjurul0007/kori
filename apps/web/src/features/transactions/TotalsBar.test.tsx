@@ -27,3 +27,15 @@ describe("TotalsBar", () => {
     expect(value("Net")).toHaveTextContent("৳0");
   });
 });
+
+describe("TotalsBar transaction count", () => {
+  it("shows the count when given", () => {
+    render(<TotalsBar expense="10" income="0" count={38} />);
+    expect(screen.getByText("Transactions").nextElementSibling).toHaveTextContent("38");
+  });
+
+  it("omits the count cell when not given", () => {
+    render(<TotalsBar expense="10" income="0" />);
+    expect(screen.queryByText("Transactions")).not.toBeInTheDocument();
+  });
+});

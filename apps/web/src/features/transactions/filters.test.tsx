@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 
-import { exportHref, useFilters } from "./filters";
+import { exportHref, groupCategoriesByKind, useFilters } from "./filters";
 
 const wrap = (path: string) =>
   function Wrapper({ children }: { children: ReactNode }) {
@@ -97,5 +97,27 @@ describe("exportHref", () => {
   it("leaves out empty and too-short filters", () => {
     const href = exportHref({ month: "2026-09", categoryIds: [], q: "a" });
     expect(href).toBe("/api/v1/transactions/export.csv?month=2026-09");
+  });
+});
+
+describe("groupCategoriesByKind", () => {
+  const cat = (name: string, kind: "expense" | "income") => ({ name, kind });
+
+  it("lists expense categories before income, each in its original order", () => {
+    const groups = groupCategoriesByKind([
+      cat("Salary", "income"),
+      cat("Food", "expense"),
+      cat("Bills", "expense"),
+    ]);
+    expect(groups.map((g) => [g.label, g.categories.map((c) => c.name)])).toEqual([
+      ["Expense", ["Food", "Bills"]],
+      ["Income", ["Salary"]],
+    ]);
+  });
+
+  it("leaves out a kind that has no categories", () => {
+    expect(groupCategoriesByKind([cat("Food", "expense")]).map((g) => g.label)).toEqual([
+      "Expense",
+    ]);
   });
 });

@@ -3,6 +3,7 @@ import {
   addMonths,
   defaultDateForMonth,
   endOfMonth,
+  formatDayHeading,
   formatDisplayDate,
   formatMonth,
   formatMonthShort,
@@ -42,6 +43,11 @@ describe("month helpers", () => {
 describe("display formats", () => {
   it("formats a date like 'Mon, 28 Sep'", () => {
     expect(formatDisplayDate("2026-09-28")).toBe("Mon, 28 Sep");
+  });
+
+  it("headlines a day like 'Mon 28 Sep', and 'Today, Mon 28 Sep' for today", () => {
+    expect(formatDayHeading("2026-09-28", "2026-09-29")).toBe("Mon 28 Sep");
+    expect(formatDayHeading("2026-09-28", "2026-09-28")).toBe("Today, Mon 28 Sep");
   });
 
   it("formats a month like 'September 2026'", () => {

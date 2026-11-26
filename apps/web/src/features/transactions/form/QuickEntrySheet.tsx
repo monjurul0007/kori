@@ -13,7 +13,7 @@ import { todayInDhaka } from "@/lib/dates";
 import { formatTaka, parseTakaInput } from "@/lib/money";
 import { problemFieldErrors } from "@/lib/problem";
 import { toastError } from "@/lib/toast";
-import { useMediaQuery } from "@/lib/useMediaQuery";
+import { DESKTOP_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { OFFLINE_MESSAGE } from "@/pwa/useOnline";
 
@@ -30,7 +30,6 @@ import { TagInput } from "./TagInput";
 import type { DeleteFlow } from "./useDeleteFlow";
 import { useRankedCategories } from "./useRankedCategories";
 
-const DESKTOP_QUERY = "(min-width: 768px)";
 const TYPE_LABELS = { expense: "Expense", income: "Income" } as const;
 const TRANSACTION_TYPES = ["expense", "income"] as const;
 
