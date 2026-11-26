@@ -1,28 +1,12 @@
-import { ArrowDown, ArrowUp, Archive, ArchiveRestore, Pencil, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, GripVertical, Plus } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
-import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { toastError } from "@/lib/toast";
+import { IconButton } from "@/components/ui/icon-button";
+import { toastError, toastSuccess } from "@/lib/toast";
 
-import { COUNTER_WITHIN, friendlyMessage, tooLong } from "./nameLimits";
 import { planMove, type OrderPatch } from "./reorder";
+import { ReferenceEditSheet } from "./ReferenceEditSheet";
 
 export interface ListItem {
   id: string;
@@ -37,18 +21,19 @@ interface Props<I extends ListItem, E> {
   /** The API's name length limit. */
   maxNameLength: number;
   items: I[];
-  /** Extra fields of the add/rename sheet, and their starting value. */
+  /** Extra fields of the add/edit sheet, and their starting value. */
   initialExtra: (item?: I) => E;
   extraFields?: (value: E, set: (value: E) => void) => ReactNode;
-  /** Shown before the name (an icon) and after it (a kind). */
+  /** Shown before the name (an icon). */
   leading?: (item: I) => ReactNode;
-  detail?: (item: I) => string;
+  /** Secondary text under or beside the name: a month's spend, a kind. */
+  detail?: (item: I) => ReactNode;
   onSave: (input: { item?: I; name: string; extra: E }) => Promise<unknown>;
   onMove: (patches: OrderPatch[]) => void;
   onArchive: (item: I, archive: boolean) => Promise<unknown>;
 }
 
-const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const rowClass = "flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left";
 
 export function ReferenceListEditor<I extends ListItem, E>({
   noun,
@@ -63,70 +48,90 @@ export function ReferenceListEditor<I extends ListItem, E>({
   onArchive,
 }: Props<I, E>) {
   const [showArchived, setShowArchived] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [editing, setEditing] = useState<{ item?: I } | null>(null);
-  const [archiving, setArchiving] = useState<I | null>(null);
 
   const active = items.filter((i) => !i.archived_at).sort((a, b) => a.sort_order - b.sort_order);
   const archived = items.filter((i) => i.archived_at);
 
+  const rowBody = (item: I) => (
+    <>
+      {leading?.(item)}
+      <span className="min-w-0 flex-1 break-words">{item.name}</span>
+      {detail && <span className="text-xs text-muted-foreground">{detail(item)}</span>}
+    </>
+  );
+
+  async function archive(item: I) {
+    await onArchive(item, true);
+    toastSuccess(`Archived ${item.name}`, {
+      undo: () => onArchive(item, false).then(() => undefined, toastError),
+    });
+  }
+
+  async function save(input: { item?: I; name: string; extra: E }) {
+    await onSave(input);
+    toastSuccess(input.item ? "Saved changes" : `Added ${input.name}`);
+  }
+
   return (
     <div>
-      <ul className="divide-y rounded-md border">
+      <ul className="divide-y rounded-lg border bg-card">
         {active.map((item, index) => (
-          <li key={item.id} className="flex items-center gap-2 px-3 py-2">
-            {leading?.(item)}
-            <span className="min-w-0 flex-1 truncate">{item.name}</span>
-            {detail && <span className="text-xs text-muted-foreground">{detail(item)}</span>}
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Move ${item.name} up`}
-              disabled={index === 0}
-              onClick={() => onMove(planMove(active, index, -1))}
-            >
-              <ArrowUp className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Move ${item.name} down`}
-              disabled={index === active.length - 1}
-              onClick={() => onMove(planMove(active, index, 1))}
-            >
-              <ArrowDown className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Edit ${item.name}`}
-              onClick={() => setEditing({ item })}
-            >
-              <Pencil className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Archive ${item.name}`}
-              onClick={() => setArchiving(item)}
-            >
-              <Archive className="h-4 w-4" aria-hidden="true" />
-            </Button>
+          <li key={item.id}>
+            {isReordering ? (
+              <div className={rowClass}>
+                <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                {rowBody(item)}
+                <IconButton
+                  aria-label={`Move ${item.name} up`}
+                  disabled={index === 0}
+                  onClick={() => onMove(planMove(active, index, -1))}
+                >
+                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                </IconButton>
+                <IconButton
+                  aria-label={`Move ${item.name} down`}
+                  disabled={index === active.length - 1}
+                  onClick={() => onMove(planMove(active, index, 1))}
+                >
+                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                </IconButton>
+              </div>
+            ) : (
+              <button
+                type="button"
+                aria-label={`Edit ${item.name}`}
+                className={`${rowClass} hover:bg-muted focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25`}
+                onClick={() => setEditing({ item })}
+              >
+                {rowBody(item)}
+                <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              </button>
+            )}
           </li>
         ))}
         {active.length === 0 && (
-          <li className="px-3 py-4 text-sm text-muted-foreground">No {noun}s yet.</li>
+          <li className="px-4 py-4 text-sm text-muted-foreground">No {noun}s yet.</li>
         )}
       </ul>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <Button className="h-11" onClick={() => setEditing({})}>
-          <Plus className="h-4 w-4" aria-hidden="true" /> Add {noun}
-        </Button>
+        <div className="flex gap-2">
+          <Button className="h-11" onClick={() => setEditing({})}>
+            <Plus className="h-4 w-4" aria-hidden="true" /> Add {noun}
+          </Button>
+          {active.length > 1 && (
+            <Button variant="outline" className="h-11" onClick={() => setIsReordering((on) => !on)}>
+              {isReordering ? "Done" : "Reorder"}
+            </Button>
+          )}
+        </div>
         {archived.length > 0 && (
           <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
-              className="h-5 w-5"
+              className="h-5 w-5 accent-primary"
               checked={showArchived}
               onChange={(e) => setShowArchived(e.target.checked)}
             />
@@ -136,19 +141,23 @@ export function ReferenceListEditor<I extends ListItem, E>({
       </div>
 
       {showArchived && archived.length > 0 && (
-        <ul className="mt-3 divide-y rounded-md border text-muted-foreground">
+        <ul className="mt-3 divide-y rounded-lg border bg-card text-muted-foreground">
           {archived.map((item) => (
-            <li key={item.id} className="flex items-center gap-2 px-3 py-2">
+            <li key={item.id} className="flex min-h-14 items-center gap-3 px-4 py-2">
               {leading?.(item)}
-              <span className="min-w-0 flex-1 truncate">{item.name}</span>
-              <span className="text-xs">Archived</span>
+              <span className="min-w-0 flex-1 break-words">{item.name}</span>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
+                className="h-11"
                 aria-label={`Unarchive ${item.name}`}
-                onClick={() => onArchive(item, false).catch(toastError)}
+                onClick={() =>
+                  onArchive(item, false)
+                    .then(() => toastSuccess(`Unarchived ${item.name}`))
+                    .catch(toastError)
+                }
               >
-                <ArchiveRestore className="h-4 w-4" aria-hidden="true" /> Unarchive
+                Unarchive
               </Button>
             </li>
           ))}
@@ -156,7 +165,7 @@ export function ReferenceListEditor<I extends ListItem, E>({
       )}
 
       {editing && (
-        <EditSheet
+        <ReferenceEditSheet
           // A new key resets the form for each item.
           key={editing.item?.id ?? "new"}
           noun={noun}
@@ -164,133 +173,11 @@ export function ReferenceListEditor<I extends ListItem, E>({
           item={editing.item}
           initialExtra={initialExtra}
           extraFields={extraFields}
-          onSave={onSave}
+          onSave={save}
+          onArchive={archive}
           onClose={() => setEditing(null)}
         />
       )}
-
-      <Dialog open={archiving !== null} onOpenChange={(open) => !open && setArchiving(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Archive “{archiving?.name}”?</DialogTitle>
-            <DialogDescription>
-              It will no longer be offered when you add a transaction. Past transactions keep it,
-              and you can unarchive it any time. Nothing is deleted.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setArchiving(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                const item = archiving;
-                setArchiving(null);
-                if (item) void onArchive(item, true).catch(toastError);
-              }}
-            >
-              Archive
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
-  );
-}
-
-function EditSheet<I extends ListItem, E>({
-  noun,
-  maxNameLength,
-  item,
-  initialExtra,
-  extraFields,
-  onSave,
-  onClose,
-}: {
-  noun: string;
-  maxNameLength: number;
-  item?: I;
-  initialExtra: (item?: I) => E;
-  extraFields?: (value: E, set: (value: E) => void) => ReactNode;
-  onSave: Props<I, E>["onSave"];
-  onClose: () => void;
-}) {
-  const [name, setName] = useState(item?.name ?? "");
-  const [extra, setExtra] = useState(() => initialExtra(item));
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError("Enter a name");
-      return;
-    }
-    if ([...trimmed].length > maxNameLength) {
-      setError(tooLong(maxNameLength));
-      return;
-    }
-    setSaving(true);
-    try {
-      await onSave({ item, name: trimmed, extra });
-      onClose();
-    } catch (err) {
-      if (err instanceof ApiError && err.response.status === 409) {
-        setError(`You already have a ${noun} called ${trimmed}`);
-      } else if (err instanceof ApiError && err.response.status === 422) {
-        const items = Array.isArray(err.problem.errors) ? err.problem.errors : [];
-        const onName = (items as { loc?: unknown[]; msg?: string }[]).find(
-          (i) => i.loc?.[i.loc.length - 1] === "name",
-        );
-        if (onName) setError(friendlyMessage(onName.msg));
-        else toastError(err);
-      } else {
-        toastError(err);
-      }
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{item ? `Edit ${noun}` : `Add ${noun}`}</SheetTitle>
-          <SheetDescription className="sr-only">{sentence(noun)} details</SheetDescription>
-        </SheetHeader>
-        <form onSubmit={submit} className="mt-4 space-y-4" noValidate>
-          <div className="space-y-1">
-            <Label htmlFor="ref-name">Name</Label>
-            <Input
-              id="ref-name"
-              value={name}
-              maxLength={maxNameLength}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? "ref-name-error" : undefined}
-              onChange={(e) => {
-                setName(e.target.value);
-                setError(null);
-              }}
-            />
-            {[...name].length >= maxNameLength - COUNTER_WITHIN && (
-              <p className="text-right text-xs text-muted-foreground" aria-live="polite">
-                {[...name].length}/{maxNameLength}
-              </p>
-            )}
-            {error && (
-              <p id="ref-name-error" role="alert" className="text-sm text-over">
-                {error}
-              </p>
-            )}
-          </div>
-          {extraFields?.(extra, setExtra)}
-          <Button type="submit" className="h-11 w-full" disabled={saving}>
-            Save
-          </Button>
-        </form>
-      </SheetContent>
-    </Sheet>
   );
 }

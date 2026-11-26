@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
@@ -42,7 +42,11 @@ const cat = (id: string, name: string, over: Partial<Cat> = {}): Cat => ({
 });
 
 /** A tiny in-memory API for categories and payment methods. */
-function mockApi(initialCats: Cat[], initialPms: Pm[] = []) {
+function mockApi(
+  initialCats: Cat[],
+  initialPms: Pm[] = [],
+  spending: { amount: string; count: number; category: { id: string } }[] = [],
+) {
   const cats = [...initialCats];
   const pms = [...initialPms];
   const calls: { method: string; path: string; body: unknown }[] = [];
@@ -89,6 +93,9 @@ function mockApi(initialCats: Cat[], initialPms: Pm[] = []) {
       c.archived_at = params.action === "archive" ? "2026-09-01T00:00:00Z" : null;
       return HttpResponse.json(c);
     }),
+    http.get("*/api/v1/reports/spending", () =>
+      HttpResponse.json({ by_category: spending, count: 0, from: "", to: "", total: "0.00" }),
+    ),
     http.get("*/api/v1/payment-methods", () => HttpResponse.json(pms)),
     http.patch("*/api/v1/payment-methods/:id", async ({ request, params }) => {
       const body = await log(request);
@@ -103,7 +110,7 @@ function mockApi(initialCats: Cat[], initialPms: Pm[] = []) {
 const names = () =>
   screen
     .getAllByRole("listitem")
-    .map((li) => li.querySelector("span")?.textContent)
+    .map((li) => li.querySelector("span.break-words")?.textContent)
     .filter(Boolean);
 
 describe("categories settings", () => {
@@ -166,9 +173,8 @@ describe("categories settings", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Add category" }));
     await userEvent.type(screen.getByLabelText("Name"), "food");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("You already have a category called food");
-    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(alert.textContent!);
+    const message = await screen.findByText("You already have a category called food");
+    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(message.textContent!);
   });
 
   it("limits a category name to the API's 50 characters, with a counter near the limit", async () => {
@@ -187,7 +193,7 @@ describe("categories settings", () => {
     renderApp("/settings/categories");
     await userEvent.click(await screen.findByRole("button", { name: /^Edit y+/ }));
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Use 50 characters or fewer");
+    expect(await screen.findByText("Use 50 characters or fewer")).toBeVisible();
     expect(api.calls.filter((c) => c.method === "PATCH")).toHaveLength(0);
   });
 
@@ -218,23 +224,53 @@ describe("categories settings", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Add category" }));
     await userEvent.type(screen.getByLabelText("Name"), "Coffee");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Use 50 characters or fewer");
-    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(alert.textContent!);
+    const message = await screen.findByText("Use 50 characters or fewer");
+    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(message.textContent!);
     expect(screen.queryByText("Unprocessable Content")).not.toBeInTheDocument();
   });
 
-  it("archives behind a confirm, then unarchives from the archived list", async () => {
-    mockApi([cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })]);
+  it("archives from the edit sheet behind a confirm, with Undo", async () => {
+    const api = mockApi([cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })]);
     renderApp("/settings/categories");
-    await userEvent.click(await screen.findByRole("button", { name: "Archive Food" }));
-    const dialog = await screen.findByRole("dialog");
-    expect(dialog).toHaveTextContent("Nothing is deleted");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Archive" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Edit Food" }));
+    await userEvent.click(screen.getByRole("button", { name: "Archive" }));
+    expect(screen.getByRole("group", { name: "Confirm archive" })).toHaveTextContent(
+      "Nothing is deleted",
+    );
+    expect(api.calls.filter((c) => c.path.endsWith("/archive"))).toHaveLength(0);
+    await userEvent.click(screen.getByRole("button", { name: "Archive" }));
     await waitFor(() => expect(screen.queryByRole("button", { name: "Edit Food" })).toBeNull());
-    await userEvent.click(screen.getByRole("checkbox", { name: /Show archived/ }));
+    expect(await screen.findByText("Archived Food")).toBeInTheDocument();
+    // fireEvent: sonner's swipe handling needs setPointerCapture, which jsdom lacks.
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(await screen.findByRole("button", { name: "Edit Food" })).toBeInTheDocument();
+  });
+
+  it("unarchives from the archived list", async () => {
+    mockApi([cat("c1", "Food", { archived_at: "2026-09-01T00:00:00Z" })]);
+    renderApp("/settings/categories");
+    await userEvent.click(await screen.findByRole("checkbox", { name: /Show archived/ }));
     await userEvent.click(screen.getByRole("button", { name: "Unarchive Food" }));
     expect(await screen.findByRole("button", { name: "Edit Food" })).toBeInTheDocument();
+  });
+
+  it("keeps a long name fully visible instead of truncating it", async () => {
+    const long = "Groceries and household supplies from the corner bazaar";
+    mockApi([cat("c1", long)]);
+    renderApp("/settings/categories");
+    const row = await screen.findByRole("button", { name: `Edit ${long}` });
+    expect(within(row).getByText(long)).not.toHaveClass("truncate");
+  });
+
+  it("shows this month's spend on expense rows, and Nothing yet otherwise", async () => {
+    mockApi(
+      [cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })],
+      [],
+      [{ amount: "3150.00", count: 4, category: { id: "c1" } }],
+    );
+    renderApp("/settings/categories");
+    expect(await screen.findByText("৳3,150 this month")).toBeInTheDocument();
+    expect(screen.getByText("Nothing yet")).toBeInTheDocument();
   });
 
   it("makes the whole Show archived row at least 44px tall with a 20px checkbox", async () => {
@@ -245,11 +281,23 @@ describe("categories settings", () => {
     expect(checkbox.closest("label")).toHaveClass("min-h-11");
   });
 
+  it("shows move buttons only in reorder mode, and Done leaves it", async () => {
+    mockApi([cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })]);
+    renderApp("/settings/categories");
+    await screen.findByText("Food");
+    expect(screen.queryByRole("button", { name: "Move Bills up" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Reorder" }));
+    expect(screen.getByRole("button", { name: "Move Bills up" })).toBeEnabled();
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.queryByRole("button", { name: "Move Bills up" })).toBeNull();
+  });
+
   it("moves a category up and down, and the order persists", async () => {
     const api = mockApi([cat("c1", "Food"), cat("c2", "Bills", { sort_order: 20 })]);
     renderApp("/settings/categories");
     await screen.findByText("Food");
     expect(names()).toEqual(["Food", "Bills"]);
+    await userEvent.click(screen.getByRole("button", { name: "Reorder" }));
     await userEvent.click(screen.getByRole("button", { name: "Move Bills up" }));
     await waitFor(() => expect(names()).toEqual(["Bills", "Food"]));
     expect(api.cats.map((c) => [c.name, c.sort_order])).toEqual([
@@ -265,6 +313,7 @@ describe("categories settings", () => {
     server.use(http.patch("*/api/v1/categories/:id", () => HttpResponse.error()));
     renderApp("/settings/categories");
     await screen.findByText("Food");
+    await userEvent.click(screen.getByRole("button", { name: "Reorder" }));
     await userEvent.click(screen.getByRole("button", { name: "Move Bills up" }));
     await waitFor(() => expect(names()).toEqual(["Food", "Bills"]));
   });
@@ -273,10 +322,9 @@ describe("categories settings", () => {
     mockApi([cat("c1", "Food")]);
     const { client } = renderApp("/settings/categories");
     client.setQueryData(["categories"], [{ id: "stale" }]);
-    await userEvent.click(await screen.findByRole("button", { name: "Archive Food" }));
-    await userEvent.click(
-      within(await screen.findByRole("dialog")).getByRole("button", { name: "Archive" }),
-    );
+    await userEvent.click(await screen.findByRole("button", { name: "Edit Food" }));
+    await userEvent.click(screen.getByRole("button", { name: "Archive" }));
+    await userEvent.click(screen.getByRole("button", { name: "Archive" }));
     await waitFor(() => expect(client.getQueryState(["categories"])?.isInvalidated).toBe(true));
   });
 });
@@ -311,7 +359,7 @@ describe("payment methods settings", () => {
     const input = screen.getByLabelText("Name");
     expect(input).toHaveAttribute("maxlength", "40");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Use 40 characters or fewer");
+    expect(await screen.findByText("Use 40 characters or fewer")).toBeVisible();
     expect(api.calls.filter((c) => c.method === "PATCH")).toHaveLength(0);
   });
 
@@ -319,6 +367,7 @@ describe("payment methods settings", () => {
     const api = mockApi([], [pm("p1", "Cash"), pm("p2", "bKash")]);
     renderApp("/settings/payment-methods");
     await screen.findByText("bKash");
+    await userEvent.click(screen.getByRole("button", { name: "Reorder" }));
     await userEvent.click(screen.getByRole("button", { name: "Move bKash up" }));
     await waitFor(() => expect(api.pms.find((p) => p.id === "p2")?.sort_order).toBeLessThan(20));
     const order = [...api.pms].sort((a, b) => a.sort_order - b.sort_order).map((p) => p.name);

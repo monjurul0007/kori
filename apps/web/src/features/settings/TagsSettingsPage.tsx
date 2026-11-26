@@ -1,46 +1,29 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
-import { ApiError } from "@/api/client";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { useTags } from "@/features/transactions/hooks";
 import { normalizeTagName } from "@/lib/tags";
-import { toastError } from "@/lib/toast";
+import { toastSuccess } from "@/lib/toast";
 
 import { useDeleteTag, useRenameTag, type Tag } from "./hooks";
 import { SETTINGS_PARENT } from "./parent";
-import { useTags } from "@/features/transactions/hooks";
-
-const count = (n: number) => `${n} transaction${n === 1 ? "" : "s"}`;
+import { TagEditSheet, transactionCount } from "./TagEditSheet";
 
 export function TagsSettingsPage() {
   const tags = useTags();
   const rename = useRenameTag();
   const remove = useDeleteTag();
-  const [renaming, setRenaming] = useState<Tag | null>(null);
-  const [deleting, setDeleting] = useState<Tag | null>(null);
+  const [editing, setEditing] = useState<Tag | null>(null);
+  const [query, setQuery] = useState("");
 
   const sorted = [...(tags.data ?? [])].sort(
     (a, b) => b.usage_count - a.usage_count || a.name.localeCompare(b.name),
   );
+  const needle = normalizeTagName(query);
+  const shown = sorted.filter((tag) => tag.name.includes(needle));
 
   return (
     <>
@@ -52,170 +35,61 @@ export function TagsSettingsPage() {
       ) : sorted.length === 0 ? (
         <p className="text-sm text-muted-foreground">Tags you add to transactions appear here.</p>
       ) : (
-        <ul className="divide-y rounded-md border">
-          {sorted.map((tag) => (
-            <li key={tag.id} className="flex items-center gap-2 px-3 py-1">
-              <Link
-                to={`/transactions?tag=${encodeURIComponent(tag.name)}`}
-                className="flex min-h-11 min-w-0 flex-1 items-center justify-between gap-2"
-              >
-                <span className="truncate">#{tag.name}</span>
-                <span className="text-xs text-muted-foreground">{count(tag.usage_count)}</span>
-              </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Rename #${tag.name}`}
-                onClick={() => setRenaming(tag)}
-              >
-                <Pencil className="h-4 w-4" aria-hidden="true" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Delete #${tag.name}`}
-                onClick={() => setDeleting(tag)}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="relative mb-3">
+            <Search
+              className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              aria-label="Find a tag"
+              placeholder="Find a tag"
+              className="h-11 pl-9"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          {shown.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tags match “{query}”.</p>
+          ) : (
+            <ul className="divide-y rounded-lg border bg-card">
+              {shown.map((tag) => (
+                <li key={tag.id}>
+                  <button
+                    type="button"
+                    aria-label={`Edit #${tag.name}`}
+                    className="flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25"
+                    onClick={() => setEditing(tag)}
+                  >
+                    <span className="min-w-0 flex-1 break-words">#{tag.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {transactionCount(tag.usage_count)}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">
+            Tags are saved in lowercase; spaces become hyphens.
+          </p>
+        </>
       )}
 
-      {renaming && (
-        <RenameSheet
-          key={renaming.id}
-          tag={renaming}
-          others={sorted.filter((t) => t.id !== renaming.id)}
-          onSave={(name) => rename.mutateAsync({ id: renaming.id, name })}
-          onClose={() => setRenaming(null)}
+      {editing && (
+        <TagEditSheet
+          key={editing.id}
+          tag={editing}
+          others={sorted.filter((t) => t.id !== editing.id)}
+          onRename={(name) => rename.mutateAsync({ id: editing.id, name })}
+          onDelete={() =>
+            remove.mutateAsync(editing.id).then(() => toastSuccess(`Deleted #${editing.name}`))
+          }
+          onClose={() => setEditing(null)}
         />
       )}
-
-      <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete #{deleting?.name}?</DialogTitle>
-            <DialogDescription>
-              It will be removed from {count(deleting?.usage_count ?? 0)}. The transactions
-              themselves stay.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDeleting(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                const tag = deleting;
-                setDeleting(null);
-                if (tag) void remove.mutateAsync(tag.id).catch(toastError);
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
-  );
-}
-
-function RenameSheet({
-  tag,
-  others,
-  onSave,
-  onClose,
-}: {
-  tag: Tag;
-  others: Tag[];
-  onSave: (name: string) => Promise<unknown>;
-  onClose: () => void;
-}) {
-  const [name, setName] = useState(tag.name);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [mergeInto, setMergeInto] = useState<Tag | null>(null);
-
-  async function save(normalized: string) {
-    setSaving(true);
-    try {
-      await onSave(normalized);
-      onClose();
-    } catch (err) {
-      setMergeInto(null);
-      if (err instanceof ApiError && err.response.status === 422) setError(err.problem.detail);
-      else toastError(err);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const normalized = normalizeTagName(name);
-    if (!normalized) return setError("Enter a name");
-    if (normalized.length > 30) return setError("Tag names can be at most 30 characters");
-    if (normalized === tag.name) return onClose();
-    const target = others.find((t) => t.name === normalized);
-    if (target) setMergeInto(target);
-    else void save(normalized);
-  }
-
-  return (
-    <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Rename tag</SheetTitle>
-          <SheetDescription className="sr-only">Rename or merge #{tag.name}</SheetDescription>
-        </SheetHeader>
-        {mergeInto ? (
-          <div className="mt-4 space-y-4">
-            <p>
-              Merge #{tag.name} into #{mergeInto.name}? {count(tag.usage_count)} will use #
-              {mergeInto.name}.
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" className="h-11" onClick={() => setMergeInto(null)}>
-                Back
-              </Button>
-              <Button className="h-11" disabled={saving} onClick={() => void save(mergeInto.name)}>
-                Merge
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={submit} className="mt-4 space-y-4" noValidate>
-            <div className="space-y-1">
-              <Label htmlFor="tag-name">Name</Label>
-              <Input
-                id="tag-name"
-                value={name}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? "tag-name-error" : undefined}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setError(null);
-                }}
-              />
-              {error && (
-                <p id="tag-name-error" role="alert" className="text-sm text-over">
-                  {error}
-                </p>
-              )}
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" className="h-11" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" className="h-11" disabled={saving}>
-                Save
-              </Button>
-            </div>
-          </form>
-        )}
-      </SheetContent>
-    </Sheet>
   );
 }

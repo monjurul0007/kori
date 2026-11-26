@@ -62,16 +62,27 @@ describe("tags settings", () => {
     );
   });
 
-  it("lists tags by usage, then name, with counts", async () => {
+  it("lists tags by usage, then name, with counts and a naming hint", async () => {
     mockTags(sample());
     renderApp("/settings/tags");
     await screen.findByText("#food");
-    const rows = screen.getAllByRole("link").filter((l) => l.textContent?.startsWith("#"));
+    const rows = screen.getAllByRole("button", { name: /^Edit #/ });
     expect(rows.map((r) => r.textContent)).toEqual([
       "#food12 transactions",
       "#lunch12 transactions",
       "#work2 transactions",
     ]);
+    expect(screen.getByText("Tags are saved in lowercase; spaces become hyphens.")).toBeVisible();
+  });
+
+  it("filters tags by the search box", async () => {
+    mockTags(sample());
+    renderApp("/settings/tags");
+    await userEvent.type(await screen.findByRole("searchbox", { name: "Find a tag" }), "Lu");
+    expect(screen.getByRole("button", { name: "Edit #lunch" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Edit #food" })).toBeNull();
+    await userEvent.type(screen.getByRole("searchbox", { name: "Find a tag" }), "zzz");
+    expect(screen.getByText(/No tags match/)).toBeVisible();
   });
 
   it("shows an empty state", async () => {
@@ -80,29 +91,29 @@ describe("tags settings", () => {
     expect(await screen.findByText("Tags you add to transactions appear here.")).toBeVisible();
   });
 
-  it("renames to a new name", async () => {
+  it("previews how a name will be saved, and renames to it", async () => {
     const api = mockTags(sample());
     renderApp("/settings/tags");
-    await userEvent.click(await screen.findByRole("button", { name: "Rename #work" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Edit #work" }));
     const input = screen.getByLabelText("Name");
     await userEvent.clear(input);
     await userEvent.type(input, "  Day Job ");
+    expect(screen.getByText("Saved as #day-job")).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(screen.getByText("#day-job")).toBeInTheDocument());
     expect(api.calls).toEqual([{ method: "PATCH", path: "/tags/t1", body: { name: "day-job" } }]);
   });
 
-  it("confirms before merging into an existing tag", async () => {
+  it("warns about a merge in the sheet, and only merges when asked", async () => {
     const api = mockTags(sample());
     renderApp("/settings/tags");
-    await userEvent.click(await screen.findByRole("button", { name: "Rename #lunch" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Edit #lunch" }));
     const input = screen.getByLabelText("Name");
     await userEvent.clear(input);
     await userEvent.type(input, "Food");
-    await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(
-      screen.getByText(/Merge #lunch into #food\? 12 transactions will use #food\./),
-    ).toBeVisible();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "#food already exists. Merge #lunch into #food? 12 transactions will use #food.",
+    );
     expect(api.calls).toEqual([]);
     await userEvent.click(screen.getByRole("button", { name: "Merge" }));
     await waitFor(() => expect(screen.queryByText("#lunch")).not.toBeInTheDocument());
@@ -127,16 +138,17 @@ describe("tags settings", () => {
       ),
     );
     renderApp("/settings/tags");
-    await userEvent.click(await screen.findByRole("button", { name: "Rename #work" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Edit #work" }));
     await userEvent.type(screen.getByLabelText("Name"), "x");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Too long");
+    expect(await screen.findByText("Too long")).toBeVisible();
   });
 
-  it("deletes after confirming the usage count", async () => {
+  it("deletes from the sheet after confirming the usage count", async () => {
     const api = mockTags(sample());
     renderApp("/settings/tags");
-    await userEvent.click(await screen.findByRole("button", { name: "Delete #lunch" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Edit #lunch" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete tag" }));
     expect(screen.getByText(/removed from 12 transactions/)).toBeVisible();
     expect(api.calls).toEqual([]);
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
@@ -144,10 +156,21 @@ describe("tags settings", () => {
     expect(api.calls).toEqual([{ method: "DELETE", path: "/tags/t2", body: undefined }]);
   });
 
-  it("opens the filtered transactions list when a tag is tapped", async () => {
+  it("keeps the tag when the delete confirm is cancelled", async () => {
+    const api = mockTags(sample());
+    renderApp("/settings/tags");
+    await userEvent.click(await screen.findByRole("button", { name: "Edit #lunch" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete tag" }));
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByText(/removed from/)).toBeNull();
+    expect(api.calls).toEqual([]);
+  });
+
+  it("opens the filtered transactions list from the sheet", async () => {
     mockTags(sample());
     const { router } = renderApp("/settings/tags");
-    await userEvent.click(await screen.findByRole("link", { name: /#lunch/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "Edit #lunch" }));
+    await userEvent.click(screen.getByRole("link", { name: /View transactions tagged #lunch/ }));
     expect(router.state.location.pathname).toBe("/transactions");
     expect(router.state.location.search).toBe("?tag=lunch");
   });

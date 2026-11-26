@@ -1,10 +1,14 @@
 import { useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
+import { CategoryTile } from "@/components/ui/category-tile";
+import { useSpending } from "@/features/dashboard/hooks";
+import { monthOf, todayInDhaka } from "@/lib/dates";
+import { formatTaka } from "@/lib/money";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { CATEGORY_COLORS, CATEGORY_ICONS, CategoryIcon } from "./categoryStyle";
+import { CATEGORY_COLORS, CATEGORY_ICONS } from "./categoryStyle";
 import {
   useArchiveCategory,
   useManagedCategories,
@@ -30,6 +34,10 @@ export function CategoriesSettingsPage() {
   const save = useSaveCategory();
   const archive = useArchiveCategory();
   const reorder = useReorderCategories();
+  const spending = useSpending(monthOf(todayInDhaka()));
+  const spentById = new Map(
+    (spending.data?.by_category ?? []).map((s) => [s.category.id, s.amount]),
+  );
 
   const ofKind = (categories.data ?? []).filter((c) => c.kind === kind);
 
@@ -45,7 +53,7 @@ export function CategoriesSettingsPage() {
             aria-selected={kind === k.kind}
             onClick={() => setKind(k.kind)}
             className={cn(
-              "min-h-10 rounded-full border px-4 text-sm",
+              "min-h-11 rounded-full border px-4 text-sm",
               kind === k.kind
                 ? "border-primary bg-primary text-primary-foreground"
                 : "hover:bg-muted",
@@ -64,7 +72,8 @@ export function CategoriesSettingsPage() {
           noun="category"
           maxNameLength={CATEGORY_NAME_MAX}
           items={ofKind}
-          leading={(c) => <CategoryIcon icon={c.icon} color={c.color} />}
+          leading={(c) => <CategoryTile icon={c.icon} color={c.color} className="h-10 w-10" />}
+          detail={(c) => (kind === "expense" ? spendThisMonth(spentById.get(c.id)) : null)}
           initialExtra={(c) => ({ icon: c?.icon ?? null, color: c?.color ?? null })}
           extraFields={(value, set) => <CategoryExtras value={value} onChange={set} />}
           onSave={({ item, name, extra }) =>
@@ -84,12 +93,15 @@ export function CategoriesSettingsPage() {
   );
 }
 
+const spendThisMonth = (amount: string | undefined) =>
+  amount ? `${formatTaka(amount)} this month` : "Nothing yet";
+
 function CategoryExtras({ value, onChange }: { value: Extra; onChange: (v: Extra) => void }) {
   return (
     <>
       <fieldset className="space-y-1">
         <legend className="text-sm font-medium">Icon</legend>
-        <div className="grid grid-cols-6 gap-2">
+        <div className="grid grid-cols-[repeat(auto-fill,2.75rem)] gap-2">
           {Object.entries(CATEGORY_ICONS).map(([name, Icon]) => (
             <button
               key={name}
@@ -98,7 +110,7 @@ function CategoryExtras({ value, onChange }: { value: Extra; onChange: (v: Extra
               aria-pressed={value.icon === name}
               onClick={() => onChange({ ...value, icon: value.icon === name ? null : name })}
               className={cn(
-                "flex h-10 items-center justify-center rounded-md border",
+                "flex h-11 w-11 items-center justify-center rounded-md border",
                 value.icon === name ? "border-primary bg-muted" : "hover:bg-muted",
               )}
             >
@@ -119,12 +131,17 @@ function CategoryExtras({ value, onChange }: { value: Extra; onChange: (v: Extra
               onClick={() =>
                 onChange({ ...value, color: value.color === c.value ? null : c.value })
               }
-              style={{ backgroundColor: c.value }}
               className={cn(
-                "h-8 w-8 rounded-full border-2",
-                value.color === c.value ? "border-foreground" : "border-transparent",
+                "flex h-11 w-11 items-center justify-center rounded-md border",
+                value.color === c.value ? "border-primary bg-muted" : "hover:bg-muted",
               )}
-            />
+            >
+              <span
+                aria-hidden="true"
+                className="h-6 w-6 rounded-full"
+                style={{ backgroundColor: c.value }}
+              />
+            </button>
           ))}
         </div>
       </fieldset>
