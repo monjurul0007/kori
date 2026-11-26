@@ -254,6 +254,23 @@ describe("categories settings", () => {
     expect(await screen.findByRole("button", { name: "Edit Food" })).toBeInTheDocument();
   });
 
+  it("shows no spend text when the spending report fails to load", async () => {
+    mockApi([cat("c1", "Food")]);
+    server.use(http.get("*/api/v1/reports/spending", () => HttpResponse.error()));
+    renderApp("/settings/categories");
+    expect(await screen.findByRole("button", { name: "Edit Food" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText("Nothing yet")).toBeNull());
+    expect(screen.queryByText(/this month/)).toBeNull();
+  });
+
+  it("shows no spend text while the spending report is loading", async () => {
+    mockApi([cat("c1", "Food")]);
+    server.use(http.get("*/api/v1/reports/spending", () => new Promise(() => {})));
+    renderApp("/settings/categories");
+    expect(await screen.findByRole("button", { name: "Edit Food" })).toBeInTheDocument();
+    expect(screen.queryByText("Nothing yet")).toBeNull();
+  });
+
   it("keeps a long name fully visible instead of truncating it", async () => {
     const long = "Groceries and household supplies from the corner bazaar";
     mockApi([cat("c1", long)]);

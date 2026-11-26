@@ -73,7 +73,10 @@ export function CategoriesSettingsPage() {
           maxNameLength={CATEGORY_NAME_MAX}
           items={ofKind}
           leading={(c) => <CategoryTile icon={c.icon} color={c.color} className="h-10 w-10" />}
-          detail={(c) => (kind === "expense" ? spendThisMonth(spentById.get(c.id)) : null)}
+          detail={(c) =>
+            // No spend text until the report has loaded: a missing entry means "none" only then.
+            kind === "expense" && spending.isSuccess ? spendThisMonth(spentById.get(c.id)) : null
+          }
           initialExtra={(c) => ({ icon: c?.icon ?? null, color: c?.color ?? null })}
           extraFields={(value, set) => <CategoryExtras value={value} onChange={set} />}
           onSave={({ item, name, extra }) =>
