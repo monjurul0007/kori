@@ -1,28 +1,25 @@
 import { SlidersHorizontal } from "lucide-react";
 
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { FormSheet } from "@/components/ui/form-sheet";
 import { cn } from "@/lib/utils";
 
-import type { Filters } from "./filters";
+import { groupCategoriesByKind, type Filters } from "./filters";
 import { useCategories, usePaymentMethods, useTags } from "./hooks";
 
 interface Props {
   filters: Filters;
   onChange: (patch: Partial<Filters>) => void;
+  onClearAll: () => void;
 }
 
 const selectClass =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-base md:text-sm";
 
-export function FilterSheet({ filters, onChange }: Props) {
+export function FilterSheet({ filters, onChange, onClearAll }: Props) {
+  const [open, setOpen] = useState(false);
   const categories = useCategories().data ?? [];
   const methods = usePaymentMethods().data ?? [];
   const tags = useTags().data ?? [];
@@ -35,18 +32,34 @@ export function FilterSheet({ filters, onChange }: Props) {
     });
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" aria-label="Filters">
-          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Filters</SheetTitle>
-          <SheetDescription>Narrow this month's list.</SheetDescription>
-        </SheetHeader>
-        <div className="mt-4 space-y-4">
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="rounded-full"
+        onClick={() => setOpen(true)}
+      >
+        <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+        Filters
+      </Button>
+      <FormSheet
+        open={open}
+        onOpenChange={setOpen}
+        title="Filters"
+        description="Narrow this month's list."
+        footer={
+          <>
+            <Button type="button" variant="outline" className="flex-1" onClick={onClearAll}>
+              Clear all
+            </Button>
+            <Button type="button" className="flex-1" onClick={() => setOpen(false)}>
+              Done
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 pt-2">
           <label className="block space-y-1 text-sm font-medium">
             Type
             <select
@@ -59,25 +72,27 @@ export function FilterSheet({ filters, onChange }: Props) {
               <option value="income">Income</option>
             </select>
           </label>
-          <fieldset className="space-y-1">
-            <legend className="text-sm font-medium">Categories</legend>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  aria-pressed={filters.categoryIds.includes(c.id)}
-                  onClick={() => toggleCategory(c.id)}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-sm",
-                    filters.categoryIds.includes(c.id) && "bg-primary text-primary-foreground",
-                  )}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+          {groupCategoriesByKind(categories).map((group) => (
+            <fieldset key={group.kind} className="space-y-1">
+              <legend className="text-sm font-medium">{`${group.label} categories`}</legend>
+              <div className="flex flex-wrap gap-2">
+                {group.categories.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={filters.categoryIds.includes(c.id)}
+                    onClick={() => toggleCategory(c.id)}
+                    className={cn(
+                      "min-h-9 rounded-full border px-3 py-1 text-sm",
+                      filters.categoryIds.includes(c.id) && "bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ))}
           <label className="block space-y-1 text-sm font-medium">
             Payment method
             <select
@@ -109,7 +124,7 @@ export function FilterSheet({ filters, onChange }: Props) {
             </select>
           </label>
         </div>
-      </SheetContent>
-    </Sheet>
+      </FormSheet>
+    </>
   );
 }

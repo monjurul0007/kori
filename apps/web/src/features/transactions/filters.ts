@@ -68,3 +68,31 @@ export function exportHref(filters: Filters): string {
   if (q.length >= 2) query.set("q", q);
   return `/api/v1/transactions/export.csv?${query}`;
 }
+
+interface KindedCategory {
+  kind: "expense" | "income";
+}
+
+/** Splits categories into expense and income, keeping their order, for grouped pickers. */
+export function groupCategoriesByKind<T extends KindedCategory>(categories: T[]) {
+  return [
+    {
+      kind: "expense" as const,
+      label: "Expense",
+      categories: categories.filter((c) => c.kind === "expense"),
+    },
+    {
+      kind: "income" as const,
+      label: "Income",
+      categories: categories.filter((c) => c.kind === "income"),
+    },
+  ].filter((group) => group.categories.length > 0);
+}
+
+export const NO_FILTERS: Pick<Filters, "q" | "type" | "categoryIds" | "paymentMethodId" | "tag"> = {
+  q: "",
+  type: undefined,
+  categoryIds: [],
+  paymentMethodId: undefined,
+  tag: undefined,
+};

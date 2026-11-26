@@ -44,10 +44,10 @@ describe("transactions list", () => {
   it("groups by day and shows API totals", async () => {
     mockApi(() => page([tx("a"), tx("b", { occurred_on: "2026-09-09", amount: "100" })]));
     renderApp("/transactions?month=2026-09");
-    expect(await screen.findByRole("region", { name: "Thu, 10 Sep" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Wed, 9 Sep" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Thu 10 Sep" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Wed 9 Sep" })).toBeInTheDocument();
     expect(screen.getByText("৳1,250.50")).toBeInTheDocument();
-    expect(screen.getByText("৳749.50")).toBeInTheDocument(); // net, exact
+    expect(screen.getByText("+৳749.50")).toBeInTheDocument(); // net, exact
   });
 
   it("exports with the current filters", async () => {
@@ -292,5 +292,47 @@ describe("transactions search states", () => {
     expect(screen.queryByRole("button", { name: "Add one" })).not.toBeInTheDocument();
     release();
     expect(await screen.findByText("Shop a")).toBeInTheDocument();
+  });
+});
+
+describe("transactions toolbar layout", () => {
+  const setDesktop = (matches: boolean) =>
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }));
+  afterEach(() => vi.restoreAllMocks());
+
+  it("offers inline dropdowns instead of a Filters sheet on desktop", async () => {
+    setDesktop(true);
+    mockApi(() => page([tx("a")]));
+    renderApp("/transactions?month=2026-09");
+    await screen.findByText("Shop a");
+    expect(screen.getByLabelText("Paid with")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Filters" })).not.toBeInTheDocument();
+  });
+
+  it("offers type chips and a Filters button on phones", async () => {
+    setDesktop(false);
+    mockApi(() => page([tx("a")]));
+    renderApp("/transactions?month=2026-09");
+    await screen.findByText("Shop a");
+    expect(screen.getByRole("button", { name: "Expenses" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Paid with")).not.toBeInTheDocument();
+  });
+
+  it("shows the transaction count from the API totals", async () => {
+    mockApi(() => page([tx("a"), tx("b")]));
+    renderApp("/transactions?month=2026-09");
+    await screen.findByText("Shop a");
+    const label = screen.getByText("Transactions", { selector: "dt" });
+    expect(label.nextElementSibling).toHaveTextContent("2");
   });
 });

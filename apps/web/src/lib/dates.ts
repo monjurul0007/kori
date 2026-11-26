@@ -56,6 +56,13 @@ export function formatDisplayDate(iso: string): string {
   return `${DAYS[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
 }
 
+/** "2026-11-24" -> "Tue 24 Nov", with "Today, " in front when it is `today`. */
+export function formatDayHeading(iso: string, today: string): string {
+  const date = toDate(iso);
+  const label = `${DAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
+  return iso === today ? `Today, ${label}` : label;
+}
+
 /** "2026-09" -> "September 2026" */
 export function formatMonth(month: string): string {
   const date = toDate(startOfMonth(month));

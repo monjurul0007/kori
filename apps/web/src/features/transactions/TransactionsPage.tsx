@@ -1,4 +1,4 @@
-import { Download, X } from "lucide-react";
+import { Download, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
@@ -6,32 +6,86 @@ import { ApiError } from "@/api/client";
 import type { ShellContext } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMonth, monthOf, todayInDhaka } from "@/lib/dates";
+import { DESKTOP_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 
 import { DayGroup } from "./DayGroup";
 import { TransactionSheet } from "./form/TransactionSheet";
 import { FilterSheet } from "./FilterSheet";
+import { InlineFilters, TypeChips } from "./FilterControls";
 import { SearchInput } from "./SearchInput";
 import { TotalsBar } from "./TotalsBar";
 import type { Transaction } from "./TransactionRow";
-import { exportHref, useFilters } from "./filters";
+import { exportHref, NO_FILTERS, useFilters } from "./filters";
 import { MIN_SEARCH_LENGTH, useCategories, usePaymentMethods, useTransactions } from "./hooks";
 
 function RemovableChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-muted py-1 pl-3 pr-1 text-sm">
+    <span className="inline-flex items-center gap-1 rounded-full bg-brand-soft py-0.5 pl-3 pr-0.5 text-sm text-brand-text">
       {label}
       <button
         type="button"
         aria-label={`Remove filter ${label}`}
         onClick={onRemove}
-        className="rounded-full p-1 hover:bg-background"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-background/60"
       >
-        <X className="h-3 w-3" aria-hidden="true" />
+        <X className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
     </span>
+  );
+}
+
+interface EmptyListProps {
+  month: string;
+  searchText: string;
+  hasActiveFilters: boolean;
+  otherFiltersActive: boolean;
+  onClear: () => void;
+  onAdd: () => void;
+}
+
+/** Says why the list is empty: a no-match search or filter, a future month, or a quiet month. */
+function EmptyListState({
+  month,
+  searchText,
+  hasActiveFilters,
+  otherFiltersActive,
+  onClear,
+  onAdd,
+}: EmptyListProps) {
+  if (hasActiveFilters) {
+    return (
+      <EmptyState
+        variant="no-results"
+        message={
+          otherFiltersActive
+            ? "No transactions match these filters"
+            : `No transactions match "${searchText}"`
+        }
+        action={
+          <Button type="button" variant="outline" size="sm" onClick={onClear}>
+            {otherFiltersActive ? "Clear filters" : "Clear search"}
+          </Button>
+        }
+      />
+    );
+  }
+  if (month > monthOf(todayInDhaka())) {
+    return <EmptyState message="This month hasn't started yet." />;
+  }
+  return (
+    <EmptyState
+      message={`No transactions in ${formatMonth(month).split(" ")[0]}.`}
+      action={
+        <Button type="button" size="sm" onClick={onAdd}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          Add one
+        </Button>
+      }
+    />
   );
 }
 
@@ -65,10 +119,6 @@ export function TransactionsPage() {
 
   const totals = query.data?.pages[0]?.totals;
   const chips = [
-    filters.type && {
-      label: filters.type === "expense" ? "Expenses" : "Income",
-      clear: { type: undefined },
-    },
     ...filters.categoryIds.map((id) => ({
       label: categories.find((c) => c.id === id)?.name ?? "Category",
       clear: { categoryIds: filters.categoryIds.filter((c) => c !== id) },
@@ -85,14 +135,8 @@ export function TransactionsPage() {
   const otherFiltersActive =
     !!filters.type || filters.categoryIds.length > 0 || !!filters.paymentMethodId || !!filters.tag;
   const hasActiveFilters = searchActive || otherFiltersActive;
-  const clearAll = () =>
-    update({
-      q: "",
-      type: undefined,
-      categoryIds: [],
-      paymentMethodId: undefined,
-      tag: undefined,
-    });
+  const clearAll = () => update(NO_FILTERS);
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
 
   const [editing, setEditing] = useState<Transaction>();
 
@@ -114,9 +158,16 @@ export function TransactionsPage() {
         }
       />
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
           <SearchInput value={filters.q} onChange={(q) => update({ q })} />
-          <FilterSheet filters={filters} onChange={update} />
+          {isDesktop ? (
+            <InlineFilters filters={filters} onChange={update} />
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <TypeChips filters={filters} onChange={update} />
+              <FilterSheet filters={filters} onChange={update} onClearAll={clearAll} />
+            </div>
+          )}
         </div>
         {chips.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -138,7 +189,9 @@ export function TransactionsPage() {
           className={`space-y-3 transition-opacity ${query.isPlaceholderData ? "pointer-events-none opacity-60" : ""}`}
           aria-busy={query.isPlaceholderData}
         >
-          {totals && <TotalsBar expense={totals.expense} income={totals.income} />}
+          {totals && (
+            <TotalsBar expense={totals.expense} income={totals.income} count={totals.count} />
+          )}
 
           {query.isPending && (
             <div className="space-y-2" aria-label="Loading transactions">
@@ -148,55 +201,38 @@ export function TransactionsPage() {
             </div>
           )}
           {query.isError && (
-            <div role="alert" className="rounded-lg border p-4 text-sm">
-              <p>
-                {query.error instanceof ApiError
+            <EmptyState
+              variant="error"
+              message={
+                query.error instanceof ApiError
                   ? query.error.message
-                  : "Couldn't load transactions."}
-              </p>
-              <Button className="mt-2" size="sm" onClick={() => void query.refetch()}>
-                Try again
-              </Button>
-            </div>
-          )}
-          {query.isSuccess &&
-            !query.isPlaceholderData &&
-            groups.length === 0 &&
-            hasActiveFilters && (
-              <div className="space-y-3 py-8 text-center text-muted-foreground">
-                <p>
-                  {otherFiltersActive
-                    ? "No transactions match these filters"
-                    : `No transactions match "${searchText}"`}
-                </p>
-                <Button type="button" variant="outline" size="sm" onClick={clearAll}>
-                  {otherFiltersActive ? "Clear filters" : "Clear search"}
+                  : "Couldn't load transactions."
+              }
+              action={
+                <Button size="sm" onClick={() => void query.refetch()}>
+                  Try again
                 </Button>
-              </div>
-            )}
-          {query.isSuccess &&
-            !query.isPlaceholderData &&
-            groups.length === 0 &&
-            !hasActiveFilters && (
-              <p className="py-8 text-center text-muted-foreground">
-                {filters.month > monthOf(todayInDhaka()) ? (
-                  "This month hasn't started yet."
-                ) : (
-                  <>
-                    No transactions in {formatMonth(filters.month).split(" ")[0]}.{" "}
-                    <button
-                      type="button"
-                      onClick={openAdd}
-                      className="font-medium text-primary underline"
-                    >
-                      Add one
-                    </button>
-                  </>
-                )}
-              </p>
-            )}
+              }
+            />
+          )}
+          {query.isSuccess && !query.isPlaceholderData && groups.length === 0 && (
+            <EmptyListState
+              month={filters.month}
+              searchText={searchText}
+              hasActiveFilters={hasActiveFilters}
+              otherFiltersActive={otherFiltersActive}
+              onClear={clearAll}
+              onAdd={openAdd}
+            />
+          )}
           {groups.map(([date, items]) => (
-            <DayGroup key={date} date={date} transactions={items} onSelect={setEditing} />
+            <DayGroup
+              key={date}
+              date={date}
+              transactions={items}
+              onSelect={setEditing}
+              categories={categories}
+            />
           ))}
         </div>
         <div ref={sentinel} aria-hidden="true" />
