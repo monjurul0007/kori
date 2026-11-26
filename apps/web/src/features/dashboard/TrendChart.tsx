@@ -17,9 +17,11 @@ const PLOT_BOTTOM = 140;
 const PLOT_HEIGHT = PLOT_BOTTOM - PLOT_TOP;
 const MONTH_LABEL_Y = 156;
 const BAR_WIDTH = 24;
-const PAIRED_BAR_WIDTH = 15;
+const PAIRED_BAR_WIDTH = 18;
 const BAR_GAP = 2;
 const VALUE_LABEL_GAP = 4;
+/** Paired bars sit too close for two labels side by side, so the income label rides one line higher. */
+const PAIRED_LABEL_STAGGER = 10;
 /** A non-zero month never shrinks below this, so a small expense is still visible. */
 const MIN_BAR_HEIGHT = 2;
 
@@ -60,9 +62,18 @@ function barsFor(
   return [expense, income];
 }
 
+const BAR_FILL = {
+  expense: { current: "fill-primary", past: "fill-primary/30" },
+  income: { current: "fill-accent", past: "fill-accent/40" },
+} as const;
+
+const barFill = (key: BarSpec["key"], isCurrentMonth: boolean) =>
+  BAR_FILL[key][isCurrentMonth ? "current" : "past"];
+
 /** Spending for the last 6 months. Expenses only unless income is switched on. */
 export function TrendChart({ month }: { month: string }) {
   const query = useTrend(month);
+  // The budget line is an optional overlay: if the budget request fails, the chart still draws without it.
   const budgetLimit = useBudgetStatus(month).data?.overall?.limit;
   const [withIncome, setWithIncome] = useState(false);
 
@@ -96,7 +107,13 @@ export function TrendChart({ month }: { month: string }) {
           return Math.max(MIN_BAR_HEIGHT, PLOT_BOTTOM - yOf(taka));
         };
         const slot = (PLOT_RIGHT - PLOT_LEFT) / months.length;
-        const budgetY = budgetLimit ? yOf(largestTaka([budgetLimit])) : null;
+        const budget = budgetLimit
+          ? { y: yOf(largestTaka([budgetLimit])), label: `Budget ৳${shortAmount(budgetLimit)}` }
+          : null;
+        const labelY = (bar: BarSpec, height: number) => {
+          const stagger = withIncome && bar.key === "income" ? PAIRED_LABEL_STAGGER : 0;
+          return PLOT_BOTTOM - height - VALUE_LABEL_GAP - stagger;
+        };
         const summary = `Spending for the last 6 months, ${withIncome ? "expenses and income" : "expenses only"}; the table below has the values`;
         return (
           <div>
@@ -133,7 +150,6 @@ export function TrendChart({ month }: { month: string }) {
                   <g key={m.month} data-testid="trend-bar" data-month={m.month}>
                     {barsFor(m, center, withIncome).map((bar) => {
                       const height = barHeight(bar.amount);
-                      const solid = current ? "fill-primary" : "fill-primary/30";
                       return (
                         <g key={bar.key}>
                           <rect
@@ -142,19 +158,13 @@ export function TrendChart({ month }: { month: string }) {
                             width={bar.width}
                             height={height}
                             rx="4"
-                            className={
-                              bar.key === "expense"
-                                ? solid
-                                : current
-                                  ? "fill-accent"
-                                  : "fill-accent/40"
-                            }
+                            className={barFill(bar.key, current)}
                           >
                             <title>{`${formatMonth(m.month)}, ${bar.key}: ${formatTaka(bar.amount)}`}</title>
                           </rect>
                           <text
                             x={bar.x + bar.width / 2}
-                            y={PLOT_BOTTOM - height - VALUE_LABEL_GAP}
+                            y={labelY(bar, height)}
                             textAnchor="middle"
                             fontSize="9"
                             className="fill-foreground font-semibold"
@@ -178,25 +188,25 @@ export function TrendChart({ month }: { month: string }) {
                   </g>
                 );
               })}
-              {budgetY !== null && budgetLimit && (
+              {budget && (
                 <g data-testid="budget-line">
                   <line
                     x1={PLOT_LEFT}
                     x2={PLOT_RIGHT}
-                    y1={budgetY}
-                    y2={budgetY}
+                    y1={budget.y}
+                    y2={budget.y}
                     strokeDasharray="4 3"
                     strokeWidth="1.5"
                     className="stroke-accent"
                   />
                   <text
                     x={PLOT_RIGHT}
-                    y={budgetY - 5}
+                    y={budget.y - 5}
                     textAnchor="end"
                     fontSize="9"
                     className="fill-warn font-semibold"
                   >
-                    {`Budget ৳${shortAmount(budgetLimit)}`}
+                    {budget.label}
                   </text>
                 </g>
               )}

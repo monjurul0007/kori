@@ -128,6 +128,32 @@ describe("TrendChart", () => {
     expect(line).toHaveTextContent("Budget ৳40k");
   });
 
+  it("still draws the chart when the budget request fails", async () => {
+    server.use(
+      http.get("*/api/v1/reports/budget-status", () =>
+        HttpResponse.json({ title: "Boom", status: 500 }, { status: 500 }),
+      ),
+    );
+    mockGet("/api/v1/reports/trend", trend(["1000", "2000", "3000", "4000", "5000", "6000"]));
+    renderCard(<TrendChart month="2026-09" />);
+    expect(await screen.findAllByTestId("trend-bar")).toHaveLength(6);
+    expect(screen.queryByTestId("budget-line")).not.toBeInTheDocument();
+  });
+
+  it("puts the income label above the expense label so close values do not overlap", async () => {
+    mockGet(
+      "/api/v1/reports/trend",
+      trend(["31200", "31200", "31200", "31200", "31200", "31200"], "31200"),
+    );
+    renderCard(<TrendChart month="2026-09" />);
+    await userEvent.click(await screen.findByRole("button", { name: "Show income" }));
+    const [expenseLabel, incomeLabel] = (
+      await screen.findAllByTestId("trend-bar")
+    )[5]!.querySelectorAll("text");
+    const gap = Number(expenseLabel!.getAttribute("y")) - Number(incomeLabel!.getAttribute("y"));
+    expect(gap).toBeGreaterThanOrEqual(9);
+  });
+
   it("draws no budget line without an overall budget", async () => {
     mockGet("/api/v1/reports/trend", trend(["1000", "2000", "3000", "4000", "5000", "6000"]));
     renderCard(<TrendChart month="2026-09" />);
