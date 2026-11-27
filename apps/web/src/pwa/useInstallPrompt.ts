@@ -3,6 +3,8 @@ import { useSyncExternalStore } from "react";
 import { installStore, isDismissed, isIos, isStandalone, rememberDismissal } from "./installStore";
 
 export interface InstallPrompt {
+  /** Kori is already installed, or is running as the installed app. */
+  installed: boolean;
   /** Whether there's something to offer: an install event, or iOS instructions. */
   canPrompt: boolean;
   platform: "chromium" | "ios" | null;
@@ -20,6 +22,7 @@ export function useInstallPrompt(): InstallPrompt {
   const platform = hidden ? null : s.deferred ? "chromium" : isIos() ? "ios" : null;
 
   return {
+    installed: hidden,
     canPrompt: platform !== null,
     platform,
     dismissed: isDismissed(),

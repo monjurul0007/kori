@@ -24,4 +24,10 @@ describe("EmptyState", () => {
     render(<EmptyState message="Nothing here." />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
+
+  it("shows a heading above the message when given one", () => {
+    render(<EmptyState heading="Your spending will show here" message="Trends appear later." />);
+    expect(screen.getByText("Your spending will show here")).toBeInTheDocument();
+    expect(screen.getByText("Trends appear later.")).toBeInTheDocument();
+  });
 });
