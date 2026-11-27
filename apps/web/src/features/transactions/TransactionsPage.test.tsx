@@ -130,6 +130,32 @@ describe("transactions list", () => {
     expect(await screen.findByRole("dialog")).toHaveTextContent("New expense");
   });
 
+  describe("Add expense app shortcut", () => {
+    it("opens the add sheet with the amount focused and drops the parameter", async () => {
+      mockApi(() => page([tx("a")]));
+      const { router } = renderApp("/transactions?month=2026-09&new=expense");
+      const dialog = await screen.findByRole("dialog");
+      expect(dialog).toHaveTextContent("New expense");
+      await waitFor(() => expect(screen.getByLabelText("Amount (৳)")).toHaveFocus());
+      expect(router.state.location.search).toBe("?month=2026-09");
+    });
+
+    it("does not open the sheet without the parameter", async () => {
+      mockApi(() => page([tx("a")]));
+      renderApp("/transactions?month=2026-09");
+      await screen.findByText("Shop a");
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("ignores other values of the parameter", async () => {
+      mockApi(() => page([tx("a")]));
+      const { router } = renderApp("/transactions?month=2026-09&new=income");
+      await screen.findByText("Shop a");
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(router.state.location.search).toBe("?month=2026-09&new=income");
+    });
+  });
+
   describe("Add one from the viewed month", () => {
     beforeEach(() => {
       vi.useFakeTimers({ toFake: ["Date"] });
