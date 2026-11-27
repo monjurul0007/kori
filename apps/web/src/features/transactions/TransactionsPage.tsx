@@ -22,6 +22,7 @@ import { TotalsBar } from "./TotalsBar";
 import type { Transaction } from "./TransactionRow";
 import { exportHref, NO_FILTERS, useFilters } from "./filters";
 import { MIN_SEARCH_LENGTH, useCategories, usePaymentMethods, useTransactions } from "./hooks";
+import { useNewExpenseLink } from "./useNewExpenseLink";
 
 interface EmptyListProps {
   month: string;
@@ -76,6 +77,7 @@ function EmptyListState({
 
 export function TransactionsPage() {
   const { openAdd } = useOutletContext<ShellContext>();
+  useNewExpenseLink(openAdd);
   const { filters, update } = useFilters();
   const query = useTransactions(filters);
   const categories = useCategories().data ?? [];

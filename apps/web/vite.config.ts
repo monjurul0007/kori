@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { configDefaults, defineConfig } from "vitest/config";
 
-const THEME_COLOR = "#2F3A99"; // --brand in docs/design/tokens.css
+import { manifest } from "./src/pwa/manifest";
 
 export default defineConfig({
   plugins: [
@@ -13,25 +13,7 @@ export default defineConfig({
       // A waiting service worker shows an update toast; the Reload button activates it.
       registerType: "prompt",
       includeAssets: ["apple-touch-icon.png"],
-      manifest: {
-        name: "Kori",
-        short_name: "Kori",
-        description: "Personal expense and budget tracker",
-        theme_color: THEME_COLOR,
-        background_color: THEME_COLOR,
-        display: "standalone",
-        start_url: "/dashboard",
-        icons: [
-          { src: "icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icon-512.png", sizes: "512x512", type: "image/png" },
-          {
-            src: "icon-maskable-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
-        ],
-      },
+      manifest,
       workbox: {
         // App shell only: no runtime caching, and /api is never answered by the shell.
         globPatterns: ["**/*.{js,css,html,png,svg,webmanifest,woff2}"],
