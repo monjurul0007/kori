@@ -63,6 +63,7 @@ web-build:
 	cd apps/web && pnpm build
 
 # Needs the stack (`make up`) and a user: make create-user email=e2e@kori.local name=E2E (password e2e-test-password),
+# and demo data for it (the accessibility specs need it): docker compose exec app kori seed --email e2e@kori.local,
 # or set E2E_EMAIL and E2E_PASSWORD. Chromium once: cd apps/web && pnpm exec playwright install chromium
 e2e:
 	cd apps/web && pnpm e2e
