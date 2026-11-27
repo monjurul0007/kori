@@ -2,8 +2,8 @@ name: e2e
 
 # Stage 3 of ci.yml: Playwright smoke test against the Compose stack (`make up`).
 # Called by ci.yml; it can also be run on its own from the Actions tab.
-# One end-to-end smoke test against the same Compose stack you run locally with `make up`:
-# log in, add an expense, see it on the dashboard. More flows come later, one per milestone.
+# Playwright against the same Compose stack you run locally with `make up`: a smoke test (log in,
+# add an expense, see it on the dashboard) plus axe accessibility and layout checks on every screen.
 
 on:
   workflow_call:
@@ -33,6 +33,11 @@ jobs:
           printf '%s\n%s\n' "$E2E_PASSWORD" "$E2E_PASSWORD" |
             docker compose exec -T app kori create-user --email "$E2E_EMAIL" --name "E2E"
 
+      # The accessibility and layout specs need a populated app: the Totals list and the transactions
+      # toolbar only render with data. The seed is fake and deterministic.
+      - name: Fill the CI user with demo data
+        run: docker compose exec -T app kori seed --email "$E2E_EMAIL"
+
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: apps/web/package.json
@@ -59,7 +64,7 @@ jobs:
 
       - name: Run Playwright
         working-directory: apps/web
-        run: pnpm e2e
+        run: pnpm e2e --trace off
 
       # The report and traces hold test data only (a throwaway user and one E2E expense).
       - name: Upload the report and traces
