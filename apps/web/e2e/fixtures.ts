@@ -1,3 +1,5 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { test as base, expect, type Page } from "@playwright/test";
@@ -29,10 +31,8 @@ export const test = base.extend<object, { signedInStatePath: string }>({
     async ({ browser }, provide, workerInfo) => {
       const context = await browser.newContext({ baseURL: workerInfo.project.use.baseURL });
       await logIn(await context.newPage());
-      const statePath = path.join(
-        workerInfo.project.outputDir,
-        `signed-in-${workerInfo.workerIndex}.json`,
-      );
+      // Outside test-results/ and playwright-report/: CI uploads those, and this file holds a session cookie.
+      const statePath = path.join(mkdtempSync(path.join(tmpdir(), "kori-e2e-")), "signed-in.json");
       await context.storageState({ path: statePath });
       await context.close();
       await provide(statePath);

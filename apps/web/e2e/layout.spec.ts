@@ -1,16 +1,19 @@
 import type { Page } from "@playwright/test";
 
 import { expect, SIGNED_OUT_STATE, test, waitUntilSettled } from "./fixtures";
-import { KNOWN_FINDINGS } from "./knownFindings";
+import { TABLET_OVERFLOW } from "./knownFindings";
 import { ADD_BUTTON_NAME, LOGIN_ROUTE, SIGNED_IN_ROUTES, VIEWPORTS } from "./routes";
 
-const TABLET_WIDTH = 768;
-const SCREENS_WITH_SIDEWAYS_SCROLL_AT_TABLET = new Set(["/dashboard", "/transactions"]);
-
-async function hasSidewaysScroll(page: Page): Promise<boolean> {
-  return page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+/** How many pixels the page is wider than the viewport; 0 means it does not scroll sideways. */
+async function sidewaysExcessPixels(page: Page): Promise<number> {
+  return page.evaluate(() =>
+    Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
   );
+}
+
+function allowedExcessPixels(path: string, viewportWidth: number): number {
+  if (viewportWidth !== TABLET_OVERFLOW.viewportWidth) return 0;
+  return TABLET_OVERFLOW.maxExcessPixelsByPath[path] ?? 0;
 }
 
 for (const viewport of VIEWPORTS) {
@@ -23,19 +26,17 @@ for (const viewport of VIEWPORTS) {
       test(`${LOGIN_ROUTE.name} does not scroll sideways`, async ({ page }) => {
         await page.goto(LOGIN_ROUTE.path);
         await waitUntilSettled(page);
-        expect(await hasSidewaysScroll(page)).toBe(false);
+        expect(await sidewaysExcessPixels(page)).toBe(0);
       });
     });
 
     for (const route of SIGNED_IN_ROUTES) {
       test(`${route.name} does not scroll sideways`, async ({ page }) => {
-        test.fail(
-          viewport.width === TABLET_WIDTH && SCREENS_WITH_SIDEWAYS_SCROLL_AT_TABLET.has(route.path),
-          `${KNOWN_FINDINGS.sidewaysScrollAtTablet}: this screen is wider than the viewport`,
-        );
         await page.goto(route.path);
         await waitUntilSettled(page);
-        expect(await hasSidewaysScroll(page)).toBe(false);
+        expect(await sidewaysExcessPixels(page)).toBeLessThanOrEqual(
+          allowedExcessPixels(route.path, viewport.width),
+        );
       });
     }
 
@@ -63,6 +64,7 @@ test("every screen has a title, and no two screens share one", async ({ page, br
   });
   const loginPage = await signedOut.newPage();
   await loginPage.goto(LOGIN_ROUTE.path);
+  await waitUntilSettled(loginPage);
   titles.set(LOGIN_ROUTE.name, await loginPage.title());
   await signedOut.close();
 

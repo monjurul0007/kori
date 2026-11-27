@@ -2,15 +2,26 @@ import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 
 import { expect, SIGNED_OUT_STATE, test, waitUntilSettled } from "./fixtures";
-import { KNOWN_FINDINGS } from "./knownFindings";
+import { DASHBOARD_DEFINITION_LIST, NOT_FOUND_NUMERAL_CONTRAST } from "./knownFindings";
 import { ADD_BUTTON_NAME, LOGIN_ROUTE, SIGNED_IN_ROUTES } from "./routes";
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21aa"];
 const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
 const COLOR_SCHEMES = ["light", "dark"] as const;
 
-async function expectNoBlockingViolations(page: Page): Promise<void> {
-  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+interface KnownExemptions {
+  skippedRules?: readonly string[];
+  excludedSelector?: string;
+}
+
+async function expectNoBlockingViolations(
+  page: Page,
+  exemptions: KnownExemptions = {},
+): Promise<void> {
+  let builder = new AxeBuilder({ page }).withTags(WCAG_TAGS);
+  if (exemptions.skippedRules) builder = builder.disableRules([...exemptions.skippedRules]);
+  if (exemptions.excludedSelector) builder = builder.exclude(exemptions.excludedSelector);
+  const { violations } = await builder.analyze();
   const blocking = violations
     .filter((violation) => BLOCKING_IMPACTS.has(violation.impact ?? ""))
     .map((violation) => ({
@@ -19,6 +30,14 @@ async function expectNoBlockingViolations(page: Page): Promise<void> {
       targets: violation.nodes.map((node) => node.target.join(" ")),
     }));
   expect(blocking).toEqual([]);
+}
+
+function knownExemptionsFor(path: string, colorScheme: string): KnownExemptions {
+  if (path === DASHBOARD_DEFINITION_LIST.path) return DASHBOARD_DEFINITION_LIST;
+  const isLightNotFound =
+    path === NOT_FOUND_NUMERAL_CONTRAST.path &&
+    colorScheme === NOT_FOUND_NUMERAL_CONTRAST.colorScheme;
+  return isLightNotFound ? NOT_FOUND_NUMERAL_CONTRAST : {};
 }
 
 for (const colorScheme of COLOR_SCHEMES) {
@@ -38,17 +57,9 @@ for (const colorScheme of COLOR_SCHEMES) {
 
     for (const route of SIGNED_IN_ROUTES) {
       test(`${route.name} has no serious violations`, async ({ page }) => {
-        test.fail(
-          route.path === "/dashboard",
-          `${KNOWN_FINDINGS.dashboardDefinitionList}: the Totals list is not a valid <dl>`,
-        );
-        test.fail(
-          route.path === "/no-such-page" && colorScheme === "light",
-          `${KNOWN_FINDINGS.notFoundHeadingContrastLight}: the 404 numeral is too pale`,
-        );
         await page.goto(route.path);
         await waitUntilSettled(page);
-        await expectNoBlockingViolations(page);
+        await expectNoBlockingViolations(page, knownExemptionsFor(route.path, colorScheme));
       });
     }
 
