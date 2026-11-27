@@ -6,21 +6,26 @@ import { KoriMark } from "./KoriMark";
 export function Wordmark({
   markSize = 30,
   showBangla = true,
+  showMark = true,
   className,
+  banglaClassName,
 }: {
   markSize?: number;
   showBangla?: boolean;
+  showMark?: boolean;
   className?: string;
+  /** Overrides the Bangla name's colour, for use on the hero panel. */
+  banglaClassName?: string;
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5 font-display font-bold", className)}>
-      <KoriMark size={markSize} />
+      {showMark && <KoriMark size={markSize} />}
       <span>Kori</span>
       {showBangla && (
         <span
           lang="bn"
           aria-hidden="true"
-          className="text-[0.8em] font-medium text-muted-foreground"
+          className={cn("text-[0.8em] font-medium text-muted-foreground", banglaClassName)}
         >
           কড়ি
         </span>

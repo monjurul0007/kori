@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 
@@ -53,7 +53,7 @@ describe("login form accessibility", () => {
   it("does not mark untouched fields as invalid", async () => {
     server.use(loggedOut());
     renderApp("/login");
-    expect(await screen.findByLabelText("Email")).toHaveAttribute("aria-invalid", "false");
+    expect(await screen.findByLabelText("Email")).not.toHaveAttribute("aria-invalid", "true");
     expect(screen.getByLabelText("Email")).not.toHaveAttribute("aria-describedby");
   });
 
@@ -106,12 +106,26 @@ describe("login form accessibility", () => {
     server.use(loggedOut());
     renderApp("/login");
     const u = userEvent.setup();
-    await u.click(await screen.findByText("Forgot password?"));
+    await u.click(await screen.findByRole("button", { name: "Forgot password?" }));
     expect(
-      screen.getByText(
+      within(screen.getByRole("dialog")).getByText(
         "Kori doesn't send reset emails. Ask whoever runs your Kori server to reset your password.",
       ),
     ).toBeVisible();
+  });
+
+  it("has a Log in heading for screen readers", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    expect(await screen.findByRole("heading", { name: "Log in" })).toBeInTheDocument();
+  });
+
+  it("autofocuses the email field and shows the brand panel", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    expect(await screen.findByLabelText("Email")).toHaveFocus();
+    expect(screen.getByText("Every taka, accounted for.")).toBeInTheDocument();
+    expect(screen.getByText("কড়ি")).toHaveAttribute("lang", "bn");
   });
 });
 
