@@ -94,7 +94,7 @@ export function LoginPage() {
           noValidate
           className="mx-auto flex w-full max-w-sm flex-col gap-3.5"
         >
-          <h1 className="hidden font-display text-2xl font-semibold md:block">Log in</h1>
+          <h1 className="sr-only font-display text-2xl font-semibold md:not-sr-only">Log in</h1>
           {login.error && (
             <p role="alert" className="text-sm text-over">
               {loginErrorMessage(login.error)}

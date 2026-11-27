@@ -114,6 +114,12 @@ describe("login form accessibility", () => {
     ).toBeVisible();
   });
 
+  it("has a Log in heading for screen readers", async () => {
+    server.use(loggedOut());
+    renderApp("/login");
+    expect(await screen.findByRole("heading", { name: "Log in" })).toBeInTheDocument();
+  });
+
   it("autofocuses the email field and shows the brand panel", async () => {
     server.use(loggedOut());
     renderApp("/login");
