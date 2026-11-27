@@ -1,8 +1,10 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 
 import { renderApp } from "@/test/renderApp";
 import { server } from "@/test/setup";
+
+import { makeTx } from "../transactions/fixtures";
 
 const user = {
   id: "u1",
@@ -16,12 +18,13 @@ function mockAll() {
   const months: string[] = [];
   server.use(
     http.get("*/api/v1/auth/me", () => HttpResponse.json(user)),
+    http.get("*/api/v1/categories", () => HttpResponse.json([])),
     http.get("*/api/v1/reports/*", ({ request }) => {
       months.push(new URL(request.url).searchParams.get("month") ?? "");
       return HttpResponse.json({}, { status: 500 });
     }),
     http.get("*/api/v1/transactions", () =>
-      HttpResponse.json({ items: [], next_cursor: null, totals: {} }),
+      HttpResponse.json({ items: [makeTx("t1")], next_cursor: null, totals: {} }),
     ),
   );
   return months;
@@ -32,7 +35,7 @@ describe("DashboardPage", () => {
     const months = mockAll();
     renderApp("/dashboard?month=2026-03");
     expect(await screen.findByText("March 2026")).toBeInTheDocument();
-    expect(months).toContain("2026-03");
+    await waitFor(() => expect(months).toContain("2026-03"));
   });
 
   it("falls back to the current month for a bad ?month=", async () => {

@@ -21,6 +21,8 @@ interface Props
   extends Omit<React.ComponentProps<"div">, "title">, VariantProps<typeof emptyStateVariants> {
   /** One sentence that says what this is, or what went wrong. */
   message: string;
+  /** A short bold line above the message, for placeholders that need a title. */
+  heading?: string;
   /** The one next step, usually a button or link. */
   action?: React.ReactNode;
   icon?: LucideIcon;
@@ -28,6 +30,7 @@ interface Props
 
 export function EmptyState({
   message,
+  heading,
   action,
   icon,
   variant = "empty",
@@ -42,6 +45,7 @@ export function EmptyState({
       {...props}
     >
       <Icon className={emptyStateVariants({ variant })} aria-hidden="true" />
+      {heading ? <p className="mb-1 text-sm font-semibold">{heading}</p> : null}
       <p className="max-w-xs text-sm text-muted-foreground">{message}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>

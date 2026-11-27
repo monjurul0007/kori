@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CategoryTile } from "@/components/ui/category-tile";
 import { useSpending } from "@/features/dashboard/hooks";
 import { monthOf, todayInDhaka } from "@/lib/dates";
+import { setLocalFlag } from "@/lib/localFlag";
 import { formatTaka } from "@/lib/money";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ import {
   useSaveCategory,
   type Category,
 } from "./hooks";
+import { CATEGORIES_REVIEWED_KEY } from "@/features/dashboard/onboardingKeys";
 import { SETTINGS_PARENT } from "./parent";
 import { nextSortOrder } from "./reorder";
 import { CATEGORY_NAME_MAX } from "./nameLimits";
@@ -29,6 +31,7 @@ const KINDS = [
 ] as const;
 
 export function CategoriesSettingsPage() {
+  useEffect(() => setLocalFlag(CATEGORIES_REVIEWED_KEY), []);
   const [kind, setKind] = useState<Category["kind"]>("expense");
   const categories = useManagedCategories();
   const save = useSaveCategory();

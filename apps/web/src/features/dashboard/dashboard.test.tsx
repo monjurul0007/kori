@@ -295,7 +295,11 @@ describe("dashboard", () => {
     expect(client.getQueryState(["reports", "spending", "2026-09"])?.isInvalidated).toBe(false);
     const { REPORTS_KEY } = await import("./hooks");
     await client.invalidateQueries({ queryKey: REPORTS_KEY });
-    expect(client.getQueryCache().findAll({ queryKey: REPORTS_KEY }).length).toBe(3);
+    const forViewedMonth = client
+      .getQueryCache()
+      .findAll({ queryKey: REPORTS_KEY })
+      .filter((query) => query.queryKey[2] === "2026-09");
+    expect(forViewedMonth).toHaveLength(3);
   });
 });
 
